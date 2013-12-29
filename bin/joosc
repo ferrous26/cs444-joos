@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby -w
+
+require 'rubygems'
+gem 'joos'
+require 'joos/compiler'
+
+compiler = Joos::Compiler.new(ARGV)
+compiler.compile!
+exit compiler.result
