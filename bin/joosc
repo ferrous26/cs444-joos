@@ -4,6 +4,6 @@ require 'rubygems'
 gem 'joos'
 require 'joos/compiler'
 
-compiler = Joos::Compiler.new(ARGV)
-compiler.compile!
-exit compiler.result
+lex = Joos::Lexer.new(*ARGV)
+lex.tokens
+exit lex.result

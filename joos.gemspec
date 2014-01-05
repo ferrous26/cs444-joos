@@ -30,6 +30,6 @@ A Joos 1W compiler built for uWaterloo CS 444 in Winter 2014 by marada.
     Dir.glob('test/fixtures/**/*') +
     ['test/helper.rb']
 
-  s.executables << 'joosc' << 'joos_lex'
+  s.executables << 'joosc'
 
 end
