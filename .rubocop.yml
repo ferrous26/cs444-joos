@@ -14,3 +14,6 @@ EmptyLinesAroundBody:
 SignalException:
   Enabled: false
 
+Blocks:
+  Enabled: false
+
