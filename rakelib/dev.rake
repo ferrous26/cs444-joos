@@ -12,6 +12,7 @@ task :create, :klass  do |_, args|
   puts "Class path is Joos::#{klass_path}"
 
   mkdir_p File.dirname src_path
+  touch src_path
   File.open(src_path, 'w') do |fd|
     fd.write <<-EOF
 require 'joos/version'
@@ -19,12 +20,15 @@ require 'joos/version'
 ##
 # @todo Documentation
 class Joos::#{klass_path}
+
+  raise NotImplementedError
+
 end
     EOF
   end
-  puts "Source file created at #{src_path}"
 
   mkdir_p File.dirname test_path
+  touch test_path
   File.open(test_path, 'w') do |fd|
     fd.write <<-EOF
 require 'helper'
@@ -41,6 +45,5 @@ class #{klass_path.gsub(/::/, '')}Test < Minitest::Test
 end
     EOF
   end
-  puts "Test file created at #{test_path}"
 
 end
