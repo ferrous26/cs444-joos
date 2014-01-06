@@ -3,6 +3,8 @@ task :console do
   sh 'irb -Ilib -rubygems -rjoos'
 end
 
+ENV['N'] = `sysctl hw.ncpu | awk '{print $2}'`
+
 require 'rake/testtask'
 
 Rake::TestTask.new do |t|
@@ -19,6 +21,7 @@ namespace :test do
       t.libs = ['lib', 'test']
       t.name = "a#{assignment}"
       # t.warning = true
+      t.verbose = true
       t.test_files = FileList["test/a#{assignment}_marmoset_test.rb"]
     end
   end
