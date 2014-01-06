@@ -3,7 +3,12 @@ task :console do
   sh 'irb -Ilib -rubygems -rjoos'
 end
 
-ENV['N'] = `sysctl hw.ncpu | awk '{print $2}'`
+`which nproc`
+ENV['N'] = if $?.success?
+             `nproc`
+           else
+             `sysctl hw.ncpu | awk '{print $2}'`
+           end
 
 require 'rake/testtask'
 
