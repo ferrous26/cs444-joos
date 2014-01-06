@@ -2,7 +2,7 @@
 
 require 'rubygems'
 gem 'joos'
-require 'joos/compiler'
+require 'joos'
 
 lex = Joos::Lexer.new(*ARGV)
 lex.tokens
