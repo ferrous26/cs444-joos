@@ -1,5 +1,4 @@
 require 'helper'
-require 'joos/lexer'
 
 ##
 # Assignment 1 Marmoset tests
