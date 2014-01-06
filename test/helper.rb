@@ -19,7 +19,7 @@ class Minitest::Test
 
   def assert_analysis *files
     stdout, stderr, status = lexical_analysis(*files)
-    assert(status.success?) {
+    assert(status.success?, lambda {
       <<-EOM
 STATUS: #{status.exitstatus}
 
@@ -35,12 +35,12 @@ INPUT
 =====
 #{files.map { |f| f + ":\n" + File.read(f)}.join("\n\n")}
      EOM
-    }
+    })
   end
 
   def refute_analysis *files
     stdout, stderr, status = lexical_analysis(*files)
-    assert_equal(42, status.exitstatus) {
+    assert_equal(42, status.exitstatus, lambda {
       <<-EOM
 STATUS: #{status.exitstatus}
 
@@ -56,7 +56,7 @@ INPUT
 =====
 #{files.map { |f| f + ":\n" + File.read(f)}.join("\n\n")}
      EOM
-    }
+    })
   end
 
 end
