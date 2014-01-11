@@ -10,5 +10,7 @@ group :development do
   gem 'yardstick'
   gem 'minitest'
   gem 'rubocop'
+  gem 'rspec'
+  gem 'rspec-pride'
 end
 

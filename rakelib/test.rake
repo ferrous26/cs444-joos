@@ -11,14 +11,6 @@ ENV['N'] = if $?.success?
            end
 
 require 'rake/testtask'
-
-Rake::TestTask.new do |t|
-  t.libs = ['lib', 'test']
-  t.name = 'test'
-  # t.warning = true
-  t.test_files = FileList['test/**/*_test.rb']
-end
-
 namespace :test do
   5.times do |assignment|
     assignment += 1
@@ -31,3 +23,9 @@ namespace :test do
     end
   end
 end
+
+require 'rspec/core/rake_task'
+RSpec::Core::RakeTask.new(:spec) do |spec|
+  spec.pattern = FileList['spec/**/*_spec.rb']
+end
+

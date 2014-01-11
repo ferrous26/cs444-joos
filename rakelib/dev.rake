@@ -6,7 +6,7 @@ task :create, :klass  do |_, args|
   path.downcase!
 
   src_path   = "lib/joos/#{path}.rb"
-  test_path  = "test/#{path}_test.rb"
+  spec_path  = "spec/#{path}_spec.rb"
   klass_path = args[:klass]
 
   puts "Class path is Joos::#{klass_path}"
@@ -27,19 +27,17 @@ end
     EOF
   end
 
-  mkdir_p File.dirname test_path
-  touch test_path
-  File.open(test_path, 'w') do |fd|
+  mkdir_p File.dirname spec_path
+  touch spec_path
+  File.open(spec_path, 'w') do |fd|
     fd.write <<-EOF
-require 'helper'
+require 'spec_helper'
 require '#{src_path.sub(/lib\//, '').chomp('.rb')}'
 
-##
-# Unit tests for Joos::#{klass_path}
-class #{klass_path.gsub(/::/, '')}Test < Minitest::Test
+describe #{klass_path} do
 
-  def test_herp
-    flunk
+  it 'should have some passing tests' do
+    true.should == false
   end
 
 end
