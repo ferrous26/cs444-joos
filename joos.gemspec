@@ -13,8 +13,6 @@ A Joos 1W compiler built for uWaterloo CS 444 in Winter 2014 by marada.
   s.homepage    = 'http://ferrous26.com/joos'
   s.licenses    = ['Class Work']
   s.has_rdoc    = 'yard'
-  s.cert_chain  = ['certs/cert.pem']
-  s.signing_key = 'certs/signing_key.pem' if $0 =~ /gem\z/
   s.metadata    = {
     'allowed_push_host' => 'ferrous26.com'
   }
@@ -23,7 +21,7 @@ A Joos 1W compiler built for uWaterloo CS 444 in Winter 2014 by marada.
     Dir.glob('lib/**/*.rb') +
     Dir.glob('rakelib/*.rake') +
     ['Rakefile', 'README.markdown', 'History.markdown'] +
-    ['.yardopts', 'Gemfile', 'joos.gemspec', 'certs/cert.pem']
+    ['.yardopts', 'Gemfile', 'joos.gemspec']
 
   s.test_files       =
     Dir.glob('test/**/*_test.rb') +
