@@ -1,12 +1,10 @@
 doc
 .yardoc
-Gemfile.lock
 *.rbo
 *.gem
 xcuserdata
 .DS_Store
 test/fixture
-Makefile
 *.bundle
 *.o
 .rvmrc
@@ -15,5 +13,4 @@ pkg/*
 TODO
 unfinished/
 ci/
-certs/signing_key.pem
 
