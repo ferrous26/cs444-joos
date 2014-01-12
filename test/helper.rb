@@ -17,10 +17,8 @@ class Minitest::Test
     Open3.capture3("./bin/joosc #{files.join(' ')}")
   end
 
-  def assert_analysis *files
-    stdout, stderr, status = lexical_analysis(*files)
-    assert(status.success?, lambda {
-      <<-EOM
+  def error_lambda files, stdout, stderr, status
+    lambda { <<-EOM
 STATUS: #{status.exitstatus}
 
 STDOUT
@@ -33,30 +31,20 @@ STDERR
 
 INPUT
 =====
-#{files.map { |f| f + ":\n" + File.read(f)}.join("\n\n")}
+#{files.map { |f| f + ":\n" + File.read(f) }.join("\n\n") }
      EOM
-    })
+    }
+  end
+
+  def assert_analysis *files
+    stdout, stderr, status = lexical_analysis(*files)
+    assert(status.success?, error_lambda(files, stdout, stderr, status))
   end
 
   def refute_analysis *files
     stdout, stderr, status = lexical_analysis(*files)
-    assert_equal(42, status.exitstatus, lambda {
-      <<-EOM
-STATUS: #{status.exitstatus}
-
-STDOUT
-======
-#{stdout}
-
-STDERR
-======
-#{stderr}
-
-INPUT
-=====
-#{files.map { |f| f + ":\n" + File.read(f)}.join("\n\n")}
-     EOM
-    })
+    assert_equal(42, status.exitstatus,
+                 error_lambda(files, stdout, stderr, status))
   end
 
 end

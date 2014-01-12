@@ -2,7 +2,7 @@
 # The point is for the user to remove these configuration records
 # one by one as the offences are removed from the code base.
 
-DefWithoutParentheses:
+MethodDefParentheses:
   Enabled: false
 
 EmptyLines:
