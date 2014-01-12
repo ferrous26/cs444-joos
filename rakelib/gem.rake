@@ -12,3 +12,7 @@ task :clobber_pkg do
 end
 task :clobber => :clobber_pkg
 
+require 'rubygems/package_task'
+spec = Gem::Specification.load('joos.gemspec')
+Gem::PackageTask.new spec
+
