@@ -1,5 +1,5 @@
 all: joosc
 
 joosc:
-	rake marmoset
+	bundle install
 

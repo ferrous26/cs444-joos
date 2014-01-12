@@ -14,18 +14,5 @@ task :yard do
 end
 
 desc 'Run all CI related tasks'
-task :ci => [:test, :flog, :rubocop, :yard]
-
-desc 'Run the marmoset setup job'
-task :marmoset do
-  $stderr.puts <<-EOT
-*************************************************
-Pretend that we are building our compiler now...
-
-touch joosc
-
-:)
-*************************************************
-  EOT
-end
+task :ci => [:spec, :test, :flog, :rubocop, :yard]
 
