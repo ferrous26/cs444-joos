@@ -4,5 +4,7 @@ SimpleCov.start do
   formatter SimpleCov::Formatter::HTMLFormatter
 
   add_filter 'test/'
+  add_filter 'spec/'
+
   add_group 'Joos', 'lib/'
 end
