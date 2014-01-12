@@ -17,3 +17,6 @@ SignalException:
 Blocks:
   Enabled: false
 
+ClassLength:
+  Exclude:
+    - test/
