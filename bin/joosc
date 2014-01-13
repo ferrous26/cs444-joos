@@ -1,9 +1,0 @@
-#!/usr/bin/env ruby
-
-require 'rubygems'
-gem 'joos'
-require 'joos'
-
-lex = Joos::Lexer.new(*ARGV)
-lex.tokens
-exit lex.result

@@ -16,3 +16,7 @@ end
 desc 'Run all CI related tasks'
 task :ci => [:spec, :test, :flog, :rubocop, :yard]
 
+5.times do |num|
+  task :test => "test:a#{num + 1}"
+end
+
