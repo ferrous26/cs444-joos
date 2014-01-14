@@ -76,7 +76,8 @@ class Joos::Token::Keyword < Joos::Token
    ['abstract',     ClassModifier, MethodModifier],
    ['default',      IllegalToken],
    ['if',           ControlFlow],
-   ['private',      ReferenceLiteral],
+   ['private',      IllegalToken],
+   ['this',         ReferenceLiteral],
    ['boolean',      PrimitiveType],
    ['do',           IllegalToken],
    ['implements',   ClassModifier],
@@ -132,6 +133,5 @@ class Joos::Token::Keyword < Joos::Token
     const_set(name.capitalize, klass)
     CONSTANT_TOKENS[name] = klass
   end
-
 
 end
