@@ -10,6 +10,7 @@ describe Joos::Token do
   it 'returns the matching token class from .class_for for constant tokens' do
     expect(Joos::Token.class_for 'class').to be == Joos::Token::Class
     expect(Joos::Token.class_for '+').to be == Joos::Token::Plus
+    expect(Joos::Token.class_for '.').to be == Joos::Token::Dot
   end
 
   it 'returns the correct pattern class from .class_for for literals' do

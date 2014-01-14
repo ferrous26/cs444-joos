@@ -1,6 +1,7 @@
 require 'joos/version'
 require 'joos/token'
 
+# Extensions to the Token class
 class Joos::Token
 
   # @group Operator Modifiers

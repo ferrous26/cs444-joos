@@ -126,6 +126,6 @@ class Joos::Token
   require 'joos/token/operator'
   # require 'joos/token/literal'
   # require 'joos/token/identifier'
-  # require 'joos/token/separator'
+  require 'joos/token/separator'
 
 end
