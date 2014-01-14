@@ -34,7 +34,7 @@ end
 require 'spec_helper'
 require '#{src_path.sub(/lib\//, '').chomp('.rb')}'
 
-describe #{klass_path} do
+describe Joos::#{klass_path} do
 
   it 'should have some passing tests' do
     true.should == false
