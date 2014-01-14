@@ -28,12 +28,12 @@ describe Joos::Token::Keyword do
      :PrimitiveLiteral,
      :ReferenceLiteral
     ].each do |attribute|
-      expect(Joos::Token::Keyword.const_get(attribute, false)).to be_a Module
+      expect(Joos::Token.const_get(attribute, false)).to be_a Module
     end
   end
 
   it 'sets features correctly for each attribute' do
-    ns = Joos::Token::Keyword
+    ns = Joos::Token
     expect(ns.const_get :FieldModifier).to include ns.const_get(:Modifier)
     expect(ns.const_get :ClassModifier).to include ns.const_get(:Modifier)
     expect(ns.const_get :MethodModifier).to include ns.const_get(:Modifier)
@@ -92,22 +92,24 @@ describe Joos::Token::Keyword do
               'synchronized'
              ]
 
-  it 'has a class for each possible Java 1.3 keyword' do
+  it 'has a class for each possible Java 1.3 keyword tagged as a keyword' do
     keywords.map(&:capitalize).each do |keyword|
-      expect(Joos::Token::Keyword.const_get(keyword, false)).to be_a Class
+      klass = Joos::Token.const_get(keyword, false)
+      expect(klass).to be_a Class
+      expect(klass).to include Joos::Token::Keyword
     end
   end
 
   it 'makes sure each keyword class has .token set' do
     keywords.each do |keyword|
-      klass = Joos::Token::Keyword.const_get(keyword.capitalize, false)
+      klass = Joos::Token.const_get(keyword.capitalize, false)
       expect(klass.token).to be == keyword
     end
   end
 
   it 'adds each keyword to the token CONSTANT_TOKENS hash' do
     keywords.map(&:capitalize).each do |keyword|
-      klass = Joos::Token::Keyword.const_get(keyword, false)
+      klass = Joos::Token.const_get(keyword, false)
       list  = Joos::Token.const_get :CONSTANT_TOKENS
       expect(list[klass.token]).to be == klass
     end

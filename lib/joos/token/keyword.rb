@@ -1,18 +1,19 @@
 require 'joos/version'
 require 'joos/token'
 
-##
-# Namespace for all Joos 1W keyword tokens
-class Joos::Token::Keyword < Joos::Token
-
-  def self.token
-    raise 'forgot to implement .token'
-  end
-
-  include Joos::Token::ConstantToken
-
+class Joos::Token
 
   # @group Keyword Modifiers
+
+  ##
+  # Namespace for all Joos 1W keyword tokens
+  module Keyword
+    def self.token
+      raise 'forgot to implement .token'
+    end
+
+    include Joos::Token::ConstantToken
+  end
 
   ##
   # Attribute for tokens that are a kind of modifier
@@ -125,6 +126,8 @@ class Joos::Token::Keyword < Joos::Token
 
     klass = ::Class.new(self) do
       define_singleton_method(:token) { name }
+
+      include Keyword
       attributes.each do |attribute|
         include attribute
       end

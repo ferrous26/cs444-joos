@@ -19,7 +19,7 @@ describe Joos::Token::Operator do
      :UnaryOperator,
      :BinaryOperator
     ].each do |attribute|
-      expect(Joos::Token::Operator.const_get(attribute, false)).to be_a Module
+      expect(Joos::Token.const_get(attribute, false)).to be_a Module
     end
   end
 
@@ -65,18 +65,18 @@ describe Joos::Token::Operator do
 
   it 'has a class for every Java 1.3 operator' do
     operators.each do |_, name|
-      ns = Joos::Token::Operator
-      expect(ns.const_get(name, false)).to be_a Class
+      klass = Joos::Token.const_get(name, false)
+      expect(klass).to be_a Class
+      expect(klass).to include Joos::Token::Operator
     end
   end
 
   it 'tags each operator as either unary, binary, or illegal' do
     operators.each do |_, name|
-      ns    = Joos::Token::Operator
-      klass = ns.const_get(name, false)
+      klass = Joos::Token.const_get(name, false)
       expect {
-        klass.ancestors.include?(Joos::Token::Operator::UnaryOperator)  ||
-        klass.ancestors.include?(Joos::Token::Operator::BinaryOperator) ||
+        klass.ancestors.include?(Joos::Token::UnaryOperator)  ||
+        klass.ancestors.include?(Joos::Token::BinaryOperator) ||
         klass.ancestors.include?(Joos::Token::IllegalOperator)
       }.to be_true
     end
@@ -84,8 +84,7 @@ describe Joos::Token::Operator do
 
   it 'registers each operator with the CONSTANT_TOKENS hash' do
     operators.each do |symbol, name|
-      ns    = Joos::Token::Operator
-      klass = ns.const_get(name, false)
+      klass = Joos::Token.const_get(name, false)
       list  = Joos::Token.const_get(:CONSTANT_TOKENS, false)
       expect(list[klass.token]).to be == klass
     end

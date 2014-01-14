@@ -1,18 +1,20 @@
 require 'joos/version'
 require 'joos/token'
 
-##
-# Namespace for all Joos 1W operators
-#
-class Joos::Token::Operator < Joos::Token
-
-  def self.token
-    raise 'forgot to implement .token'
-  end
-
-  include Joos::Token::ConstantToken
+class Joos::Token
 
   # @group Operator Modifiers
+
+  ##
+  # Attribute for all Joos 1W operators
+  #
+  module Operator
+    def self.token
+      raise 'forgot to implement .token'
+    end
+
+    include Joos::Token::ConstantToken
+  end
 
   ##
   # Attribute for operators that take a single operand
@@ -66,12 +68,16 @@ class Joos::Token::Operator < Joos::Token
    ['>>>=', :UnsignedShiftRightEquals, IllegalToken]
 
   ].each do |symbol, name, *attributes|
+
     klass = ::Class.new(self) do
       define_singleton_method(:token) { symbol }
+
+      include Operator
       attributes.each do |attribute|
         include attribute
       end
     end
+
     const_set(name, klass)
     CONSTANT_TOKENS[symbol] = klass
   end
