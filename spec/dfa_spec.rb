@@ -1,10 +1,8 @@
 require 'spec_helper'
 require 'joos/dfa'
 
-describe Dfa do
+describe Joos::Dfa do
 
-  it 'should have some passing tests' do
-    true.should == false
-  end
+  it 'should have some passing tests'
 
 end
