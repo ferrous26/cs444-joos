@@ -3,9 +3,114 @@ require 'joos/token/keyword'
 
 describe Joos::Token::Keyword do
 
-  it 'implements a default .token which raises an exception'
-  it 'includes ConstantToken'
-  it 'makes various attributes available under its namespace'
+  it 'implements a default .token which raises an exception' do
+    expect {
+      Joos::Token::Keyword.token
+    }.to raise_error('forgot to implement .token')
+  end
 
+  it 'includes ConstantToken' do
+    ancestors = Joos::Token::Keyword.ancestors
+    expect(ancestors).to include Joos::Token::ConstantToken
+  end
+
+  it 'makes various attributes available under its namespace' do
+    [
+     :Modifier,
+     :FieldModifier,
+     :ClassModifier,
+     :MethodModifier,
+     :VisibilityModifier,
+     :ControlFlow,
+     :Declaration,
+     :Type,
+     :PrimitiveType,
+     :PrimitiveLiteral,
+     :ReferenceLiteral
+    ].each do |attribute|
+      expect(Joos::Token::Keyword.const_get(attribute, false)).to be_a Module
+    end
+  end
+
+  it 'sets features correctly for each attribute' do
+    ns = Joos::Token::Keyword
+    expect(ns.const_get :FieldModifier).to include ns.const_get(:Modifier)
+    expect(ns.const_get :ClassModifier).to include ns.const_get(:Modifier)
+    expect(ns.const_get :MethodModifier).to include ns.const_get(:Modifier)
+    expect(ns.const_get :VisibilityModifier).to include ns.const_get(:Modifier)
+    expect(ns.const_get :PrimitiveType).to include ns.const_get(:Type)
+  end
+
+  keywords = [
+              'abstract',
+              'default',
+              'if',
+              'private',
+              'this',
+              'boolean',
+              'do',
+              'implements',
+              'protected',
+              'throw',
+              'break',
+              'double',
+              'import',
+              'public',
+              'throws',
+              'byte',
+              'else',
+              'instanceof',
+              'return',
+              'transient',
+              'case',
+              'extends',
+              'int',
+              'short',
+              'try',
+              'catch',
+              'final',
+              'interface',
+              'static',
+              'void',
+              'char',
+              'finally',
+              'long',
+              'strictfp',
+              'volatile',
+              'class',
+              'float',
+              'native',
+              'super',
+              'while',
+              'const',
+              'for',
+              'new',
+              'switch',
+              'continue',
+              'goto',
+              'package',
+              'synchronized'
+             ]
+
+  it 'has a class for each possible Java 1.3 keyword' do
+    keywords.map(&:capitalize).each do |keyword|
+      expect(Joos::Token::Keyword.const_get(keyword, false)).to be_a Class
+    end
+  end
+
+  it 'makes sure each keyword class has .token set' do
+    keywords.each do |keyword|
+      klass = Joos::Token::Keyword.const_get(keyword.capitalize, false)
+      expect(klass.token).to be == keyword
+    end
+  end
+
+  it 'adds each keyword to the token CONSTANT_TOKENS hash' do
+    keywords.map(&:capitalize).each do |keyword|
+      klass = Joos::Token::Keyword.const_get(keyword, false)
+      list  = Joos::Token.const_get :CONSTANT_TOKENS
+      expect(list[klass.token]).to be == klass
+    end
+  end
 
 end
