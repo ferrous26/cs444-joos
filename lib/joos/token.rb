@@ -123,7 +123,7 @@ class Joos::Token
   PATTERN_TOKENS = {}
 
   require 'joos/token/keyword'
-  # require 'joos/token/operator'
+  require 'joos/token/operator'
   # require 'joos/token/literal'
   # require 'joos/token/identifier'
   # require 'joos/token/separator'
