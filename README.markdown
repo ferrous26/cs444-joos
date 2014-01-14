@@ -1,4 +1,4 @@
-# CS 444: Compiler Construction 
+# CS 444: Compiler Construction
 
 Professor: Ondřej Lhoták
 
@@ -12,9 +12,9 @@ Group:
 
 ## Getting Started
 
-TODO
+[Welcome to The Danger Zone](http://www.youtube.com/watch?v=_7HkG6OSo3E)
 
 ```sh
 bundle install
+rake -T
 ```
-
