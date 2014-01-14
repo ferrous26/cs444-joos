@@ -3,9 +3,38 @@ require 'joos/token'
 
 describe Joos::Token do
 
+  it 'returns nil from .class_for when no token class exists' do
+    expect(Joos::Token.class_for('dangerZone')).to be_nil
+  end
+
+  it 'returns the matching token class from .class_for for constant tokens' do
+    expect(Joos::Token.class_for('class')).to be == Joos::Token::Keyword::Class
+  end
+
+  it 'returns the correct pattern class from .class_for for literals' do
+    [
+     ['true',  :True],
+     ['false', :False],
+     ['null',  :Null],
+     ['2701',  :Integer],
+     ['3.14',  :Double],
+     ["'a'",   :Char],
+     ['"wow"', :String]
+    ].each do |str, const|
+      klass = Joos::Token::Literal.const_get(const, false)
+      expect(Joos::Token.class_for(str)).to be == klass
+    end
+  end
+
+  it 'returns the correct pattern class from .class_for for identifiers' do
+    expect(Joos::Token.class_for('doge')).to be == Joos::Token::Identifier
+  end
+
+  # Mock token class used for testing...
   class Joos::Token::MockToken < Joos::Token
-    registry_method 'mock'
-    register_mock 'derp'
+    def self.token
+      'mock'
+    end
     include Joos::Token::ConstantToken
   end
 
@@ -18,15 +47,9 @@ describe Joos::Token do
     expect(token.column).to be == 86
   end
 
-  it 'raises an exception if the token is not appropriate for the class' do
-    expect { 
-	    mock.new('herp', 'derp', 0, 1) 
-    }.to raise_error(Joos::Token::WrongTokenForClass)
-  end
-
   it 'stores the original value of the token' do
-    token = mock.new('derp', '', 0, 1)
-    expect(token.token).to be == 'derp'
+    token = mock.new('mock', '', 0, 1)
+    expect(token.token).to be == 'mock'
   end
 
   it 'always gives a duplicate of the original token when asked' do
@@ -34,22 +57,39 @@ describe Joos::Token do
     expect(token.token).to_not be token.token
   end
 
-  it 'raises NotImplementedError for self.pattern'
-  it 'allows checking of pattern matching using #match?'
-  it 'exposes a mixin for marking illegal token types'
-  it 'exposes an optimization for tokens which are always the same value'
+  it 'exposes an alias for #token called #value' do
+    a = Joos::Token.instance_method(:value)
+    b = Joos::Token.instance_method(:token)
+    expect(a).to be == b
+  end
+
+  it 'exposes a mixin for marking illegal token types' do
+    expect(Joos::Token::IllegalToken).to be_kind_of Module
+  end
+
+  it 'exposes an optimization for tokens which are always the same value' do
+    expect(Joos::Token::ConstantToken).to be_kind_of Module
+  end
 
   describe Joos::Token::ConstantToken do
+    it 'uses the classes existing .token to avoid string copies' do
+      marker = 'cake'
+      klass  = Class.new(Joos::Token) do
+        define_singleton_method(:token) { marker }
+        include Joos::Token::ConstantToken
+      end
 
-    it 'uses the classes existing token'
+      token = klass.new('pie', 'pie.java', 23, 32)
+      expect(token.value).to be == marker
+    end
 
+    it 'raises an error if the includer does not implement .token' do
+      expect {
+        Class.new(Joos::Token) do
+          include Joos::Token::ConstantToken
+        end
+      }.to raise_error('failed assertion')
+    end
   end
 
-  describe Joos::Token::WrongTokenForClass do
-  
-    it 'is an exception class'
-    it 'automatically formats a nice message'
-    
-  end
-  
 end

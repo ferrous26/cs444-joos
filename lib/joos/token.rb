@@ -3,10 +3,23 @@ require 'joos/version'
 ##
 # @abstract
 #
-# The abstract base implementation of all lexical tokens in the
-# Joos 1W language.
+# The abstract base implementation of all lexical tokens in the Joos 1W
+# language.
 #
 class Joos::Token
+
+  ##
+  # Determine the concrete token class for an arbitrary string.
+  #
+  # If a token class cannot be determined then this method will return
+  # `nil`.
+  #
+  # @return [Class,nil]
+  def self.class_for str
+    CONSTANT_TOKENS.fetch(str) { |_|
+      PATTERN_TOKENS.find { |pattern| pattern.match str }
+    }
+  end
 
   ##
   # The line in {#file} where the token originates.
@@ -29,9 +42,6 @@ class Joos::Token
   # @param line [Fixnum]
   # @param column [Fixnum]
   def initialize token, file, line, column
-    self.class.match?(token) ||
-      raise(WrongTokenForClass.new(self.class, token))
-
     @token  = token.dup
     @file   = file.dup
     @line   = line
@@ -41,7 +51,7 @@ class Joos::Token
   ##
   # The name of the file from which the token originates.
   #
-  # The name will be a relative path from the working directory
+  # The name will be a relative path from the working directory where
   # where the compiler was invoked.
   #
   # @return [String]
@@ -57,93 +67,65 @@ class Joos::Token
     @token.dup
   end
 
-  ##
-  # The pattern that matches the class of tokens
-  #
-  # This can be a string or a regular expression, depending
-  # on which is appropriate for the class.
-  #
-  # @return [String,Regexp]
-  def self.pattern
-    raise NotImplementedError
-  end
+  alias_method :value, :token
 
   ##
-  # Test if an arbitrary string matches the {#pattern} for the
-  # class.
+  # Attribute for tokens that are not allowed in Joos 1W.
   #
-  # Subclasses should override this method to specialize the
-  # code path for the type of {#pattern}.
+  # These include keywords, operators, and the like that are part of the
+  # Java language but have been removed from Joos.
   #
-  def self.match? str
-    if pattern.kind_of? String
-      pattern == str
-    else
-      pattern.match str
-    end
-  end
-
-  ##
-  # Attribute for tokens that are not allowed in Joos 1W
-  #
-  # These include keywords, operators, and the like that
-  # are part of the Java language but have been removed
-  # from Joos.
   module IllegalToken; end
 
   ##
-  # Attribute for tokens that have a string pattern and
-  # therefore the actual value of the token is constant.
+  # Attribute for tokens that have a constant string pattern and
+  # therefore we do not need to keep multiple copies of the token value.
+  #
   module ConstantToken
     ##
-    # Override the default constructor for tokens so that
-    # we can avoid storing duplicates of the same string,
-    # since Ruby won't know that the string is a duplicate
-    # by itself in this case.
+    # Override the default constructor for tokens so that we can avoid
+    # avoid storing duplicates of the same string, since Ruby won't know
+    # that the string is a duplicate by itself in this case.
     #
     # @param token [String]
     # @param file [String]
     # @param line [Fixnum]
     # @param column [Fixnum]
     def initialize token, file, line, column
-      self.class.match?(token) ||
-        raise(WrongTokenForClass.new(self.class, token))
-
-      @token  = self.class.pattern
+      @token  = self.class.token
       @file   = file.dup
       @line   = line
       @column = column
     end
-  end
 
-  ##
-  # Exception used when a mismatch between token and token
-  # class is found
-  #
-  # This is used for internal debugging.
-  class WrongTokenForClass < Exception
-    def initialize klass, token
-      super("#{token} does not match the language of #{klass}")
+    ##
+    # Just a safety assertion that I am adding for myself to make sure
+    # I always include the `#token` singleton method on constant token
+    # classes.
+    def self.included klass
+      raise 'failed assertion' unless klass.respond_to? :token
     end
   end
 
 
   private
 
-  def self.registry_method name
-    konst = Joos::Token.const_set(name.upcase, [])
+  ##
+  # A mapping of strings to their corresponding class
+  #
+  # @return [Hash{ String => Class }]
+  CONSTANT_TOKENS = {}
 
-    define_singleton_method("register_#{name}") do |pattern|
-      define_singleton_method(:pattern) { pattern }
-      konst.push(self)
-    end
-  end
+  ##
+  # A mapping of regular expressions to their corresponding class
+  #
+  # @return [Hash{ String => Class }]
+  PATTERN_TOKENS = {}
 
-  # require 'joos/token/keyword'
+  require 'joos/token/keyword'
   # require 'joos/token/operator'
   # require 'joos/token/literal'
   # require 'joos/token/identifier'
   # require 'joos/token/separator'
-  # require 'joos/token/comment'
 
 end
