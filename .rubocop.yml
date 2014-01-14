@@ -20,3 +20,6 @@ Blocks:
 ClassLength:
   Exclude:
     - test/
+
+WordArray:
+  Enabled: false
