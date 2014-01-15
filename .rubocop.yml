@@ -23,3 +23,6 @@ ClassLength:
 
 WordArray:
   Enabled: false
+
+RaiseArgs:
+  Enabled: false
