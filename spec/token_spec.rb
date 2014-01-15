@@ -18,8 +18,8 @@ describe Joos::Token do
      ['true',  :True],
      ['false', :False],
      ['null',  :Null],
-     ['2701',  :Integer],
-     ['3.14',  :Double],
+     ['2701',  :Int],
+     ['3.14',  :Float],
      ["'a'",   :Char],
      ['"wow"', :String]
     ].each do |str, const|
