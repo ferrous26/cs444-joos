@@ -4,7 +4,7 @@ require 'joos/token'
 # Extensions to the Token class
 class Joos::Token
 
-  # @group Operator Modifiers
+  # @!group Operator Modifiers
 
   ##
   # Attribute for all Joos 1W operators
@@ -26,7 +26,7 @@ class Joos::Token
   module BinaryOperator; end
 
 
-  # @group Operators
+  # @!group Operators
 
   [
    ['=',    :Equals ,                  BinaryOperator],

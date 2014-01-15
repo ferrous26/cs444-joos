@@ -4,7 +4,7 @@ require 'joos/token'
 # Extensions to the Token class
 class Joos::Token
 
-  # @group Keyword Modifiers
+  # @!group Keyword Modifiers
 
   ##
   # Namespace for all Joos 1W keyword tokens
@@ -72,7 +72,7 @@ class Joos::Token
   module ReferenceLiteral; end
 
 
-  # @group Keywords
+  # @!group Keywords
 
   [
    ['abstract',     ClassModifier, MethodModifier],

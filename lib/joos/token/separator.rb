@@ -16,7 +16,7 @@ class Joos::Token
   end
 
 
-  # @group Separators
+  # @!group Separators
 
   [
    ['(', :OpenParen],
