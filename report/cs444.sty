@@ -1,0 +1,24 @@
+\usepackage{color}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{csquotes}
+\usepackage{mfirstuc}
+\usepackage{hyperref}
+\usepackage{amsmath}
+
+\usepackage{caption}
+\DeclareCaptionFont{white}{\color{white}}
+\DeclareCaptionFormat{listing}{\colorbox{gray}{\parbox{\textwidth}{#1#2#3}}}
+\captionsetup[lstlisting]{format=listing,labelfont=white,textfont=white}
+
+\usepackage{fullpage}
+
+\newcommand{\titlemake}[1]{
+\title{CS 444\\ Assignment \capitalisewords{#1}}
+\date{}
+\author{
+Mark Rada (\texttt{marada})\\
+Riel Fuller  (\texttt{r3fuller})\\
+Michael Forsyth (\texttt{mfforsyt})}
+\maketitle
+}
