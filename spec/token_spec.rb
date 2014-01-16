@@ -3,10 +3,6 @@ require 'joos/token'
 
 describe Joos::Token do
 
-  it 'returns nil from .class_for when no token class exists' do
-    expect(Joos::Token.class_for('dangerZone')).to be_nil
-  end
-
   it 'returns the matching token class from .class_for for constant tokens' do
     expect(Joos::Token.class_for 'class').to be == Joos::Token::Class
     expect(Joos::Token.class_for '+').to be == Joos::Token::Plus
@@ -24,12 +20,21 @@ describe Joos::Token do
      ['"wow"', :String]
     ].each do |str, const|
       klass = Joos::Token::Literal.const_get(const, false)
-      expect(Joos::Token.class_for(str)).to be == klass
+      expect(Joos::Token.class_for str).to be == klass
     end
   end
 
   it 'returns the correct pattern class from .class_for for identifiers' do
     expect(Joos::Token.class_for('doge')).to be == Joos::Token::Identifier
+  end
+
+  it 'returns nil if no class exists for a given token' do
+    expect(Joos::Token.class_for '123invalid').to be_nil
+  end
+
+  it 'does not like being given nil values for token or file' do
+    expect { Joos::Token.new(nil, '', 1, 1) }.to raise_error
+    expect { Joos::Token.new('', nil, 1, 1) }.to raise_error
   end
 
   # Mock token class used for testing...
