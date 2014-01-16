@@ -95,10 +95,50 @@ describe Joos::Token::Literal do
   end
 
   describe Joos::Token::Literal::Int do
-    it 'raises an error if the value is outside of allowed ranges'
-    it 'registers itself with PATTERN_TOKENS'
+    it 'raises an error if the value is outside of allowed ranges' do
+      [
+       9_000_000_000,
+       -9_000_000_000,
+       Joos::Token::Literal::Int::INT_MAX + 1,
+       Joos::Token::Literal::Int::INT_MIN - 1,
+      ].each do |num|
+        expect {
+          Joos::Token::Literal::Int.new(num.to_s, '', nil, nil)
+        }.to raise_error Joos::Token::Literal::Int::OutOfRangeError
+      end
+    end
+
+    it 'allows values which are on the boundary of the allowed range' do
+      [
+       Joos::Token::Literal::Int::INT_MAX,
+       Joos::Token::Literal::Int::INT_MIN
+      ].each do |num|
+        expect {
+          Joos::Token::Literal::Int.new(num.to_s, '', nil, nil)
+        }.to_not raise_error
+      end
+    end
+
+    it 'registers itself with PATTERN_TOKENS' do
+      klass = Joos::Token::Literal::Int
+      expect(Joos::Token::PATTERN_TOKENS.values).to include klass
+    end
+
+    it 'does not match integers with a leading 0' do
+      expect('01').to_not match Joos::Token::Literal::Int.token
+    end
+
+    it 'does match 0' do
+      expect('0').to match Joos::Token::Literal::Int.token
+    end
+
+    it 'returns the Fixnum value via #to_i' do
+      num = rand 1_000_000
+      int = Joos::Token::Literal::Int.new(num.to_s, '', nil, nil)
+      expect(int.to_i).to be == num
+    end
+
     it 'returns a 32-bit binary representation from #to_binary'
-    it 'returns the Fixnum value via #to_i'
   end
 
   describe Joos::Token::Literal::Float do

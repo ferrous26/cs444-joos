@@ -72,6 +72,12 @@ module Joos::Token::Literal
   class Int < Joos::Token
     include Joos::Token::Literal
 
+    def self.token
+      /\A[1-9]\d*\Z|\A0\Z/
+    end
+
+    Joos::Token::PATTERN_TOKENS[token] = self
+
     ##
     # The maximum value that an `int` can take.
     #
@@ -89,13 +95,17 @@ module Joos::Token::Literal
     INT_MIN = -2_147_483_648
 
     ##
+    # The allowed range of values for Joos integers
+    #
+    # @return [Range]
+    INT_RANGE = INT_MIN..INT_MAX
+
+    ##
     # Error
     class OutOfRangeError < Exception
       # @param i [Fixnum] the out of range value
       def initialize i
-        msg  = "#{i} exceeds the allowed range of values for integers "
-        msg << "#{INT_MIN}..#{INT_MAX}"
-        super msg
+        super "#{i} is not in the allowed range for integers #{INT_RANGE}"
       end
     end
 
@@ -109,7 +119,7 @@ module Joos::Token::Literal
     def initialize token, file, line, column
       super
       @to_i = value.to_i
-      raise OutOfRangeError.new(@to_i) if @to_i > INT_MAX || @to_i < INT_MIN
+      raise OutOfRangeError.new(@to_i) unless INT_RANGE.cover? @to_i
     end
   end
 
