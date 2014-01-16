@@ -13,6 +13,6 @@ namespace :report do
 end
 
 task :clobber do
-  rm_rf 'report/**/*{.aux,.log}'
+  rm_rf 'report/**/*{.aux,.log,.out}'
   rm_rf 'report.pdf'
 end

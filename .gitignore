@@ -16,4 +16,5 @@ ci/
 marmoset.zip
 *.aux
 *.log
+*.out
 
