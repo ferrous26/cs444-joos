@@ -4,9 +4,11 @@ namespace :report do
     num += 1
     desc "Compile the PDF report for Assignment #{num}"
     task "a#{num}" do
-      sh "pdflatex report/a#{num}/report.tex"
-      sh "pdflatex report/a#{num}/report.tex"
-      cp "report/a#{num}/report.pdf ./"
+      cd "report/a#{num}/" do
+        sh 'pdflatex report.tex'
+        sh 'pdflatex report.tex'
+      end
+      cp "report/a#{num}/report.pdf", './'
     end
   end
 
