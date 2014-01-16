@@ -20,6 +20,7 @@ describe Joos::Token::Literal do
     names.each do |name|
       klass = ns.const_get(name, false)
       expect(klass).to include Joos::Token::Literal
+      expect(klass.ancestors).to include Joos::Token
     end
   end
 

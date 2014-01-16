@@ -14,7 +14,7 @@ module Joos::Token::Literal
   #
   # Common code for both types of boolean values.
   #
-  class Bool
+  class Bool < Joos::Token
     include Joos::Token::Literal
 
     def self.token
@@ -52,7 +52,7 @@ module Joos::Token::Literal
   ##
   # Token representing a literal `true` value in code.
   #
-  class Null
+  class Null < Joos::Token
     include Joos::Token::Literal
 
     def self.token
@@ -69,7 +69,7 @@ module Joos::Token::Literal
   #
   # Integers are always signed 32-bit values.
   #
-  class Int
+  class Int < Joos::Token
     include Joos::Token::Literal
 
     ##
@@ -116,7 +116,7 @@ module Joos::Token::Literal
   ##
   # Token representing a literal floating point value in code.
   #
-  class Float
+  class Float < Joos::Token
     include Joos::Token::Literal
     include Joos::Token::IllegalToken
 
@@ -126,14 +126,14 @@ module Joos::Token::Literal
   ##
   # Token representing a literal `String` value in code.
   #
-  class String
+  class String < Joos::Token
     include Joos::Token::Literal
   end
 
   ##
   # Token representing a literal character value in code.
   #
-  class Char
+  class Char < Joos::Token
     include Joos::Token::Literal
   end
 
