@@ -17,7 +17,8 @@ class Joos::Token
   # @return [Class,nil]
   def self.class_for str
     CONSTANT_TOKENS.fetch(str) { |_|
-      PATTERN_TOKENS.find { |pattern| pattern.match str }
+      PATTERN_TOKENS.each { |pattern, k| return k if pattern.match str }
+      nil
     }
   end
 
