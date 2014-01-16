@@ -30,7 +30,7 @@ class Joos::Token
    ['.', :Dot]
   ].each do |symbol, name|
 
-    klass = Class.new(self) do
+    klass = ::Class.new(self) do
       define_singleton_method(:token) { symbol }
       include Separator
     end
