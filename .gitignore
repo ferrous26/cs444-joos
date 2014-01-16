@@ -14,4 +14,7 @@ TODO
 unfinished/
 ci/
 marmoset.zip
+*.aux
+*.log
+*.out
 
