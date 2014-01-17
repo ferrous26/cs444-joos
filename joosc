@@ -3,6 +3,3 @@
 $LOAD_PATH.unshift File.expand_path('./lib')
 require 'joos'
 
-lexer = Joos::Lexer.new(*ARGV)
-lexer.tokens
-exit lexer.result
