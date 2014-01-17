@@ -9,12 +9,10 @@ require 'open3'
 # Joos test suite extensions to Minitest
 class Minitest::Test
 
-  def fixture name
-    File.expand_path('./test/fixtures/' + name)
-  end
+  JOOSC = File.join(File.expand_path(File.dirname(__FILE__)), '../joosc')
 
   def lexical_analysis *files
-    Open3.capture3("./bin/joosc #{files.join(' ')}")
+    Open3.capture3("#{JOOSC} #{files.join(' ')}")
   end
 
   def error_lambda files, stdout, stderr, status
