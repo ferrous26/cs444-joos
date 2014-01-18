@@ -120,16 +120,21 @@ describe Joos::Token::Literal do
     end
 
     it 'registers itself with PATTERN_TOKENS' do
-      klass = Joos::Token::Literal::Int
-      expect(Joos::Token::PATTERN_TOKENS.values).to include klass
+      klass   = Joos::Token::Literal::Int
+      pattern = klass.const_get(:PATTERN, false)
+      expect(Joos::Token::PATTERN_TOKENS[pattern]).to be == klass
     end
 
     it 'does not match integers with a leading 0' do
-      expect('01').to_not match Joos::Token::Literal::Int.token
+      expect(Joos::Token.class_for '01').to be_nil
     end
 
     it 'does match 0' do
-      expect('0').to match Joos::Token::Literal::Int.token
+      expect(Joos::Token.class_for '0').to be == Joos::Token::Literal::Int
+    end
+
+    it 'matches multi-digit numbers' do
+      expect(Joos::Token.class_for '1996').to be == Joos::Token::Literal::Int
     end
 
     it 'returns the Fixnum value via #to_i' do
@@ -146,7 +151,43 @@ describe Joos::Token::Literal do
       expect(Joos::Token::Float).to include Joos::Token::IllegalToken
     end
 
-    it 'registers itself with PATTERN_TOKENS' # ?
+    it 'registers itself with PATTERN_TOKENS' do
+      klass   = Joos::Token::Literal::Float
+      pattern = klass.const_get(:PATTERN, false)
+      expect(Joos::Token::PATTERN_TOKENS[pattern]).to be == klass
+    end
+
+    it 'validates floating point values' do
+      [
+       '1e1f',
+       '2.f',
+       '.3f',
+       '0f',
+       '3.14f',
+       '6.022137e+23f',
+       '1e1',
+       '2.',
+       '.3',
+       '0.0',
+       '3.14',
+       '1e-9d',
+       '1e137',
+       '12345.12345'
+      ].each do |val|
+        expect(Joos::Token.class_for val).to be == Joos::Token::Literal::Float
+      end
+    end
+
+    it 'does not match against integer values' do
+      [
+       '1',
+       '123L',
+       '098'
+      ].each do |value|
+        klass = Joos::Token.class_for value
+        expect(klass).to_not be == Joos::Token::Literal::Float
+      end
+    end
   end
 
   describe Joos::Token::Literal::String do

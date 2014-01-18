@@ -72,11 +72,12 @@ module Joos::Token::Literal
   class Int < Joos::Token
     include Joos::Token::Literal
 
-    def self.token
-      /\A[1-9]\d*\Z|\A0\Z/
-    end
+    PATTERN = Regexp.union [
+                            /\A0\Z/,
+                            /\A[1-9]\d*\Z/
+                           ]
 
-    Joos::Token::PATTERN_TOKENS[token] = self
+    Joos::Token::PATTERN_TOKENS[PATTERN] = self
 
     ##
     # The maximum value that an `int` can take.
@@ -129,6 +130,19 @@ module Joos::Token::Literal
   class Float < Joos::Token
     include Joos::Token::Literal
     include Joos::Token::IllegalToken
+
+    DIGITS   = '(\d+)'
+    EXPONENT = "([eE][+-]?#{DIGITS})"
+    SUFFIX   = '(f|F|d|D)'
+
+    PATTERN = Regexp.union [
+                            "#{DIGITS}\\.#{DIGITS}?#{EXPONENT}?#{SUFFIX}?",
+                            "\\.#{DIGITS}#{EXPONENT}?#{SUFFIX}?",
+                            "#{DIGITS}#{EXPONENT}#{SUFFIX}?",
+                            "#{DIGITS}#{EXPONENT}?#{SUFFIX}"
+                           ].map { |str| Regexp.new "\\A#{str}\\Z" }
+
+    Joos::Token::PATTERN_TOKENS[PATTERN] = self
 
     # no point in overriding the constructor to validate the float
   end
