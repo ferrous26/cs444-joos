@@ -188,6 +188,12 @@ describe Joos::Token::Literal do
         expect(klass).to_not be == Joos::Token::Literal::Float
       end
     end
+
+    it 'raises an exception during init' do
+      expect {
+        Joos::Token::Literal::Float.new('3.14', 'hey.c', 1, 2)
+      }.to raise_error Joos::Token::IllegalToken::Exception
+    end
   end
 
   describe Joos::Token::Literal::String do

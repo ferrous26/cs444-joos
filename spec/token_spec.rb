@@ -83,6 +83,21 @@ describe Joos::Token do
     expect(token.source).to be == 'there.c line:3, column:21'
   end
 
+  describe Joos::Token::IllegalToken do
+    it 'raises an error during initialization' do
+      klass = Class.new(Joos::Token) do
+        include Joos::Token::IllegalToken
+        def msg
+          'waffles'
+        end
+      end
+
+      expect {
+        klass.new('hurr', 'durr', 1, 2)
+      }.to raise_error Joos::Token::IllegalToken::Exception
+    end
+  end
+
   describe Joos::Token::ConstantToken do
     it 'uses the classes existing .token to avoid string copies' do
       marker = 'cake'

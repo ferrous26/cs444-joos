@@ -82,9 +82,35 @@ class Joos::Token
   # Attribute for tokens that are not allowed in Joos 1W.
   #
   # These include keywords, operators, and the like that are part of the
-  # Java language but have been removed from Joos.
+  # Java language but have been removed from Joos. Including this module will
+  # cause all token classes that include the module to raise an exception
+  # during initialization.
   #
-  module IllegalToken; end
+  module IllegalToken
+
+    ##
+    # Exception that is used for instantiated tokens which have been marked
+    # as illegal.
+    #
+    class Exception < ::Exception
+      # @param token [Joos::Token]
+      def initialize token
+        super <<-EOM
+Bad input token found at #{token.source}
+#{token.value}
+#{token.msg}
+        EOM
+      end
+    end
+
+    ##
+    # Override the default constructor to raise an exception when called.
+    #
+    def initialize token, file, line, column
+      super
+      raise Exception.new(self)
+    end
+  end
 
   ##
   # Attribute for tokens that have a constant string pattern and
@@ -96,10 +122,6 @@ class Joos::Token
     # avoid storing duplicates of the same string, since Ruby won't know
     # that the string is a duplicate by itself in this case.
     #
-    # @param token [String]
-    # @param file [String]
-    # @param line [Fixnum]
-    # @param column [Fixnum]
     def initialize token, file, line, column
       @token  = self.class.token
       @file   = file.dup

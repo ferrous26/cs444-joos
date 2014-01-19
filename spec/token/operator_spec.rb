@@ -90,4 +90,15 @@ describe Joos::Token::Operator do
     end
   end
 
+  it 'raises an exception during init for illegal operators' do
+    k = operators.map { |_, name| Joos::Token.const_get(name, false) }
+    k.select! { |klass| klass.ancestors.include? Joos::Token::IllegalToken }
+    k.each do |klass|
+      expect {
+        klass.new('', 'derp.c', 8, 2)
+      }.to raise_error Joos::Token::IllegalToken::Exception
+    end
+
+  end
+
 end

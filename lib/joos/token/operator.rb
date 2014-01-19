@@ -15,6 +15,10 @@ class Joos::Token
     end
 
     include Joos::Token::ConstantToken
+
+    def msg
+      "The `#{self.class.token}' operator is not allowed in Joos"
+    end
   end
 
   ##

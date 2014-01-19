@@ -115,4 +115,15 @@ describe Joos::Token::Keyword do
     end
   end
 
+  it 'raises an exception during init for illegal keywords' do
+    k = keywords.map(&:capitalize)
+    k.map! { |klass| Joos::Token.const_get(klass, false) }
+    k.select! { |klass| klass.ancestors.include? Joos::Token::IllegalToken }
+    k.each do |klass|
+      expect {
+        klass.new('float', 'derp.c', 8, 2)
+      }.to raise_error Joos::Token::IllegalToken::Exception
+    end
+  end
+
 end

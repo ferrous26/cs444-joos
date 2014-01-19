@@ -144,7 +144,9 @@ module Joos::Token::Literal
 
     Joos::Token::PATTERN_TOKENS[PATTERN] = self
 
-    # no point in overriding the constructor to validate the float
+    def msg
+      'Floating point values are not allowed in Joos'
+    end
   end
 
   ##
