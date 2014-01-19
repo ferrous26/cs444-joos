@@ -37,7 +37,6 @@ class Joos::Token
    ['>',    :GreaterThan,              BinaryOperator],
    ['<',    :LessThan,                 BinaryOperator],
    ['!',    :Not,                      UnaryOperator],
-   # @todo ask if bitwise complement is in Joos 1W or not
    ['~',    :Twiddle,                  UnaryOperator, IllegalToken],
    ['?',    :Option,                   IllegalToken],
    [':',    :OptionSeparator,          IllegalToken],
