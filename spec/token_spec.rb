@@ -78,6 +78,11 @@ describe Joos::Token do
     expect(Joos::Token::ConstantToken).to be_kind_of Module
   end
 
+  it 'responds to #source with a formatted string about source file info' do
+    token = Joos::Token.new('hello', 'there.c', 3, 21)
+    expect(token.source).to be == 'there.c line:3, column:21'
+  end
+
   describe Joos::Token::ConstantToken do
     it 'uses the classes existing .token to avoid string copies' do
       marker = 'cake'

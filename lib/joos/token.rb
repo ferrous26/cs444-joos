@@ -71,6 +71,14 @@ class Joos::Token
   alias_method :value, :token
 
   ##
+  # Source code location of the token formatted as a string
+  #
+  # @return [String]
+  def source
+    "#{file} line:#{line}, column:#{column}"
+  end
+
+  ##
   # Attribute for tokens that are not allowed in Joos 1W.
   #
   # These include keywords, operators, and the like that are part of the
