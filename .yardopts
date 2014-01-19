@@ -7,5 +7,4 @@
 --readme README.markdown
 lib/**/*.rb
 -
-History.markdown
 
