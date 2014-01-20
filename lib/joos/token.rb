@@ -156,7 +156,7 @@ Bad input token found at #{token.source}
   require 'joos/token/keyword'
   require 'joos/token/operator'
   require 'joos/token/literal'
-  # require 'joos/token/identifier'
   require 'joos/token/separator'
+  require 'joos/token/identifier'
 
 end
