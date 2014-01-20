@@ -3,10 +3,10 @@ require 'joos/token/operator'
 
 describe Joos::Token::Operator do
 
-  it 'implements a default .token which raises an exception' do
+  it 'does not implement a default .token' do
     expect {
       Joos::Token::Operator.token
-    }.to raise_error('forgot to implement .token')
+    }.to raise_error NoMethodError
   end
 
   it 'includes ConstantToken' do
@@ -82,11 +82,10 @@ describe Joos::Token::Operator do
     end
   end
 
-  it 'registers each operator with the CONSTANT_TOKENS hash' do
+  it 'registers each operator with the Joos::Token::CLASSES hash' do
     operators.each do |symbol, name|
       klass = Joos::Token.const_get(name, false)
-      list  = Joos::Token.const_get(:CONSTANT_TOKENS, false)
-      expect(list[klass.token]).to be == klass
+      expect(Joos::Token::CLASSES[klass.token]).to be == klass
     end
   end
 

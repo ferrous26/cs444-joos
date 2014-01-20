@@ -9,12 +9,10 @@ class Joos::Token
   ##
   # Namespace for all Joos 1W keyword tokens
   module Keyword
-    def self.token
-      raise 'forgot to implement .token'
-    end
-
     include Joos::Token::ConstantToken
 
+    ##
+    # Message given for IllegalToken::Exception instances
     def msg
       "The `#{self.class.token}' keyword is not allowed in Joos"
     end
@@ -130,16 +128,16 @@ class Joos::Token
   ].each do |name, *attributes|
 
     klass = ::Class.new(self) do
-      define_singleton_method(:token) { name }
-
       include Keyword
       attributes.each do |attribute|
         include attribute
       end
+
+      define_singleton_method(:token) { name }
     end
 
     const_set(name.capitalize, klass)
-    CONSTANT_TOKENS[name] = klass
+    CLASSES[name] = klass
   end
 
 end

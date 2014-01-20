@@ -3,10 +3,10 @@ require 'joos/token/keyword'
 
 describe Joos::Token::Keyword do
 
-  it 'implements a default .token which raises an exception' do
+  it 'does not implement a default .token' do
     expect {
       Joos::Token::Keyword.token
-    }.to raise_error('forgot to implement .token')
+    }.to raise_error NoMethodError
   end
 
   it 'includes ConstantToken' do
@@ -107,11 +107,10 @@ describe Joos::Token::Keyword do
     end
   end
 
-  it 'adds each keyword to the token CONSTANT_TOKENS hash' do
+  it 'adds each keyword to the Joos::Token::CLASSES hash' do
     keywords.map(&:capitalize).each do |keyword|
       klass = Joos::Token.const_get(keyword, false)
-      list  = Joos::Token.const_get :CONSTANT_TOKENS
-      expect(list[klass.token]).to be == klass
+      expect(Joos::Token::CLASSES[klass.token]).to be == klass
     end
   end
 

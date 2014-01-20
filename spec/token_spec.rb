@@ -3,33 +3,17 @@ require 'joos/token'
 
 describe Joos::Token do
 
-  it 'returns the matching token class from .class_for for constant tokens' do
-    expect(Joos::Token.class_for 'class').to be == Joos::Token::Class
-    expect(Joos::Token.class_for '+').to be == Joos::Token::Plus
-    expect(Joos::Token.class_for '.').to be == Joos::Token::Dot
-  end
-
-  it 'returns the correct pattern class from .class_for for literals' do
-    [
-     ['true',  :True],
-     ['false', :False],
-     ['null',  :Null],
-     ['2701',  :Int],
-     ['3.14',  :Float],
-     ["'a'",   :Char],
-     ['"wow"', :String]
-    ].each do |str, const|
-      klass = Joos::Token::Literal.const_get(const, false)
-      expect(Joos::Token.class_for str).to be == klass
-    end
-  end
-
-  it 'returns the correct pattern class from .class_for for identifiers' do
-    expect(Joos::Token.class_for('doge')).to be == Joos::Token::Identifier
+  it 'returns the matching token class from CLASSES hash' do
+    expect(Joos::Token::CLASSES['class']).to be == Joos::Token::Class
+    expect(Joos::Token::CLASSES['+']).to be == Joos::Token::Plus
+    expect(Joos::Token::CLASSES['.']).to be == Joos::Token::Dot
+    expect(Joos::Token::CLASSES['false']).to be == Joos::Token::False
+    expect(Joos::Token::CLASSES['true']).to be == Joos::Token::True
+    expect(Joos::Token::CLASSES['null']).to be == Joos::Token::Null
   end
 
   it 'returns nil if no class exists for a given token' do
-    expect(Joos::Token.class_for '123invalid').to be_nil
+    expect(Joos::Token::CLASSES['123invalid']).to be_nil
   end
 
   it 'does not like being given nil values for token or file' do
@@ -39,10 +23,10 @@ describe Joos::Token do
 
   # Mock token class used for testing...
   class Joos::Token::MockToken < Joos::Token
+    include Joos::Token::ConstantToken
     def self.token
       'mock'
     end
-    include Joos::Token::ConstantToken
   end
 
   mock = Joos::Token::MockToken
@@ -102,20 +86,12 @@ describe Joos::Token do
     it 'uses the classes existing .token to avoid string copies' do
       marker = 'cake'
       klass  = Class.new(Joos::Token) do
-        define_singleton_method(:token) { marker }
         include Joos::Token::ConstantToken
+        define_singleton_method(:token) { marker }
       end
 
       token = klass.new('pie', 'pie.java', 23, 32)
       expect(token.value).to be == marker
-    end
-
-    it 'raises an error if the includer does not implement .token' do
-      expect {
-        Class.new(Joos::Token) do
-          include Joos::Token::ConstantToken
-        end
-      }.to raise_error('failed assertion')
     end
   end
 
