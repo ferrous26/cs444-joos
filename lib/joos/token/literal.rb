@@ -20,6 +20,147 @@ class Joos::Token
     include Joos::Token::ConstantToken
   end
 
+  ##
+  # Common code for both character and string literals.
+  #
+  # Clients that include this module must implement the {Joos::Token}
+  # interface, as well as `#disallowed_char` which should return
+  # a string representing a disallowed character (see the implementation
+  # in {Joos::Token::String} for details).
+  #
+  module StringHelpers
+
+    ##
+    # The maximum allowed value for an octal escape (in base 10 :P)
+    #
+    # @return [Fixnum]
+    MAX_OCTAL = 127
+
+    ##
+    # Map of Java escape sequences to their ASCII value
+    #
+    # @return [Hash{ String => Fixnum }]
+    STANDARD_ESCAPES = {
+                        'b' => "\b".ord, # backspace
+                        't' => "\t".ord, # tab
+                        'n' => "\n".ord, # line feed
+                        'f' => "\f".ord, # form feed
+                        'r' => "\r".ord, # carriage return
+                        '"' => '"'.ord,  # double quote
+                        "'" => "'".ord,  # single quote
+                        '\\' => '\\'.ord # backslash
+                       }
+
+    ##
+    # Exception raised when a string escape sequence is not valid
+    class InvalidEscapeSequence < Exception
+      # @param string [Joos::Token]
+      # @param index [Fixnum]
+      def initialize string, index
+        super <<-EOM
+Invalid escape sequence detected in string/character literal: #{string.source}
+"#{string.value}"
+#{' ' * index}^^
+        EOM
+      end
+    end
+
+    ##
+    # Exception raised when an octal escape sequence is out of the ASCII range
+    class InvalidOctalEscapeSequence < Exception
+      # @param string [Joos::Token]
+      # @param index [Fixnum]
+      def initialize string, index
+        super <<-EOM
+Octal escape out of ASCII range in string/character literal: #{string.source}
+"#{string.value}"
+#{' ' * index}^^^^
+        EOM
+      end
+    end
+
+    ##
+    # Exception raised when the disallowed character is detected without
+    # being escaped.
+    class InvalidCharacter < Exception
+      # @param string [Joos::Token]
+      # @param index [Fixnum]
+      def initialize string, index
+        klass = string.class.to_s.split('::').last
+        sauce = string.source
+        char  = string.disallowed_char
+        super <<-EOM
+#{char} not allowed in #{klass} literal without escaping: #{sauce}
+"#{string.value}"
+#{' ' * (index + 1)}^
+        EOM
+      end
+    end
+
+    ##
+    # Validate the token for the class and also translate it into a byte array
+    #
+    # @example
+    #
+    #   "hello".validate! # => [104, 101, 108, 108, 111]
+    #   "\b".validate!    # => [8]
+    #
+    # @return [Array<Fixnum>]
+    def validate!
+      validate 0, []
+    end
+
+
+    private
+
+    # @param index [Fixnum]
+    # @param accum [Array<Fixnum>]
+    # @return [Array<Fixnum>]
+    def validate index, accum
+      char = token[index]
+      return accum unless char
+
+      if char == '\\'
+        index = validate_escape(index + 1, accum)
+      elsif char == disallowed_char
+        raise InvalidCharacter.new(self, index)
+      else
+        accum << char.ord
+      end
+
+      validate(index + 1, accum)
+    end
+
+    # @param index [Fixnum]
+    # @param accum [Array<Fixnum>]
+    # @return [Fixnum]
+    def validate_escape index, accum
+      char = token[index]
+      raise InvlaidEscapeSequence.new(self, index) unless char
+
+      if STANDARD_ESCAPES.key? char
+        accum << STANDARD_ESCAPES[char]
+        index
+      elsif char =~ /[0-9]/
+        validate_octal(index, accum)
+      else
+        raise InvalidEscapeSequence.new(self, index)
+      end
+    end
+
+    # @param index [Fixnum]
+    # @param accum [Array<Fixnum>]
+    # @return [Fixnum]
+    def validate_octal index, accum
+      m = token[index..(index + 2)].match(/[0-7]+/).to_s
+      raise InvalidOctalEscapeSequence.new(self, index) if m.empty?
+      n = m.to_i(8)
+      raise InvalidOctalEscapeSequence.new(self, index) if n > MAX_OCTAL
+      accum << n
+      index + m.length - 1
+    end
+  end
+
 
   # @!group Literal Classes
 
@@ -187,104 +328,6 @@ class Joos::Token
   end
 
   ##
-  # Collection of code relevant to both character and string literals
-  #
-  module StringHelpers
-
-    ##
-    # Map of Java escape sequences to their ASCII value
-    #
-    # @return [Hash{ String => Fixnum }]
-    STANDARD_ESCAPES = {
-                        'b' => '\b'.ord,
-                        't' => '\t'.ord,
-                        'n' => '\n'.ord,
-                        'f' => '\f'.ord,
-                        'r' => '\r'.ord,
-                        '"' => '"'.ord,
-                        "'" => "'".ord,
-                        '\\' => '\\'.ord
-                       }
-
-    ##
-    # Exception raised when a string escape sequence is not valid
-    class InvalidEscapeSequence < Exception
-      # @param string [String]
-      # @param index [Fixnum]
-      def initialize string, index
-        super "herp"
-      end
-    end
-
-    class InvalidOctalEscapeSequence < InvalidEscapeSequence
-      def initialize string, index
-        super "herp"
-      end
-    end
-
-    ##
-    # Validate the token for the class and also translate it into a byte array
-    #
-    # @example
-    #
-    #   "hello".validate! # => [104, 101, 108, 108, 111]
-    #   "\b".validate!    # => [8]
-    #
-    # @return [Array<Fixnum>]
-    def validate!
-      validate 0, []
-    end
-
-
-    private
-
-    # @param index [Fixnum]
-    # @param accum [Array<Fixnum>]
-    # @return [Array<Fixnum>]
-    def validate index, accum
-      char = token[index]
-      return accum unless char
-
-      if char == '\\'
-        index = validate_escape(index + 1, accum)
-      elsif char == disallowed_char
-        raise InvalidCharacter.new(self, index)
-      else
-        accum << char.ord
-      end
-
-      validate(index + 1, accum)
-    end
-
-    # @param index [Fixnum]
-    # @param accum [Array<Fixnum>]
-    # @return [Fixnum]
-    def validate_escape index, accum
-      char = token[index]
-      raise InvlaidEscapeSequence.new(self, index) unless char
-
-      if STANDARD_ESCAPES.key? char
-        accum << STANDARD_ESCAPES[char]
-        index
-      elsif char =~ /[0-9]/
-        validate_octal(index, accum)
-      else
-        raise InvalidEscapeSequence.new(self, index)
-      end
-    end
-
-    # @param index [Fixnum]
-    # @param accum [Array<Fixnum>]
-    # @return [Fixnum]
-    def validate_octal index, accum
-      match = token[index..(index + 2)].match(/[0-7]+/).to_s
-      raise InvlaidOctalEscapeSequence.new(self, index) if match.empty?
-      accum << match.to_i(8)
-      index + match.length - 1
-    end
-  end
-
-  ##
   # Token representing a literal character value in code.
   #
   class Character < self
@@ -341,12 +384,24 @@ class Joos::Token
       # @return [String]
       attr_reader :token
 
+      # @return [String]
+      attr_reader :file
+
+      # @return [Fixnum]
+      attr_reader :line
+
+      # @return [Fixnum]
+      attr_reader :column
+
       # @return [Array<Fixnum>]
       attr_reader :to_binary
 
       # @param token [String]
-      def initialize token
-        @token = token
+      def initialize token, file, line, column
+        @token  = token
+        @file   = file
+        @line   = line
+        @column = column
         @to_binary = validate!
       end
 
