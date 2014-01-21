@@ -405,6 +405,16 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
         @to_binary = validate!
       end
 
+      alias_method :value, :token
+
+      ##
+      # Source code location of the token formatted as a string
+      #
+      # @return [String]
+      def source
+        "#{file} line:#{line}, column:#{column}"
+      end
+
       ##
       # The one character that is not allowed to appear in a literal
       # string token without being escaped
@@ -428,13 +438,16 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     # @param column [Fixnum]
     # @return [Joos::Token::String]
     def self.new token, file, line, column
-      proto = ProtoString.new token
+      proto = ProtoString.new token, file, line, column
       STRINGS.fetch proto.to_binary do |binary|
         string = allocate
-        string.initialize token, file, line, column, binary
+        string.send :initialize, token, file, line, column, binary
         STRINGS[binary] = string
       end
     end
+
+    # @return [Array<Fixnum>]
+    attr_reader :to_binary
 
     ##
     # Overridden to avoid recomputing the binary representation of the
@@ -444,6 +457,14 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     def initialize token, file, line, column, binary
       super token, file, line, column
       @to_binary = binary
+    end
+
+    ##
+    # The length, in bytes, of the string
+    #
+    # @return [Fixnum]
+    def length
+      @to_binary.length
     end
   end
 

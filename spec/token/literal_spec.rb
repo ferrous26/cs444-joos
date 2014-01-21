@@ -268,19 +268,105 @@ describe Joos::Token::Literal do
   end
 
   describe Joos::Token::Character do
-    it 'returns the binary representation from #to_binary'
-    it 'validates all character escape sequences'
-    it 'validates all octal escape sequences'
-    it 'ensures that the length of the character string is one'
+    it 'returns the binary representation from #to_binary' do
+      expect(Joos::Token::Character.new('a', '', 1, 1).to_binary).to be == [97]
+    end
+
+    it 'validates all character escape sequences' do
+      escapes = ['b', 't', 'n', 'f', 'r', '"', "'", '\\'].map { |char|
+        "\\#{char}"
+      }
+      escapes.each do |char|
+        convert = Joos::Token::Character.new(char, 'derp', 1, 0).to_binary
+        expect(convert.length).to be == 1
+      end
+    end
+
+    it 'validates all octal escape sequences' do
+      128.times do |num|
+        char = "\\#{num.to_s(8)}"
+        convert = Joos::Token::Character.new(char, 'derp', 1, 0).to_binary
+        expect(convert.length).to be == 1
+      end
+    end
+
+    it 'ensures that the length of the character string is one' do
+      expect {
+        Joos::Token::Character.new('hi', '', 1, 2)
+      }.to raise_error Joos::Token::Character::InvalidLength
+    end
+
+    it 'does not allowed the disallowed_char' do
+      expect {
+        Joos::Token::Character.new("'", '', 1, 2)
+      }.to raise_error Joos::Token::Character::InvalidCharacter
+    end
+
+    it 'accepts single character strings' do
+      [
+       'a',
+       '1',
+       ')'
+      ].each do |char|
+        expect(Joos::Token::Character.new(char, '', 1, 2).value).to be == char
+      end
+    end
   end
 
   describe Joos::Token::String do
-    it 'knows the length of its token value' # account for escapes
-    it 'returns the binary representation from #to_binary'
-    it 'maintains a global array of all strings and avoids duplication'
-    it 'validates all character escape sequences'
-    it 'validates all octal escape sequences'
-    it 'handles the escape sequence of "\2555" correctly'
+    it 'returns the binary representation from #to_binary' do
+      bytes = Joos::Token::String.new('abd', '', 1, 2).to_binary
+      expect(bytes).to be == [97, 98, 100]
+    end
+
+    it 'knows the length of its token value' do
+      [
+       ['', 0],
+       ['hi', 2],
+       ['\\tb', 2],
+       ['\\176', 1]
+      ].each do |string, len|
+        expect(Joos::Token::String.new(string, '', 1, 4).length).to be == len
+      end
+    end
+
+    it 'maintains a global array of all strings and avoids duplication' do
+      token1 = Joos::Token::String.new('hi', '', 4, 5)
+      token2 = Joos::Token::String.new('hi', '', 4, 5)
+      expect(token1).to be token2
+    end
+
+    it 'validates all character escape sequences' do
+      escapes = ['b', 't', 'n', 'f', 'r', '"', "'", '\\'].map { |char|
+        "\\#{char}"
+      }.join('')
+      convert = Joos::Token::String.new(escapes, 'derp', 1, 0).to_binary
+      expect(convert.length).to be == 8
+    end
+
+    it 'validates all octal escape sequences' do
+      escapes = ''
+      128.times do |num|
+        escapes << "\\#{num.to_s(8)}"
+      end
+      convert = Joos::Token::String.new(escapes, 'derp', 1, 0).to_binary
+      expect(convert.length).to be == 128
+    end
+
+    it 'handles the escape sequence of "\1777" correctly' do
+      bytes = Joos::Token::String.new('\\1777', '', 2, 3).to_binary
+      expect(bytes).to be == [127, 55]
+    end
+
+    it 'does not allowed the disallowed character' do
+      expect {
+        Joos::Token::String.new('""', '', 3, 3)
+      }.to raise_error Joos::Token::StringHelpers::InvalidCharacter
+    end
+
+    it 'allows the empty string' do
+      expect(Joos::Token::String.new('', '', 4, 4).to_binary).to be_empty
+    end
   end
 
 end
