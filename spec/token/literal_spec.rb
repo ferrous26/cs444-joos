@@ -306,7 +306,8 @@ describe Joos::Token::Literal do
       [
        'a',
        '1',
-       ')'
+       ')',
+       '%',
       ].each do |char|
         expect(Joos::Token::Character.new(char, '', 1, 2).value).to be == char
       end
