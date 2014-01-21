@@ -90,34 +90,44 @@ describe Joos::Token::Literal do
   end
 
   describe Joos::Token::Integer do
-    it 'raises an error if the value is outside of allowed ranges' do
+    it 'raises an error from #validate! if the value has too much magnitude' do
       [
-       9_000_000_000,
-       Joos::Token::Integer::INT_MAX + 2
+       Joos::Token::Integer::INT_MIN - 1,
+       Joos::Token::Integer::INT_MAX + 1,
+       9_000_000_000
       ].each do |num|
         expect {
-          Joos::Token::Integer.new(num.to_s, '', nil, nil)
+          Joos::Token::Integer.new(num.to_s, '', nil, nil).validate!
         }.to raise_error Joos::Token::Integer::OutOfRangeError
       end
     end
 
-    it 'allows values which are on the boundary of the allowed range' do
+    it 'accepts reasonable values of integers' do
       [
        '0',
+       '1',
        '1996',
+       '-42',
        Joos::Token::Integer::INT_MAX,
-       Joos::Token::Integer::INT_MAX.succ
+       Joos::Token::Integer::INT_MIN
       ].each do |num|
         expect {
-          Joos::Token::Integer.new(num.to_s, '', nil, nil)
+          Joos::Token::Integer.new(num.to_s, '', nil, nil).validate!
         }.to_not raise_error
       end
     end
 
-    it 'raises an error if the number is ill formatted' do
-      expect {
-        Joos::Token::Integer.new('01', 'help.c', 1, 4)
-      }.to raise_error Joos::Token::Integer::BadFormatting
+    it 'raises an error during init if the number is ill formatted' do
+      [
+       '-0',
+       '01',
+       '0x123',
+       '9001L'
+      ].each do |num|
+        expect {
+          Joos::Token::Integer.new(num, 'help.c', 1, 4)
+        }.to raise_error Joos::Token::Integer::BadFormatting
+      end
     end
 
     it 'returns the Fixnum value via #to_i' do

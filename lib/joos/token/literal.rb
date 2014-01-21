@@ -81,7 +81,7 @@ class Joos::Token
     # that Joos supports.
     #
     # @return [Regexp]
-    PATTERN = Regexp.union(/\A0\Z/, /\A[1-9]\d*\Z/)
+    PATTERN = Regexp.union(/\A0\Z/, /\A-?[1-9]\d*\Z/)
 
     ##
     # The maximum value that an `int` can take.
@@ -136,9 +136,13 @@ class Joos::Token
       super
       raise BadFormatting.new(self) unless PATTERN.match token
       @to_i = value.to_i
-      # @todo remember to test that we weed out values at INT_MAX unless
-      #       they are preceeded by a unary minus
-      raise OutOfRangeError.new(self) unless @to_i <= (INT_MAX + 1)
+    end
+
+    ##
+    #
+    # @return [Boolean]
+    def validate!
+      raise OutOfRangeError.new(self) unless INT_RANGE.cover? @to_i
     end
   end
 
