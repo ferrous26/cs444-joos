@@ -369,61 +369,13 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
   #
   class String < self
     include Joos::Token::Literal
+    include StringHelpers
 
     ##
     # Global array of all string literals that will be in the final program
     #
     # @return [Hash{ Array<Fixnum> => Joos::Token::String }]
     STRINGS = {}
-
-    ##
-    # A primitive version of a string token class...used internally
-    class ProtoString
-      include StringHelpers
-
-      # @return [String]
-      attr_reader :token
-
-      # @return [String]
-      attr_reader :file
-
-      # @return [Fixnum]
-      attr_reader :line
-
-      # @return [Fixnum]
-      attr_reader :column
-
-      # @return [Array<Fixnum>]
-      attr_reader :to_binary
-
-      # @param token [String]
-      def initialize token, file, line, column
-        @token  = token
-        @file   = file
-        @line   = line
-        @column = column
-        @to_binary = validate!
-      end
-
-      alias_method :value, :token
-
-      ##
-      # Source code location of the token formatted as a string
-      #
-      # @return [String]
-      def source
-        "#{file} line:#{line}, column:#{column}"
-      end
-
-      ##
-      # The one character that is not allowed to appear in a literal
-      # string token without being escaped
-      #
-      # @return [String]
-      def disallowed_char
-        '"'
-      end
-    end
 
     ##
     # Override the default instantiation method in order to perform literal
@@ -438,11 +390,10 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     # @param column [Fixnum]
     # @return [Joos::Token::String]
     def self.new token, file, line, column
-      proto = ProtoString.new token, file, line, column
-      STRINGS.fetch proto.to_binary do |binary|
-        string = allocate
-        string.send :initialize, token, file, line, column, binary
-        STRINGS[binary] = string
+      string = allocate
+      string.send :initialize, token, file, line, column
+      STRINGS.fetch string.to_binary do |_|
+        STRINGS[string.to_binary] = string
       end
     end
 
@@ -453,10 +404,18 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     # Overridden to avoid recomputing the binary representation of the
     # string.
     #
-    # @param binary [Array<Fixnum>]
-    def initialize token, file, line, column, binary
-      super token, file, line, column
-      @to_binary = binary
+    def initialize token, file, line, column
+      super
+      @to_binary = validate!
+    end
+
+    ##
+    # The one character that is not allowed to appear in a literal
+    # string token without being escaped
+    #
+    # @return [String]
+    def disallowed_char
+      '"'
     end
 
     ##
