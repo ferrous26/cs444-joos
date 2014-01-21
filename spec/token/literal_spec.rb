@@ -184,7 +184,6 @@ describe Joos::Token::Literal do
 
   describe Joos::Token::Character do
     it 'returns the binary representation from #to_binary'
-    it 'maintains a global array of all chars and avoids duplication'
     it 'validates all character escape sequences'
     it 'validates all octal escape sequences'
     it 'ensures that the length of the character string is one'
