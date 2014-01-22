@@ -6,7 +6,6 @@ describe Joos::Token::Identifier do
   it 'raises an exception if the first character of an id is not valid' do
     ['123puppy', '&e', '^hi'].each do |name|
       expect {
-        puts name
         Joos::Token::Identifier.new(name, '', 1, 9)
       }.to raise_error Joos::Token::Identifier::BadFirstCharacter
     end
