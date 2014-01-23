@@ -1,24 +1,25 @@
-\documentclass[pdftex,12pt,a4paper]{report}
+\documentclass[pdftex,12pt,a4paper]{article}
 \usepackage{../cs444}
 
 \begin{document}
 
 \titlemake{1}
 
-\part{Design}
+\section{Design}
 
-Some preamble to design talk goes here.
+Some preamble to design talk goes here. Perhaps mention roughly how
+the repository is organized so that readers can navigate to the code
+if they wish.
 
 
-\section{Tokens}
 
-A set of classes which make lexing and parsing simpler, and abstracts
+\subsection{Tokens}
 part of the weeding process from the lexer and parser.
 
 Some more description. Maybe a code listing or example.
 
 
-\section{Lexer}
+\subsection{Lexer}
 
 It does stuff with a DFA and generates a stream of tokens from code
 input.
@@ -26,24 +27,24 @@ input.
 Rejecting non-ASCII code is handled during this phase.
 
 
-\section{Weeder}
+\subsection{Weeder}
 
 Magic! Reject all programs that use non-Joos keywords, literal
 integers that are outside of allowed ranges, and strings that include
 invalid escape sequences.
 
 
-\section{Abstract Syntax Tree}
+\subsection{Abstract Syntax Tree}
 
 Or whatever data abstraction we end up with for parsing.
 
 
-\section{Parser}
+\subsection{Parser}
 
 It takes a stream of tokens from the lexer and does some other stuff.
 
 
-\section{Other Requirements}
+\subsection{Other Requirements}
 
 Some assignment requirements did not fit well into any other portion
 of the compiler that has been designed so far. Or maybe not\ldots
