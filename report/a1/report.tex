@@ -32,6 +32,32 @@ we construct in this portion of the course.
 
 \subsection{Tokens}
 
+The interface between the lexer and the parser is a stream
+(\texttt{Array}) of \texttt{Joos::Token} objects. \texttt{Joos::Token}
+is an abstract base class which contains encodes the original value of
+the token, the type of the token, and metadata related to where the
+token originated.
+
+Concrete subclasses are created for each keyword, operator, separator,
+and literal type, as defined in the JLS. A concrete class for
+identifiers is also created. Classes may \texttt{include} modifiers
+which attach extra metadata to a token.
+
+The class itself specifies the type of the token. For instance, a
+token representing the keyword \texttt{while} will be contained by an
+instance of the \texttt{Joos::Token::While} class, and a token
+representing a litertal \texttt{true} will be contained by an instance
+of the \texttt{Joos::Token::True} class. Identifiers are wrapped by
+\texttt{Joos::Token::Identifier}, literal integers by
+\texttt{Joos::Token::Integer}, and so on.
+
+Each token will contain metadata that can be used for diagnostic
+purposes: the relative path to the file where the token comes from,
+the line in the file where the token comes from, and the column in the
+line where the token begins.
+
+Additional metadata is attached to different groupings of token
+classes to create a sort of hierarchy.
 
 
 \subsection{Lexer}
