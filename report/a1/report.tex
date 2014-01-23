@@ -5,22 +5,24 @@
 
 \titlemake{1}
 
-\section{Design}
-
-Some fluffy preamble to design talk goes here.
-
-As per assignment requirements, we implement scanning and parsing of
+This document outlines the design of a scanner and parser for
 the Joos 1W language as specified by the Java Language Specification
 2.0 (JLS) and the course website
-\url{https://www.student.cs.uwaterloo.ca/~cs444/joos.html}.
+\url{https://www.student.cs.uwaterloo.ca/~cs444/joos.html}. It also
+discusses some challenges faced while implementing the scanner and
+parser, as well as our strategy for testing correctness.
 
 Code is written in Ruby, and our implementation of the scanner and
 lexer is located in \texttt{lib/}. Our copy of the Marmoset tests are
 located in \texttt{test/}, and our own tests are located in
 \texttt{spec/}. Offline tasks, such as running our parser generator
-are located in \texttt{rakelib/}, which is the Ruby equivalent to the
-\texttt{make} system. As a result, our \texttt{Makefile} delegates any
-work to \texttt{rake} tasks.
+are located in \texttt{rakelib/}. All tasks that might have been in
+the \texttt{Makefile} are delegate to tasks defined in
+\texttt{rakelib/}.
+
+\section{Design}
+
+Some fluffy preamble to design talk goes here.
 
 The design of the scanning and parsing phases of our compiler are
 broken up into five sections: the herp for derp, the foo for bar, the
@@ -29,24 +31,13 @@ we construct in this portion of the course.
 
 
 \subsection{Tokens}
-part of the weeding process from the lexer and parser.
 
-Some more description. Maybe a code listing or example.
 
 
 \subsection{Lexer}
 
 It does stuff with a DFA and generates a stream of tokens from code
-input.
-
-Rejecting non-ASCII code is handled during this phase.
-
-
-\subsection{Weeder}
-
-Magic! Reject all programs that use non-Joos keywords, literal
-integers that are outside of allowed ranges, and strings that include
-invalid escape sequences.
+input. Rejecting non-ASCII code is handled during this phase.
 
 
 \subsection{Abstract Syntax Tree}
@@ -59,10 +50,46 @@ Or whatever data abstraction we end up with for parsing.
 It takes a stream of tokens from the lexer and does some other stuff.
 
 
-\subsection{Other Requirements}
+\section{Challenges}
 
-Some assignment requirements did not fit well into any other portion
-of the compiler that has been designed so far. Or maybe not\ldots
+
+This is where the interesting shit goes. Talk about anything that did
+not follow simply from class. This is a required section of the report.
+
+
+\subsection{Weeder}
+
+Magic! Reject all programs that use non-Joos keywords, literal
+integers that are outside of allowed ranges, and strings that include
+invalid escape sequences.
+
+
+\subsection{Duplicate String Literals}
+
+Literal string duplication is avoided by overriding how
+\texttt{Joos::Token::String} objects are allocated. We override the
+default allocation method for the class and check if another string
+with the same binary value already exists. If it the string already
+exists we return the existing token instead of a new token. The trade
+off here is that we lose any metadata attached to the duplicate
+literal string, such as the file and line where the string came from;
+so any compilation errors related to the string may point to the
+incorrect string, depending on the type of error. We compare against
+the binary form of the string so that differences in escape sequences
+do not affect the detection of duplicate strings.
+
+I should probably modify this strategy a bit so that we actually keep
+duplicate literal strings during the analysis phase of compilation,
+and just link their in memory address when it comes to code
+generation.
+
+
+\section{Testing}
+
+We wrote tests. And we also have an offline version of marmoset tests
+which we run in the student environment at roflscale.
+
+This section is required, so we have to fill it out at some point\ldots
 
 
 \end{document}
