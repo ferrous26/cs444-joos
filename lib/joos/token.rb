@@ -56,7 +56,7 @@ class Joos::Token
   # The name of the file from which the token originates.
   #
   # The name will be a relative path from the working directory where
-  # where the compiler was invoked.
+  # the compiler was invoked.
   #
   # @return [String]
   def file
