@@ -7,10 +7,25 @@
 
 \section{Design}
 
-Some preamble to design talk goes here. Perhaps mention roughly how
-the repository is organized so that readers can navigate to the code
-if they wish.
+Some fluffy preamble to design talk goes here.
 
+As per assignment requirements, we implement scanning and parsing of
+the Joos 1W language as specified by the Java Language Specification
+2.0 (JLS) and the course website
+\url{https://www.student.cs.uwaterloo.ca/~cs444/joos.html}.
+
+Code is written in Ruby, and our implementation of the scanner and
+lexer is located in \texttt{lib/}. Our copy of the Marmoset tests are
+located in \texttt{test/}, and our own tests are located in
+\texttt{spec/}. Offline tasks, such as running our parser generator
+are located in \texttt{rakelib/}, which is the Ruby equivalent to the
+\texttt{make} system. As a result, our \texttt{Makefile} delegates any
+work to \texttt{rake} tasks.
+
+The design of the scanning and parsing phases of our compiler are
+broken up into five sections: the herp for derp, the foo for bar, the
+baz for quux, hurr for durr, and AST for the final data structure that
+we construct in this portion of the course.
 
 
 \subsection{Tokens}
