@@ -15,58 +15,41 @@ describe Joos::ParserGenerator do
       parser = Joos::ParserGenerator.new(grammar)
       parser.grammar.should eq grammar
     end
+
+    it "should not have any initialized states" do
+      @parser = Joos::ParserGenerator.new(RULES)
+      @parser.states.should be_empty
+    end
   end
 
-  context "#bootstrap" do
+  context "#build_start_state" do
     before(:each) do
       @parser = Joos::ParserGenerator.new(RULES)
-      @parser.send :bootstrap
+      @parser.send :build_start_state
     end
 
     it "should create a start state" do
       @parser.start_state.should_not be_nil
     end
 
-    it "should add the start state to the state queue" do
-      @parser.send(:state_queue).size.should eq 1
-      @parser.send(:state_queue).pop.should eq @parser.start_state
+    it "should properly add all items to the start state and none else" do
+      @parser.start_state.size.should eq 4
+      @parser.start_state.should include [:S, [], [:A, :B]]
+      @parser.start_state.should include [:A, [], [:A, :B, :a]]
+      @parser.start_state.should include [:A, [], [:B, :a, :C]]
+      @parser.start_state.should include [:B, [], [:b, :c, :C]]
     end
 
-    it "should add all reductions from the start symbol to the start state's item queue" do
-      @parser.start_state[:item_queue].size.should eq 1
-      @parser.start_state[:item_queue].pop.should eq [:S, [], [:A, :B]]
+    it "should fill the transitions queue with needed transitions from the start state" do
+      queue = @parser.send(:transition_queue)
+      queue.size.should eq 1
+      from_state, symbols = queue.shift
+      from_state.should eq 0
+      symbols.size.should eq 3
+      symbols.should include :A
+      symbols.should include :B
+      symbols.should include :b
     end
-  end
-
-  context "#build_next_state" do
-    before(:each) do
-      @parser = Joos::ParserGenerator.new(RULES)
-      @parser.send :bootstrap
-    end
-
-    it "should add a new state skeletons to the states array" do
-      @parser.send :build_next_state
-      @parser.states.size.should eq 4
-    end
-
-    it "should properly fill out the start state items" do
-      @parser.send :build_next_state
-      @parser.start_state[:items].size.should eq 4
-      @parser.start_state[:items].should include [:S, [], [:A, :B]]
-      @parser.start_state[:items].should include [:A, [], [:A, :B, :a]]
-      @parser.start_state[:items].should include [:A, [], [:B, :a, :C]]
-      @parser.start_state[:items].should include [:B, [], [:b, :c, :C]]
-    end
-
-    it "should properly add the start state transitions" do
-      @parser.send :build_next_state
-      @parser.start_state[:transitions].should eq({ A: 1, B: 2, b: 3 })
-    end
-
-    it "should work" do
-      @parser.build_FSM!
-    end
-
   end
 
 end
