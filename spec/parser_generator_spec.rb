@@ -12,36 +12,36 @@ describe Joos::ParserGenerator do
 
     it "should be properly initialized with a grammar hash" do
       grammar = { A: [] }
-      parser = Joos::ParserGenerator.new(grammar)
-      parser.grammar.should eq grammar
+      parser_generator = Joos::ParserGenerator.new(grammar)
+      parser_generator.grammar.should eq grammar
     end
 
     it "should not have any initialized states" do
-      @parser = Joos::ParserGenerator.new(RULES)
-      @parser.states.should be_empty
+      @parser_generator = Joos::ParserGenerator.new(RULES)
+      @parser_generator.states.should be_empty
     end
   end
 
   context "#build_start_state" do
-    before(:each) do
-      @parser = Joos::ParserGenerator.new(RULES)
-      @parser.send :build_start_state
+    before :each do
+      @parser_generator = Joos::ParserGenerator.new(RULES)
+      @parser_generator.send :build_start_state
     end
 
     it "should create a start state" do
-      @parser.start_state.should_not be_nil
+      @parser_generator.start_state.should_not be_nil
     end
 
     it "should properly add all items to the start state and none else" do
-      @parser.start_state.size.should eq 4
-      @parser.start_state.should include [:S, [], [:A, :B]]
-      @parser.start_state.should include [:A, [], [:A, :B, :a]]
-      @parser.start_state.should include [:A, [], [:B, :a, :C]]
-      @parser.start_state.should include [:B, [], [:b, :c, :C]]
+      @parser_generator.start_state.size.should eq 4
+      @parser_generator.start_state.should include [:S, [], [:A, :B]]
+      @parser_generator.start_state.should include [:A, [], [:A, :B, :a]]
+      @parser_generator.start_state.should include [:A, [], [:B, :a, :C]]
+      @parser_generator.start_state.should include [:B, [], [:b, :c, :C]]
     end
 
     it "should fill the transitions queue with needed transitions from the start state" do
-      queue = @parser.send(:transition_queue)
+      queue = @parser_generator.send(:transition_queue)
       queue.size.should eq 1
       from_state, symbols = queue.shift
       from_state.should eq 0
@@ -50,6 +50,16 @@ describe Joos::ParserGenerator do
       symbols.should include :B
       symbols.should include :b
     end
+
   end
 
+  context "#build_parser_generator" do
+    before :each do
+      @parser_generator = Joos::ParserGenerator.new(RULES)
+    end
+
+    it "should build a parser_generator without error" do
+      @parser_generator.build_parser
+    end
+  end
 end

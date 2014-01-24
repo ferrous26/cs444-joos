@@ -14,6 +14,7 @@ class Joos::ParserGenerator
     @states = []
     @transitions = {}
     @transition_queue = {}
+    @reductions = {}
   end
 
 
@@ -36,21 +37,20 @@ class Joos::ParserGenerator
   #                Example: [:A, [:B], [:a, :C]]
   #
   #
-  # The final form being returned to the caller will simply be a transitions hash of the form:
-  #   { from_state => { transition_symbol: next_state } }
+  # The final form being returned to the caller will simply be a hash containing the transitions and reductions
 
-  def build_transitions
+  def build_parser
     build_start_state
     build_remaining_states
-
-    @transitions
+    find_each_states_complete_item
+    { transitions: @transitions, reductions: @reductions }
   end
 
   def start_state
     @states.first
   end
 
-  attr_reader :grammar, :non_terminals, :states, :transitions
+  attr_reader :grammar, :non_terminals, :states, :transitions, :reductions
 
 private
 
@@ -142,6 +142,24 @@ private
     end
 
     items
+  end
+
+  def find_each_states_complete_item
+    @states.each do |state|
+      reduction = nil
+      state.each do |item|
+        if item[2].empty?
+          this_reduction = [item[0], item[1]]
+          unless reduction.nil?
+            r1 = "#{reduction.first.to_s} -> #{reduction.last}"
+            r2 = "#{this_reduction.first.to_s} -> #{reduction.last}"
+            raise "Abiguous Grammar, conflicting rules: " + r1 + "   and   " + r2
+          end
+          reduction = this_reduction
+        end
+      end
+      @reductions[@states.index state] = [reduction.first, reduction.last.size] unless reduction.nil?
+    end
   end
 
   def next_symbol item
