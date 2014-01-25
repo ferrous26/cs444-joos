@@ -79,7 +79,8 @@ input. Rejecting non-ASCII code is handled during this phase.
 
 \subsection{Abstract Syntax Tree}
 
-Or whatever data abstraction we end up with for parsing.
+Our goal with the abstract syntax tree is to provide a data structure
+that will make future stages of the compiler easier to implement.
 
 
 \subsection{Parser}
@@ -96,15 +97,26 @@ not follow simply from class. This is a required section of the report.
 
 \subsection{Weeder}
 
-Magic! Reject all programs that use non-Joos keywords, literal
-integers that are outside of allowed ranges, and strings that include
-invalid escape sequences.
+Weeding is performed during both scanning and parsing. Our goal is to
+weed out issues as early as possible in order to make later stages
+easier to implement, and so most weeding is done during scanning.
+
+All keywords and operators not supported by Joos are caught during
+scanning and will never be passed to the parser. Literal floating
+point values and unsupported formats of literal integers are also
+caught during the scanning phase.
+
+However, validating that literal integers are within the signed 32-bit
+range cannot be done during scanning because the range of values
+differs depending on if the integer has a negative or positive value,
+and we cannot determine that information until the tokens have been
+parsed.
 
 
 \subsection{Duplicate String Literals}
 
 Literal string duplication is avoided by overriding how
-\texttt{Joos::Token::String} objects are allocated. We override the
+\ttt{Joos::Token::String} objects are allocated. We override the
 default allocation method for the class and check if another string
 with the same binary value already exists. If it the string already
 exists we return the existing token instead of a new token. The trade
