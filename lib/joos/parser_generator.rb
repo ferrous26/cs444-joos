@@ -1,7 +1,4 @@
 require 'joos/version'
-require 'joos/token'
-
-TERMINALS = Joos::Token.constants.map { |k| Joos::Token.const_get(k) }.select {|k| k.is_a?(Class) && !k.ancestors.include?(Joos::Token::IllegalToken)}.map { |k|k.to_s.split('::').last.to_sym }.sort
 
 ##
 # Used to generate an LALR(1) parser from the parser definition
@@ -15,6 +12,8 @@ class Joos::ParserGenerator
     @transitions = {}
     @transition_queue = {}
     @reductions = {}
+    @first = {}
+    @follow = {}
   end
 
 
@@ -40,6 +39,8 @@ class Joos::ParserGenerator
   # The final form being returned to the caller will simply be a hash containing the transitions and reductions
 
   def build_parser
+    build_first_sets
+    build_follow_sets
     build_start_state
     build_remaining_states
     find_each_states_complete_item
@@ -47,14 +48,22 @@ class Joos::ParserGenerator
   end
 
   def start_state
-    @states.first
+    @start_state ||= @states.first
   end
 
-  attr_reader :grammar, :non_terminals, :states, :transitions, :reductions
+  attr_reader :grammar, :non_terminals, :states, :transitions, :reductions, :first, :follow
 
 private
 
   attr_accessor :transition_queue
+
+  def build_first_sets
+
+  end
+
+  def build_follow_sets
+
+  end
 
   def build_start_state
     return if @start_state
@@ -152,7 +161,7 @@ private
           this_reduction = [item[0], item[1]]
           unless reduction.nil?
             r1 = "#{reduction.first.to_s} -> #{reduction.last}"
-            r2 = "#{this_reduction.first.to_s} -> #{reduction.last}"
+            r2 = "#{this_reduction.first.to_s} -> #{this_reduction.last}"
             raise "Abiguous Grammar, conflicting rules: " + r1 + "   and   " + r2
           end
           reduction = this_reduction
