@@ -16,9 +16,19 @@ describe Joos::ScannerDFA do
   dfa = TestDFA.new
 
   it 'should accept simple identifiers' do
-    dfa.check_simple 'foo',  :identifier
-    dfa.check_simple '_bar', :identifier
-    dfa.check_simple 'a123', :identifier
+    [
+     'foo',
+     '_bar',
+     'a123',
+     '$',
+     '$$',
+     '$$bill',
+     'lol$lol',
+     '_123',
+     'CamelNotes'
+    ].each do |id|
+      dfa.check_simple id, :identifier
+    end
   end
 
   it 'should accept integers' do
@@ -27,11 +37,19 @@ describe Joos::ScannerDFA do
   end
 
   it 'should accept whitespace' do
-    dfa.check_simple ' ',       :whitespace
-    dfa.check_simple '    ',    :whitespace
-    dfa.check_simple " \t",     :whitespace
-    dfa.check_simple "\n",      :whitespace
-    dfa.check_simple "\n\n\t ", :whitespace
+    [
+     ' ',
+     '    ',
+     " \t",
+     "\n",
+     "\n\n\t",
+     "\r",
+     "\r\n",
+     "\f",
+     "  \t\n"
+    ].each do |ws|
+      dfa.check_simple ws, :whitespace
+    end
   end
 
   it 'should accept operators and separators' do
