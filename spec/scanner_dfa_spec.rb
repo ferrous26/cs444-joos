@@ -15,7 +15,7 @@ describe Joos::ScannerDFA do
 
   dfa = TestDFA.new
 
-  it 'should accept simple identifiers' do
+  it 'accepts simple identifiers' do
     [
      'foo',
      '_bar',
@@ -31,10 +31,18 @@ describe Joos::ScannerDFA do
     end
   end
 
-  it 'should accept integers' do
+  it 'accepts integers' do
     dfa.check_simple '123', :integer
     dfa.check_simple '0',   :integer
   end
+
+  it 'accepts literal chars'
+  it 'accepts literal strings'
+  it 'accepts literal true/false/null'
+  it 'accepts keywords'
+
+  it 'accepts single line comments'
+  it 'accepts multiline comments'
 
   it 'should accept whitespace' do
     [
@@ -52,7 +60,7 @@ describe Joos::ScannerDFA do
     end
   end
 
-  it 'should accept operators and separators' do
+  it 'accepts operators and separators' do
     Joos::ScannerDFA::SEPARATORS.each_char do |token|
       dfa.check_simple token, token
     end
@@ -64,7 +72,11 @@ describe Joos::ScannerDFA do
     end
   end
 
-  it 'should not accept float literals' do
+  it 'does not accept float literals' do
     expect { dfa.tokenize '123.456' }.to raise_error # FIXME
   end
+  it 'does not accept unused keywords'
+  it 'does not accept unused operators'
+  it 'does not accept octal or hex literal integers'
+  it 'does not accept literal integers tagged as long integers'
 end
