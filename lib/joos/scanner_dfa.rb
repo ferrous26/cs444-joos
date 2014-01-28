@@ -1,10 +1,8 @@
-require 'joos/version'
-
 require 'joos/dfa'
 
 ##
 # @todo Documentation
-class Joos::ScannerDfa < Joos::Dfa
+class Joos::ScannerDFA < Joos::DFA
   SEPARATORS = '[]{}(),.;'
   SINGLE_CHAR_TOKENS = '+-*/%<>=&|!^'
   SPECIAL_CHARS = "'\"\\\n"
@@ -15,39 +13,41 @@ class Joos::ScannerDfa < Joos::Dfa
 
   def initialize
     transitions = {
-        :start => {
-            :alpha => :identifier,
-            :space => :whitespace,
-            :digit => :integer,
-            "\n" => :whitespace
-        },
-        :identifier => {
-            :alpha => :identifier,
-            :digit => :identifier
-        },
-        :integer => {
-            :digit => :integer,
-            '.' => :illegal_token # floats are explicitly disallowed - this is an early out check
-        },
-        :whitespace => {
-            :space => :whitespace,
-            "\n" => :whitespace
-        },
+                   start: {
+                           alpha: :identifier,
+                           space: :whitespace,
+                           digit: :integer,
+                           "\n" => :whitespace
+                          },
+                   identifier: {
+                                alpha: :identifier,
+                                digit: :identifier
+                               },
+                   integer: {
+                             digit: :integer,
+                             # floats are explicitly disallowed -
+                             # this is an early out check
+                             '.' => :illegal_token
+                            },
+                   whitespace: {
+                                space: :whitespace,
+                                "\n" => :whitespace
+                               },
+                   string: {
+                            # TODO
+                           },
+                   char: {
+                          # TODO
+                         },
+                   illegal_token: {
+                                   # no transitions, non-accepting
+                                   # this state will raise lexer error
+                                  }
+                  }
 
-        :string => {
-            # TODO
-        },
-        :char => {
-            # TODO
-        },
-
-        :illegal_token => {
-            # no transitions, non-accepting -> will raise lexer error
-        }
-    }
     accept_states = [:identifier, :integer, :whitespace]
-    accept_states += SEPARATORS.split //
-    accept_states += SINGLE_CHAR_TOKENS.split //
+    accept_states += SEPARATORS.split(//)
+    accept_states += SINGLE_CHAR_TOKENS.split(//)
     accept_states += MULTI_CHAR_TOKENS
 
     # Add transitions for constant tokens
@@ -69,17 +69,17 @@ class Joos::ScannerDfa < Joos::Dfa
 
   def classify character
     case character
-      when /[_a-zA-Z]/
-        :alpha
-      when /[0-9]/
-        :digit
-      when /[ \t]/
-        :space
-      when UNCLASSIFIED_CHARACTERS[character]
-        character
-      else
-        # Need to check Java spec for what is allowed in strings, comments, etc
-        :invalid
+    when /[_a-zA-Z]/
+      :alpha
+    when /[0-9]/
+      :digit
+    when /[ \t]/
+      :space
+    when UNCLASSIFIED_CHARACTERS[character]
+      character
+    else
+      # Need to check Java spec for what is allowed in strings, comments, etc
+      :invalid
     end
   end
 end

@@ -1,69 +1,69 @@
 require 'spec_helper'
 require 'joos/dfa'
 
-describe Joos::Dfa do
+describe Joos::DFA do
 
   # DFA for /a+/
   ap_transitions = {
-      :start => {
-          'a' => :a
-      },
-      :a => {
-          'a' => :a
-      }
-  }
-  ap = Joos::Dfa.new ap_transitions, [:a]
+                    start: {
+                            'a' => :a
+                           },
+                    a: {
+                        'a' => :a
+                       }
+                   }
+  ap = Joos::DFA.new ap_transitions, [:a]
 
-  it "tokenizes the empty string to an empty list" do
+  it 'tokenizes the empty string to an empty list' do
     tokens, state = ap.tokenize ''
-    tokens.should == []
-    expect(state).to be_a Joos::Dfa::AutomatonState
-    state.state.should == :start
-    state.dfa.should == ap
-    state.input_read.should == ''
+    expect(tokens).to be == []
+    expect(state).to be_a Joos::DFA::AutomatonState
+    expect(state.state).to be == :start
+    expect(state.dfa).to be == ap
+    expect(state.input_read).to be == ''
   end
 
-  it "tokenizes a simple regular expression" do
+  it 'tokenizes a simple regular expression' do
     tokens, state = ap.tokenize 'aaa'
-    tokens.length.should == 1
-    tokens[0].lexeme.should == 'aaa'
-    tokens[0].state.should == :a
-    tokens[0].column.should == 0
-    state.state.should == :start
-    state.input_read.should == ''
+    expect(tokens.length).to be == 1
+    expect(tokens[0].lexeme).to be == 'aaa'
+    expect(tokens[0].state).to be == :a
+    expect(tokens[0].column).to be == 0
+    expect(state.state).to be == :start
+    expect(state.input_read).to be == ''
   end
 
-  it "throws on illegal character" do
-    ap.transition(:a, 'b').should == :error
-    ap.transition(:start, 'b').should == :error
-    expect { ap.tokenize 'ab' }.to raise_error
+  it 'throws on illegal character' do
+    expect(ap.transition(:a, 'b')).to be     == :error
+    expect(ap.transition(:start, 'b')).to be == :error
+    expect { ap.tokenize 'ab' }.to raise_error # FIXME
   end
 
   # DFA for /a+|b+/
   aorb_transitions = {
-      :start => {
-          'a' => :a,
-          'b' => :b
-      },
-      :a => {
-          'a' => :a
-      },
-      :b => {
-          'b' => :b
-      }
-  }
-  aorb = Joos::Dfa.new aorb_transitions, [:a, :b]
+                      start: {
+                              'a' => :a,
+                              'b' => :b
+                             },
+                      a: {
+                          'a' => :a
+                         },
+                      b: {
+                          'b' => :b
+                         }
+                     }
+  aorb = Joos::DFA.new aorb_transitions, [:a, :b]
 
-  it "tokenizes multiple tokens" do
-    tokens, state = aorb.tokenize 'aabb'
-    tokens.length.should == 2
+  it 'tokenizes multiple tokens' do
+    tokens, _ = aorb.tokenize 'aabb'
+    expect(tokens.length).to be == 2
 
-    tokens[0].lexeme.should == 'aa'
-    tokens[0].state.should == :a
-    tokens[0].column.should == 0
+    expect(tokens[0].lexeme).to be == 'aa'
+    expect(tokens[0].state).to be  == :a
+    expect(tokens[0].column).to be == 0
 
-    tokens[1].lexeme.should == 'bb'
-    tokens[1].state.should == :b
-    tokens[1].column.should == 2
+    expect(tokens[1].lexeme).to be == 'bb'
+    expect(tokens[1].state).to be  == :b
+    expect(tokens[1].column).to be == 2
   end
 end

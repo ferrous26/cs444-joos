@@ -1,5 +1,3 @@
-require 'joos/version'
-
 require 'joos/scanner_dfa'
 require 'joos/token'
 
@@ -14,4 +12,5 @@ class Joos::Scanner
   def scan_file file_name
     raise NotImplementedError
   end
+
 end
