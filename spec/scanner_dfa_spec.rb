@@ -25,7 +25,8 @@ describe Joos::ScannerDFA do
      '$$bill',
      'lol$lol',
      '_123',
-     'CamelNotes'
+     'CamelNotes',
+     'snake_case'
     ].each do |id|
       dfa.check_simple id, :identifier
     end
@@ -37,7 +38,9 @@ describe Joos::ScannerDFA do
   end
 
   it 'accepts literal chars'
+  it 'does not include surrounding quotes in literal char tokens'
   it 'accepts literal strings'
+  it 'does not include surrounding quotes in literal string tokens'
   it 'accepts literal true/false/null'
   it 'accepts keywords'
 
@@ -93,6 +96,7 @@ describe Joos::ScannerDFA do
       expect { dfa.tokenize num }.to raise_error
     end
   end
+
   it 'does not accept unused keywords'
   it 'does not accept unused operators'
   it 'does not accept octal or hex literal integers'
