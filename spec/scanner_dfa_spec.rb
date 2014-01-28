@@ -73,7 +73,25 @@ describe Joos::ScannerDFA do
   end
 
   it 'does not accept float literals' do
-    expect { dfa.tokenize '123.456' }.to raise_error # FIXME
+    [
+     '1e1f',
+     '2.f',
+     '.3f',
+     '0f',
+     '3.14f',
+     '6.022137e+23f',
+     '1e1',
+     '2.',
+     '.3',
+     '0.0',
+     '3.14',
+     '1e-9d',
+     '1e137',
+     '12345.12345'
+    ].each do |num|
+      # FIXME: test for specific error class/message
+      expect { dfa.tokenize num }.to raise_error
+    end
   end
   it 'does not accept unused keywords'
   it 'does not accept unused operators'
