@@ -1,6 +1,6 @@
 require 'joos/version'
 require 'joos/utilities'
-# require 'joos/scanner'
+require 'joos/scanner'
 # require 'joos/parser'
 
 ##
