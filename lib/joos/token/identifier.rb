@@ -36,7 +36,7 @@ class Joos::Token::Identifier < Joos::Token
   # illegal character.
   #
   class BadFirstCharacter < IllegalName
-    # @param [Joos::Token::Identifier]
+    # @param id [Joos::Token::Identifier]
     def initialize id
       super <<-EOM
 Identifier #{id.value} @ #{id.source} must start with a letter, underscore,
@@ -49,7 +49,7 @@ or the $ character.
   # Specific error raised when the identifier name is not valid.
   #
   class BadName < IllegalName
-    # @param [Joos::Token::Identifier]
+    # @param id [Joos::Token::Identifier]
     def initialize id
       super <<-EOM
 Identifier #{id.value} @ #{id.source} is not a valid identifier name.
@@ -63,7 +63,7 @@ Identifier names must match #{PATTERN}.
   # or otherwise reserved name.
   #
   class ReservedWord < IllegalName
-    # @param [Joos::Token::Identifier]
+    # @param id [Joos::Token::Identifier]
     def initialize id
       super <<-EOM
 Identifier #{id.value} @ #{id.source} is not allowed to be an identifier
