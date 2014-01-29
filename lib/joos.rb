@@ -1,9 +1,10 @@
 require 'joos/version'
-require 'joos/constants'
+# require 'joos/scanner'
+# require 'joos/parser'
 
 ##
-# The glue that holds together the various parts of the compiler and
-# acts as a front end to the internals.
+# The glue that holds together the various parts of the compiler and acts
+# as a front end to the internals.
 class Joos::Compiler
 
   ##
@@ -25,10 +26,8 @@ class Joos::Compiler
   attr_reader :files
 
   # @param files [Array<String>]
-  def initialize files
-    @files = files.flatten!
-    # give them to the lexer
-    # give the result to the parser
+  def initialize *files
+    @files = files.flatten
   end
 
   ##

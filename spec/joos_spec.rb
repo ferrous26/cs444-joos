@@ -4,7 +4,11 @@ require 'joos'
 describe Joos::Compiler do
 
   it 'accepts a list of files at init' do
-    expect(Joos::Compiler.instance_methods).to include :compile!
+    c = Joos::Compiler.new('mah files', 'herp derp')
+    expect(c.files).to be == ['mah files', 'herp derp']
+
+    c = Joos::Compiler.new(['mah files', 'herp derp'])
+    expect(c.files).to be == ['mah files', 'herp derp']
   end
 
   it 'responds to #compile' do
