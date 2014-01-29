@@ -21,7 +21,22 @@ describe Joos::Compiler do
     expect(c).to respond_to :result
   end
 
-  it 'responds reasonably when a file path is incorrect'
+  it 'responds reasonably when a file path is incorrect' do
+    c = Joos::Compiler.new('herpDerp.java')
+    hack = $stderr
+    $stderr = StringIO.new
+    c.compile
+    expect(c.result).to be == Joos::Compiler::ERROR
+    expect($stderr.string).to match(/no such file or directory/i)
+    $stderr = hack
+  end
+
+  it 'does not allow exceptions to crash the program' do
+    c = Joos::Compiler.new('herpDerp.java')
+    expect {
+      c.compile
+    }.to_not raise_error
+  end
 
   it 'defines error and success correctly' do
     expect(Joos::Compiler::SUCCESS).to be == 0
@@ -29,6 +44,11 @@ describe Joos::Compiler do
   end
 
   it 'reports a SUCCESS result for successful compilation'
-  it 'reports an ERROR result for compilation failure cases'
+
+  it 'reports an ERROR result for compilation failure cases' do
+    c = Joos::Compiler.new('herpDerp.java')
+    c.compile
+    expect(c.result).to be == Joos::Compiler::ERROR
+  end
 
 end
