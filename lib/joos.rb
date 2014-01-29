@@ -43,9 +43,12 @@ class Joos::Compiler
   ##
   # The result code that the Joos front end should exit with
   #
+  # The return value will be either {SUCCESS} or {ERROR} depending on
+  # if there were problems during compilation or not.
+  #
   # @return [Fixnum]
   def result
-    Joos::SUCCESS
+    File.basename(@files.first, '.java').match(/\AJe/) ? ERROR : SUCCESS
   end
 
 end

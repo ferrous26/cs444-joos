@@ -17,7 +17,8 @@ describe Joos::Compiler do
   end
 
   it 'responds to #result' do
-    expect(Joos::Compiler.instance_methods).to include :result
+    c = Joos::Compiler.new('test/a1/J1_01.java')
+    expect(c).to respond_to :result
   end
 
   it 'responds reasonably when a file path is incorrect'
