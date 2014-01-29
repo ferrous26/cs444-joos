@@ -17,4 +17,12 @@ describe Joos::Compiler do
 
   it 'responds reasonably when a file path is incorrect'
 
+  it 'defines error and success correctly' do
+    expect(Joos::Compiler::SUCCESS).to be == 0
+    expect(Joos::Compiler::ERROR).to   be == 42
+  end
+
+  it 'reports a SUCCESS result for successful compilation'
+  it 'reports an ERROR result for compilation failure cases'
+
 end
