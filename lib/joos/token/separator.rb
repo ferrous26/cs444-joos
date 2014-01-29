@@ -8,10 +8,6 @@ class Joos::Token
   # Attribute for all Joos 1W separator tokens
   #
   module Separator
-    def self.token
-      raise 'forgot to implement .token'
-    end
-
     include Joos::Token::ConstantToken
   end
 
@@ -31,12 +27,12 @@ class Joos::Token
   ].each do |symbol, name|
 
     klass = ::Class.new(self) do
-      define_singleton_method(:token) { symbol }
       include Separator
+      define_singleton_method(:token) { symbol }
     end
 
     const_set(name, klass)
-    CONSTANT_TOKENS[symbol] = klass
+    CLASSES[symbol] = klass
   end
 
 end

@@ -9,18 +9,21 @@ require 'joos/version'
 class Joos::Token
 
   ##
-  # Determine the concrete token class for an arbitrary string.
+  # A mapping of strings to their corresponding class
   #
-  # If a token class cannot be determined then this method will return
-  # `nil`.
+  # If you have a token and are not sure what the token class should be, use
+  # this lookup table as an oracle. In most cases, the name of the class will
+  # simply be a capitalization of the string for the token, but in the case
+  # of operators this will not be true.
   #
-  # @return [Class,nil]
-  def self.class_for str
-    CONSTANT_TOKENS.fetch(str) { |_|
-      PATTERN_TOKENS.each { |pattern, k| return k if pattern.match str }
-      nil
-    }
-  end
+  # @example
+  #
+  #   Joos::Token::CLASSES['for']  # => Joos::Token::For
+  #   Joos::Token::CLASSES['null'] # => Joos::Token::Null
+  #   Joos::Token::CLASSES['>>>='] # => Joos::Token::UnsignedShiftRightEquals
+  #
+  # @return [Hash{ String => Class }]
+  CLASSES = {}
 
   ##
   # The line in {#file} where the token originates.
@@ -53,7 +56,7 @@ class Joos::Token
   # The name of the file from which the token originates.
   #
   # The name will be a relative path from the working directory where
-  # where the compiler was invoked.
+  # the compiler was invoked.
   #
   # @return [String]
   def file
@@ -116,6 +119,10 @@ Bad input token found at #{token.source}
   # Attribute for tokens that have a constant string pattern and
   # therefore we do not need to keep multiple copies of the token value.
   #
+  # Classes which include this module must implement a `.token` singleton
+  # method on the class which returns the constant value of the token class
+  # as a string.
+  #
   module ConstantToken
     ##
     # Override the default constructor for tokens so that we can avoid
@@ -128,35 +135,12 @@ Bad input token found at #{token.source}
       @line   = line
       @column = column
     end
-
-    ##
-    # Just a safety assertion that I am adding for myself to make sure
-    # I always include the `#token` singleton method on constant token
-    # classes.
-    def self.included klass
-      raise 'failed assertion' unless klass.respond_to? :token
-    end
   end
-
-
-  private
-
-  ##
-  # A mapping of strings to their corresponding class
-  #
-  # @return [Hash{ String => Class }]
-  CONSTANT_TOKENS = {}
-
-  ##
-  # A mapping of regular expressions to their corresponding class
-  #
-  # @return [Hash{ String => Class }]
-  PATTERN_TOKENS = {}
 
   require 'joos/token/keyword'
   require 'joos/token/operator'
   require 'joos/token/literal'
-  # require 'joos/token/identifier'
   require 'joos/token/separator'
+  require 'joos/token/identifier'
 
 end

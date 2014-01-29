@@ -3,3 +3,6 @@
 $LOAD_PATH.unshift File.expand_path('./lib')
 require 'joos'
 
+compiler = Joos::Compiler.new ARGV
+compiler.compile
+exit compiler.result

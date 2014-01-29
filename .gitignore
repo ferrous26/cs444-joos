@@ -18,3 +18,4 @@ marmoset.zip
 *.log
 *.out
 .idea
+*.synctex.gz

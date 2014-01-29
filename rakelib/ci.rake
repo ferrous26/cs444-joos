@@ -8,13 +8,18 @@ task :rubocop do
   sh 'rubocop'
 end
 
+desc 'Run reek code smell analyzer'
+task :reek do
+  sh 'reek lib/'
+end
+
 desc 'Generate documentation'
 task :yard do
   sh 'yard'
 end
 
 desc 'Run all CI related tasks'
-task :ci => [:spec, :test, :flog, :rubocop, :yard]
+task :ci => [:spec, :test, :flog, :reek, :rubocop, :yard]
 
 5.times do |num|
   task :test => "test:a#{num + 1}"

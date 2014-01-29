@@ -3,158 +3,230 @@ require 'joos/token/literal'
 
 describe Joos::Token::Literal do
 
-  ns = Joos::Token::Literal
-
   names = [
-           'Int',
-           'Float',
-           'Bool',
+           'Integer',
+           'FloatingPoint',
            'True',
            'False',
-           'Char',
+           'Character',
            'String',
            'Null'
           ]
 
   it 'has a class for each type of literal' do
     names.each do |name|
-      klass = ns.const_get(name, false)
+      klass = Joos::Token.const_get(name, false)
       expect(klass).to include Joos::Token::Literal
       expect(klass.ancestors).to include Joos::Token
     end
   end
 
   it 'tags illegal literal classes correctly' do
-    expect(Joos::Token::Literal::Float).to include Joos::Token::IllegalToken
+    expect(Joos::Token::FloatingPoint).to include Joos::Token::IllegalToken
   end
 
-  describe Joos::Token::Literal::Bool do
+  describe Joos::Token::Bool do
     it 'is a ConstantToken' do
-      klass = ns.const_get(:Bool, false)
-      expect(klass).to include Joos::Token::ConstantToken
+      expect(Joos::Token::Bool).to include Joos::Token::ConstantToken
     end
 
-    it 'raises an error for .token in order prevent useful instantiation' do
+    it 'is a kind of Literal' do
+      expect(Joos::Token::Bool).to include Joos::Token::Literal
+    end
+
+    it 'does not implement .token' do
       expect {
-        Joos::Token::Literal::Bool.token
-      }.to raise_error NotImplementedError
+        Joos::Token::Bool.token
+      }.to raise_error NoMethodError
     end
   end
 
-  describe Joos::Token::Literal::True do
-    it 'is a Bool' do
-      klass = Joos::Token::Literal::Bool
-      expect(Joos::Token::Literal::True.superclass).to be klass
+  describe Joos::Token::StringHelpers do
+    it 'has a mapping of all Java escape sequences to their byte value' do
+      mapping = Joos::Token::StringHelpers::STANDARD_ESCAPES
+      ['b', 't', 'n', 'f', 'r', '"', "'", '\\'].each do |escape|
+        expect(mapping).to be_key escape
+      end
+      expect(mapping.values.sample).to be_a Fixnum
     end
 
-    it 'sets .token correctly' do
-      expect(Joos::Token::Literal::True.token).to be == 'true'
+    # Just a mock string class for testing escape parsing
+    class StringMock
+      include Joos::Token::StringHelpers
+      attr_reader :token, :disallowed_char
+      def initialize token, disallowed_char
+        @token, @disallowed_char = token, disallowed_char
+      end
+      alias_method :value, :token
+      define_method(:file) { '' }
+      define_method(:line) { 1 }
+      define_method(:line) { 2 }
+      define_method(:source) { 'cake' }
     end
 
-    it 'registers itself with CONSTANT_TOKENS' do
-      klass = ns.const_get(:True, false)
-      expect(Joos::Token::CONSTANT_TOKENS['true']).to be klass
+    it 'catches bad character escape sequences' do
+      expect {
+        StringMock.new('\\q', 'a').validate!
+      }.to raise_error Joos::Token::StringHelpers::InvalidEscapeSequence
     end
 
-    it 'returns the binary representation from #to_binary'
-  end
-
-  describe Joos::Token::Literal::False do
-    it 'is a Bool' do
-      supur = Joos::Token::Literal::Bool
-      expect(Joos::Token::Literal::False.superclass).to be supur
+    it 'catches octal escape sequences out of range' do
+      expect {
+        StringMock.new('\\256', 'a').validate!
+      }.to raise_error Joos::Token::StringHelpers::InvalidOctalEscapeSequence
     end
 
-    it 'sets .token correctly' do
-      expect(Joos::Token::Literal::False.token).to be == 'false'
+    it 'catches use of the disallowed character' do
+      expect {
+        StringMock.new('a', 'a').validate!
+      }.to raise_error Joos::Token::StringHelpers::InvalidCharacter
     end
 
-    it 'registers itself with CONSTANT_TOKENS' do
-      klass = Joos::Token::Literal::False
-      expect(Joos::Token::CONSTANT_TOKENS['false']).to be klass
+    it 'allowed the disallowed character if it has been escaped' do
+      expect {
+        StringMock.new('\\t', 't').validate!
+      }.to_not raise_error
     end
 
-    it 'returns the binary representation from #to_binary'
-  end
-
-  describe Joos::Token::Literal::Null do
-    it 'is a ConstantToken' do
-      expect(Joos::Token::Literal::Null).to include Joos::Token::ConstantToken
+    it 'converts character escape sequences correctly' do
+      bytes = StringMock.new('\\b', '"').validate!
+      expect(bytes).to be == [8]
     end
 
-    it 'returns the correct .token value' do
-      expect(Joos::Token::Literal::Null.token).to be == 'null'
+    it 'converts octal escape sequences correctly' do
+      bytes = StringMock.new('\\5', '"').validate!
+      expect(bytes).to be == [5]
+
+      bytes = StringMock.new('\\127', '"').validate!
+      expect(bytes).to be == [87]
     end
 
-    it 'registers itself with CONSTANT_TOKENS' do
-      klass = Joos::Token::Literal::Null
-      expect(Joos::Token::CONSTANT_TOKENS['null']).to be klass
-    end
-
-    it 'returns the binary representation from #to_binary'
-  end
-
-  describe Joos::Token::Literal::Int do
-    it 'raises an error if the value is outside of allowed ranges' do
-      [
-       9_000_000_000,
-       -9_000_000_000,
-       Joos::Token::Literal::Int::INT_MAX + 1,
-       Joos::Token::Literal::Int::INT_MIN - 1,
-      ].each do |num|
-        expect {
-          Joos::Token::Literal::Int.new(num.to_s, '', nil, nil)
-        }.to raise_error Joos::Token::Literal::Int::OutOfRangeError
+    describe Joos::Token::StringHelpers::InvalidEscapeSequence do
+      it 'takes a token-ish instance and index into the token value' do
+        mock = Object.new
+        mock.define_singleton_method(:value) { 'hi' }
+        mock.define_singleton_method(:source) { 'bye' }
+        err = Joos::Token::StringHelpers::InvalidEscapeSequence.new(mock, 1)
+        expect(err.message).to match(/Invalid escape sequence/)
+        expect(err.message).to match(/hi/)
+        expect(err.message).to match(/bye/)
       end
     end
 
-    it 'allows values which are on the boundary of the allowed range' do
+    describe Joos::Token::StringHelpers::InvalidOctalEscapeSequence do
+      it 'takes a token-ish instance and index into the token value' do
+        mock = Object.new
+        mock.define_singleton_method(:value) { 'cake' }
+        mock.define_singleton_method(:source) { 'pie' }
+        e = Joos::Token::StringHelpers::InvalidOctalEscapeSequence.new(mock, 1)
+        expect(e.message).to match(/Octal escape out of ASCII range/)
+        expect(e.message).to match(/cake/)
+        expect(e.message).to match(/pie/)
+      end
+    end
+  end
+
+  describe Joos::Token::True do
+    it 'is a Bool' do
+      expect(Joos::Token::True.ancestors).to include Joos::Token::Bool
+    end
+
+    it 'sets .token correctly' do
+      expect(Joos::Token::True.token).to be == 'true'
+    end
+
+    it 'registers itself with the Joos::Token::CLASSES hash' do
+      expect(Joos::Token::CLASSES['true']).to be Joos::Token::True
+    end
+
+    it 'returns the binary representation from #to_binary'
+  end
+
+  describe Joos::Token::False do
+    it 'is a Bool' do
+      expect(Joos::Token::False.ancestors).to include Joos::Token::Bool
+    end
+
+    it 'sets .token correctly' do
+      expect(Joos::Token::False.token).to be == 'false'
+    end
+
+    it 'registers itself with the Joos::Token::CLASSES hash' do
+      expect(Joos::Token::CLASSES['false']).to be Joos::Token::False
+    end
+
+    it 'returns the binary representation from #to_binary'
+  end
+
+  describe Joos::Token::Null do
+    it 'is a ConstantToken' do
+      expect(Joos::Token::Null).to include Joos::Token::ConstantToken
+    end
+
+    it 'returns the correct .token value' do
+      expect(Joos::Token::Null.token).to be == 'null'
+    end
+
+    it 'registers itself with CONSTANT_TOKENS' do
+      expect(Joos::Token::CLASSES['null']).to be Joos::Token::Null
+    end
+
+    it 'returns the binary representation from #to_binary'
+  end
+
+  describe Joos::Token::Integer do
+    it 'raises an error from #validate! if the value has too much magnitude' do
       [
-       Joos::Token::Literal::Int::INT_MAX,
-       Joos::Token::Literal::Int::INT_MIN
+       Joos::Token::Integer::INT_MIN - 1,
+       Joos::Token::Integer::INT_MAX + 1,
+       9_000_000_000
       ].each do |num|
         expect {
-          Joos::Token::Literal::Int.new(num.to_s, '', nil, nil)
+          Joos::Token::Integer.new(num.to_s, '', nil, nil).validate!
+        }.to raise_error Joos::Token::Integer::OutOfRangeError
+      end
+    end
+
+    it 'accepts reasonable values of integers' do
+      [
+       '0',
+       '1',
+       '1996',
+       '-42',
+       Joos::Token::Integer::INT_MAX,
+       Joos::Token::Integer::INT_MIN
+      ].each do |num|
+        expect {
+          Joos::Token::Integer.new(num.to_s, '', nil, nil).validate!
         }.to_not raise_error
       end
     end
 
-    it 'registers itself with PATTERN_TOKENS' do
-      klass   = Joos::Token::Literal::Int
-      pattern = klass.const_get(:PATTERN, false)
-      expect(Joos::Token::PATTERN_TOKENS[pattern]).to be == klass
-    end
-
-    it 'does not match integers with a leading 0' do
-      expect(Joos::Token.class_for '01').to be_nil
-    end
-
-    it 'does match 0' do
-      expect(Joos::Token.class_for '0').to be == Joos::Token::Literal::Int
-    end
-
-    it 'matches multi-digit numbers' do
-      expect(Joos::Token.class_for '1996').to be == Joos::Token::Literal::Int
+    it 'raises an error during init if the number is ill formatted' do
+      [
+       '-0',
+       '01',
+       '0x123',
+       '9001L'
+      ].each do |num|
+        expect {
+          Joos::Token::Integer.new(num, 'help.c', 1, 4)
+        }.to raise_error Joos::Token::Integer::BadFormatting
+      end
     end
 
     it 'returns the Fixnum value via #to_i' do
       num = rand 1_000_000
-      int = Joos::Token::Literal::Int.new(num.to_s, '', nil, nil)
+      int = Joos::Token::Integer.new(num.to_s, '', nil, nil)
       expect(int.to_i).to be == num
     end
 
     it 'returns a 32-bit binary representation from #to_binary'
   end
 
-  describe Joos::Token::Literal::Float do
+  describe Joos::Token::FloatingPoint do
     it 'is an IllegalToken' do
-      expect(Joos::Token::Float).to include Joos::Token::IllegalToken
-    end
-
-    it 'registers itself with PATTERN_TOKENS' do
-      klass   = Joos::Token::Literal::Float
-      pattern = klass.const_get(:PATTERN, false)
-      expect(Joos::Token::PATTERN_TOKENS[pattern]).to be == klass
+      expect(Joos::Token::FloatingPoint).to include Joos::Token::IllegalToken
     end
 
     it 'validates floating point values' do
@@ -174,7 +246,7 @@ describe Joos::Token::Literal do
        '1e137',
        '12345.12345'
       ].each do |val|
-        expect(Joos::Token.class_for val).to be == Joos::Token::Literal::Float
+        expect(Joos::Token::FloatingPoint::PATTERN).to match val
       end
     end
 
@@ -184,34 +256,118 @@ describe Joos::Token::Literal do
        '123L',
        '098'
       ].each do |value|
-        klass = Joos::Token.class_for value
-        expect(klass).to_not be == Joos::Token::Literal::Float
+        expect(Joos::Token::FloatingPoint::PATTERN).to_not match value
       end
     end
 
     it 'raises an exception during init' do
       expect {
-        Joos::Token::Literal::Float.new('3.14', 'hey.c', 1, 2)
+        Joos::Token::FloatingPoint.new('3.14', 'hey.c', 1, 2)
       }.to raise_error Joos::Token::IllegalToken::Exception
     end
   end
 
-  describe Joos::Token::Literal::String do
-    it 'knows the length of its token value' # account for escapes
-    it 'returns the binary representation from #to_binary'
-    it 'maintains a global array of all strings and avoids duplication'
-    it 'registers itself with PATTERN_TOKENS'
-    it 'validates all character escape sequences'
-    it 'validates all octal escape sequences'
+  describe Joos::Token::Character do
+    it 'returns the binary representation from #to_binary' do
+      expect(Joos::Token::Character.new('a', '', 1, 1).to_binary).to be == [97]
+    end
+
+    it 'validates all character escape sequences' do
+      escapes = ['b', 't', 'n', 'f', 'r', '"', "'", '\\'].map { |char|
+        "\\#{char}"
+      }
+      escapes.each do |char|
+        convert = Joos::Token::Character.new(char, 'derp', 1, 0).to_binary
+        expect(convert.length).to be == 1
+      end
+    end
+
+    it 'validates all octal escape sequences' do
+      128.times do |num|
+        char = "\\#{num.to_s(8)}"
+        convert = Joos::Token::Character.new(char, 'derp', 1, 0).to_binary
+        expect(convert.length).to be == 1
+      end
+    end
+
+    it 'ensures that the length of the character string is one' do
+      expect {
+        Joos::Token::Character.new('hi', '', 1, 2)
+      }.to raise_error Joos::Token::Character::InvalidLength
+    end
+
+    it 'does not allowed the disallowed_char' do
+      expect {
+        Joos::Token::Character.new("'", '', 1, 2)
+      }.to raise_error Joos::Token::Character::InvalidCharacter
+    end
+
+    it 'accepts single character strings' do
+      [
+       'a',
+       '1',
+       ')',
+       '%'
+      ].each do |char|
+        expect(Joos::Token::Character.new(char, '', 1, 2).value).to be == char
+      end
+    end
   end
 
-  describe Joos::Token::Literal::Char do
-    it 'returns the binary representation from #to_binary'
-    it 'maintains a global array of all chars and avoids duplication'
-    it 'registers itself with PATTERN_TOKENS'
-    it 'validates all character escape sequences'
-    it 'validates all octal escape sequences'
-    it 'ensures that the length of the character string is one'
+  describe Joos::Token::String do
+    it 'returns the binary representation from #to_binary' do
+      bytes = Joos::Token::String.new('abd', '', 1, 2).to_binary
+      expect(bytes).to be == [97, 98, 100]
+    end
+
+    it 'knows the length of its token value' do
+      [
+       ['', 0],
+       ['hi', 2],
+       ['\\tb', 2],
+       ['\\176', 1]
+      ].each do |string, len|
+        expect(Joos::Token::String.new(string, '', 1, 4).length).to be == len
+      end
+    end
+
+    it 'maintains a global array of all strings and avoids duplication' do
+      token1 = Joos::Token::String.new('hi', '', 4, 5)
+      token2 = Joos::Token::String.new('hi', '', 4, 5)
+      expect(token1).to be token2
+    end
+
+    it 'validates all character escape sequences' do
+      escapes = ['b', 't', 'n', 'f', 'r', '"', "'", '\\'].map { |char|
+        "\\#{char}"
+      }.join('')
+      convert = Joos::Token::String.new(escapes, 'derp', 1, 0).to_binary
+      expect(convert.length).to be == 8
+    end
+
+    it 'validates all octal escape sequences' do
+      escapes = ''
+      128.times do |num|
+        escapes << "\\#{num.to_s(8)}"
+      end
+      convert = Joos::Token::String.new(escapes, 'derp', 1, 0).to_binary
+      expect(convert.length).to be == 128
+    end
+
+    it 'handles the escape sequence of "\1777" correctly' do
+      bytes = Joos::Token::String.new('\\1777', '', 2, 3).to_binary
+      expect(bytes).to be == [127, 55]
+    end
+
+    it 'does not allowed the disallowed character' do
+      expect {
+        Joos::Token::String.new('""', '', 3, 3)
+      }.to raise_error Joos::Token::StringHelpers::InvalidCharacter
+    end
+
+    it 'allows the empty string' do
+      expect(Joos::Token::String.new('', '', 4, 4).to_binary).to be_empty
+    end
   end
 
 end
