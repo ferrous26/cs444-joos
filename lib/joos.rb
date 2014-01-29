@@ -31,10 +31,13 @@ class Joos::Compiler
     # give the result to the parser
   end
 
-  def compile!
+  ##
+  # Cause {#files} to be compiled to i386 assembly (NASM style).
+  #
+  # For each {#files}, a `.s` file will be created with the appropriate
+  # assembly code.
+  def compile
     @files.each do |file|
-      # lex
-      # parse
     end
   end
 
