@@ -17,4 +17,5 @@ marmoset.zip
 *.aux
 *.log
 *.out
+*.synctex.gz
 
