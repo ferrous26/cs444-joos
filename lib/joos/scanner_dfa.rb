@@ -3,13 +3,34 @@ require 'joos/dfa'
 ##
 # @todo Documentation
 class Joos::ScannerDFA < Joos::DFA
+
+  ##
+  # All the Joos separators
   SEPARATORS = '[]{}(),.;'
-  SINGLE_CHAR_TOKENS = '+-*/%<>=&|!^'
+
+  ##
+  # All the single character Joos operators
+  SINGLE_CHAR_TOKENS = '+-*/%<>=&|!&|' # ^?:~
+
+  ##
+  # @todo DOCUMENT ME
   SPECIAL_CHARS = "'\"\\\n"
+
+  ##
+  # Joos tokens which do not have a classification
   UNCLASSIFIED_CHARACTERS = SEPARATORS + SINGLE_CHAR_TOKENS + SPECIAL_CHARS
 
-  MULTI_CHAR_TOKENS = %w{==}
-  MULTI_CHAR_ILLEGAL_TOKENS = %w{++ -- += -= *= /=}
+  ##
+  # Joos operators which are more than one character long
+  MULTI_CHAR_TOKENS = ['==', '!=', '>=', '<=', '&&', '||']
+
+  ##
+  # Java tokens which are not in Joos, but which we must catch
+  MULTI_CHAR_ILLEGAL_TOKENS = [
+                               '++', '--', '<<', '>>', '>>>',
+                               '+=', '-=', '*=', '/=', '&=', '|=', '%=',
+                               '<<=', '>>=', '>>>='
+                              ] # ^=
 
   def initialize
     transitions = {
