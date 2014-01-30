@@ -66,10 +66,11 @@ class Joos::ScannerDFA < Joos::DFA
                                   }
                   }
 
-    accept_states = [:identifier, :integer, :whitespace]
-    accept_states += SEPARATORS.split(//)
-    accept_states += SINGLE_CHAR_TOKENS.split(//)
-    accept_states += MULTI_CHAR_TOKENS
+    accept_states =
+      [:identifier, :integer, :whitespace] <<
+      SEPARATORS.split(//)                 <<
+      SINGLE_CHAR_TOKENS.split(//)         <<
+      MULTI_CHAR_TOKENS
 
     # Add transitions for constant tokens
     (SINGLE_CHAR_TOKENS + SEPARATORS).each_char do |token|
