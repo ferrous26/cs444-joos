@@ -37,15 +37,54 @@ describe Joos::ScannerDFA do
     dfa.check_simple '0',   :integer
   end
 
-  it 'accepts literal chars'
-  it 'does not include surrounding quotes in literal char tokens'
-  it 'accepts literal strings'
-  it 'does not include surrounding quotes in literal string tokens'
-  it 'accepts literal true/false/null'
-  it 'accepts keywords'
+  it 'accepts literal chars' do
+    [
+     "'a'",
+     "'\t'",
+     "'\045'",
+     "'\''",
+     "'\\'"
+    ].each do |char|
+      dfa.check_simple char, :char
+    end
+  end
 
-  it 'accepts single line comments'
-  it 'accepts multiline comments'
+  it 'does not include surrounding quotes in literal char tokens'
+
+  it 'accepts literal strings' do
+    [
+     '"hi there"',
+     '"a"',
+     '"\n\045!"',
+     '"\\"',
+     '"\""'
+    ].each do |string|
+      dfa.check_simple string, :string
+    end
+  end
+
+  it 'does not include surrounding quotes in literal string tokens'
+
+  it 'accepts literal true/false/null' do
+    dfa.check_simple 'true',  :true
+    dfa.check_simple 'false', :false
+    dfa.check_simple 'null',  :null
+  end
+
+  it 'accepts keywords' do
+    dfa.check_simple 'while', :keyword
+    dfa.check_simple 'class', :keyword
+  end
+
+  it 'accepts single line comments' do
+    dfa.check_simple '// herp de derp', :comment
+  end
+
+  it 'accepts multiline comments' do
+    dfa.check_simple '/*hi there*/', :comment
+    dfa.check_simple '/*hi /*/',     :comment
+    dfa.check_simple "/*\n there*/", :comment
+  end
 
   it 'should accept whitespace' do
     [
