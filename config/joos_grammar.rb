@@ -61,10 +61,14 @@ GRAMMAR = {
     [:Modulo]
   ],
   Expression3: [
+    [:NegativeInteger],
     [:PrefixOp, :Expression3],
     [:OpenParen, :Expression, :CloseParen, :Expression3],
     [:OpenParen, :Type, :CloseParen, :Expression3],
     [:Primary, :Selectors]
+  ],
+  NegativeInteger: [
+    [:Minus, :Integer, :Selectors]
   ],
   Selectors: [
     [:Selectors, :Selector],

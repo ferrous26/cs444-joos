@@ -2,7 +2,11 @@ require 'spec_helper'
 
 describe 'Joos 1W parsing' do
 
-  it 'collapses use of unary minus on literal integers'
+  it 'collapses use of unary minus on literal integers' do
+    # -1 should turn into a negative int
+    # -(24) will not turn into a negative int (during parse), tried it on javac
+  end
+
   it 'does not allow classes to be both final and abstract'
   it 'must ensure methods have a body if it is not abstract/native'
   it 'must ensure methods that are abstract/native do not have a body'
