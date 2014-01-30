@@ -22,6 +22,43 @@ describe Joos::ParserGenerator do
     end
   end
 
+  context "#build_first_and_nullable" do
+    it "should build the first set properly" do
+
+    end
+
+    it "should build the nullable set properly" do
+      first_and_nullable_grammar = {
+
+        Z: [
+          [:d],
+          [:X, :Y, :Z]
+        ],
+
+        Y: [
+          [:c],
+          []
+        ],
+
+        X: [
+          [:Y],
+          [:a]
+        ]
+
+      }
+      nullable = [:Y, :X]
+      first = { X: [:c, :a], Y: [:c], Z: [:d, :c, :a], a: [:a], c: [:c], d: [:d] }
+
+      @parser_generator = Joos::ParserGenerator.new(first_and_nullable_grammar)
+      @parser_generator.send :build_first_and_nullable
+      @parser_generator.nullable.should eq nullable
+      @parser_generator.first.should eq first
+      # These tests were verified by a failing test at first - the first and
+      # nullable sets were correct, but not ordered correctly. The current
+      # order allows the tests to pass :)
+    end
+  end
+
   context "#build_start_state" do
     before :each do
       @parser_generator = Joos::ParserGenerator.new(RULES)

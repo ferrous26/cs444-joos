@@ -1,5 +1,7 @@
 require 'joos/version'
 
+TERMINALS = [:a, :c, :d] # ... and a lot more.
+
 ##
 # Used to generate an LALR(1) parser from the parser definition
 class Joos::ParserGenerator
@@ -13,7 +15,7 @@ class Joos::ParserGenerator
     @transition_queue = {}
     @reductions = {}
     @first = {}
-    @follow = {}
+    @nullable = []
   end
 
 
@@ -39,8 +41,7 @@ class Joos::ParserGenerator
   # The final form being returned to the caller will simply be a hash containing the transitions and reductions
 
   def build_parser
-    build_first_sets
-    build_follow_sets
+    build_first_and_nullable
     build_start_state
     build_remaining_states
     find_each_states_complete_item
@@ -51,23 +52,51 @@ class Joos::ParserGenerator
     @start_state ||= @states.first
   end
 
-  attr_reader :grammar, :non_terminals, :states, :transitions, :reductions, :first, :follow
+  attr_reader :grammar, :non_terminals, :states, :transitions, :reductions, :first, :nullable
 
 private
 
   attr_accessor :transition_queue
 
-  def build_first_sets
+  def build_first_and_nullable
+    @non_terminals.each do |symbol|
+      @first[symbol] = []
+    end
+    TERMINALS.each do |terminal|
+      @first[terminal] = [terminal]
+    end
 
-  end
-
-  def build_follow_sets
-
+    change = true
+    while change
+      change = false
+      @grammar.each do |left_symbol, rules|
+        rules.each do |rule|
+          unless @nullable.include?(left_symbol) ||
+                 ( !rule.all? { |right_symbol| @nullable.include?(right_symbol) } )
+            @nullable.push left_symbol
+            change = true
+          end
+          rule.each_with_index do |symbol, index|
+            if rule.take(index).all? { |right_symbol| @nullable.include?(right_symbol) }
+              if @non_terminals.include? symbol
+                new_first = (@first[left_symbol] + @first[symbol]).uniq
+                unless (new_first - @first[left_symbol]).empty?
+                  @first[left_symbol] = new_first
+                  change = true
+                end
+              elsif !@first[left_symbol].include? symbol
+                @first[left_symbol].push symbol
+                change = true
+              end
+            end
+          end
+        end
+      end
+    end
   end
 
   def build_start_state
     return if @start_state
-    @start_state = []
     start_symbol, reductions = @grammar.first
     items = []
     reductions.each do |reduction|
