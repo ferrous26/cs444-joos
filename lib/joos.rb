@@ -72,9 +72,7 @@ class Joos::Compiler
 
   # @param job [String] path to the file to work on
   def scan_and_parse job
-    input = File.readlines(job)
-#    raise 'joosc only accepts ASCII input' unless input.all?(&:ascii_only?)
-    Joos::Parser.new(Joos::Scanner.new(input).consume_input).parse
+    Joos::Parser.new(Joos::Scanner.scan_file job).parse
   rescue => e
     $stderr.puts e.message
     $stderr.puts e.backtrace if $DEBUG # used internally
