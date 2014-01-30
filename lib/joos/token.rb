@@ -3,10 +3,27 @@ require 'joos/version'
 ##
 # @abstract
 #
-# The abstract base implementation of all lexical tokens in the
-# Joos 1W language.
+# The abstract base implementation of all lexical tokens in the Joos 1W
+# language.
 #
 class Joos::Token
+
+  ##
+  # A mapping of strings to their corresponding class
+  #
+  # If you have a token and are not sure what the token class should be, use
+  # this lookup table as an oracle. In most cases, the name of the class will
+  # simply be a capitalization of the string for the token, but in the case
+  # of operators this will not be true.
+  #
+  # @example
+  #
+  #   Joos::Token::CLASSES['for']  # => Joos::Token::For
+  #   Joos::Token::CLASSES['null'] # => Joos::Token::Null
+  #   Joos::Token::CLASSES['>>>='] # => Joos::Token::UnsignedShiftRightEquals
+  #
+  # @return [Hash{ String => Class }]
+  CLASSES = {}
 
   ##
   # The line in {#file} where the token originates.
@@ -29,9 +46,6 @@ class Joos::Token
   # @param line [Fixnum]
   # @param column [Fixnum]
   def initialize token, file, line, column
-    self.class.match?(token) ||
-      raise(WrongTokenForClass.new(self.class, token))
-
     @token  = token.dup
     @file   = file.dup
     @line   = line
@@ -41,8 +55,8 @@ class Joos::Token
   ##
   # The name of the file from which the token originates.
   #
-  # The name will be a relative path from the working directory
-  # where the compiler was invoked.
+  # The name will be a relative path from the working directory where
+  # the compiler was invoked.
   #
   # @return [String]
   def file
@@ -57,93 +71,76 @@ class Joos::Token
     @token.dup
   end
 
+  alias_method :value, :token
+
   ##
-  # The pattern that matches the class of tokens
+  # Source code location of the token formatted as a string
   #
-  # This can be a string or a regular expression, depending
-  # on which is appropriate for the class.
-  #
-  # @return [String,Regexp]
-  def self.pattern
-    raise NotImplementedError
+  # @return [String]
+  def source
+    "#{file} line:#{line}, column:#{column}"
   end
 
   ##
-  # Test if an arbitrary string matches the {#pattern} for the
-  # class.
+  # Attribute for tokens that are not allowed in Joos 1W.
   #
-  # Subclasses should override this method to specialize the
-  # code path for the type of {#pattern}.
+  # These include keywords, operators, and the like that are part of the
+  # Java language but have been removed from Joos. Including this module will
+  # cause all token classes that include the module to raise an exception
+  # during initialization.
   #
-  def self.match? str
-    if pattern.kind_of? String
-      pattern == str
-    else
-      pattern.match str
+  module IllegalToken
+
+    ##
+    # Exception that is used for instantiated tokens which have been marked
+    # as illegal.
+    #
+    class Exception < ::Exception
+      # @param token [Joos::Token]
+      def initialize token
+        super <<-EOM
+Bad input token found at #{token.source}
+#{token.value}
+#{token.msg}
+        EOM
+      end
+    end
+
+    ##
+    # Override the default constructor to raise an exception when called.
+    #
+    def initialize token, file, line, column
+      super
+      raise Exception.new(self)
     end
   end
 
   ##
-  # Attribute for tokens that are not allowed in Joos 1W
+  # Attribute for tokens that have a constant string pattern and
+  # therefore we do not need to keep multiple copies of the token value.
   #
-  # These include keywords, operators, and the like that
-  # are part of the Java language but have been removed
-  # from Joos.
-  module IllegalToken; end
-
-  ##
-  # Attribute for tokens that have a string pattern and
-  # therefore the actual value of the token is constant.
+  # Classes which include this module must implement a `.token` singleton
+  # method on the class which returns the constant value of the token class
+  # as a string.
+  #
   module ConstantToken
     ##
-    # Override the default constructor for tokens so that
-    # we can avoid storing duplicates of the same string,
-    # since Ruby won't know that the string is a duplicate
-    # by itself in this case.
+    # Override the default constructor for tokens so that we can avoid
+    # avoid storing duplicates of the same string, since Ruby won't know
+    # that the string is a duplicate by itself in this case.
     #
-    # @param token [String]
-    # @param file [String]
-    # @param line [Fixnum]
-    # @param column [Fixnum]
     def initialize token, file, line, column
-      self.class.match?(token) ||
-        raise(WrongTokenForClass.new(self.class, token))
-
-      @token  = self.class.pattern
+      @token  = self.class.token
       @file   = file.dup
       @line   = line
       @column = column
     end
   end
 
-  ##
-  # Exception used when a mismatch between token and token
-  # class is found
-  #
-  # This is used for internal debugging.
-  class WrongTokenForClass < Exception
-    def initialize klass, token
-      super("#{token} does not match the language of #{klass}")
-    end
-  end
-
-
-  private
-
-  def self.registry_method name
-    konst = Joos::Token.const_set(name.upcase, [])
-
-    define_singleton_method("register_#{name}") do |pattern|
-      define_singleton_method(:pattern) { pattern }
-      konst.push(self)
-    end
-  end
-
-  # require 'joos/token/keyword'
-  # require 'joos/token/operator'
-  # require 'joos/token/literal'
-  # require 'joos/token/identifier'
-  # require 'joos/token/separator'
-  # require 'joos/token/comment'
+  require 'joos/token/keyword'
+  require 'joos/token/operator'
+  require 'joos/token/literal'
+  require 'joos/token/separator'
+  require 'joos/token/identifier'
 
 end

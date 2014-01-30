@@ -1,52 +1,144 @@
-\documentclass[pdftex,12pt,a4paper]{report}
+\documentclass[pdftex,11pt,a4paper]{article}
 \usepackage{../cs444}
 
 \begin{document}
 
 \titlemake{1}
 
-\part{Design}
+This document outlines the design of a scanner and parser for
+the Joos 1W language as specified by the Java Language Specification
+2.0 (JLS) and the course website
+\url{https://www.student.cs.uwaterloo.ca/~cs444/joos.html}. It also
+discusses some challenges faced while implementing the scanner and
+parser, as well as our strategy for testing correctness.
 
-Some preamble to design talk goes here.
+Code is written in Ruby, and our implementation of the scanner and
+lexer is located in \ttt{lib/}. A copy of the Marmoset tests is
+located in \ttt{test/}, while our own tests are located in
+\ttt{spec/}. Offline tasks, such as running our parser generator
+are located in \ttt{rakelib/}. All tasks that might have been in
+the \ttt{Makefile} are delegate to tasks defined in
+\ttt{rakelib/}.
 
 
-\section{Tokens}
+\section{Design}
 
-A set of classes which make lexing and parsing simpler, and abstracts
-part of the weeding process from the lexer and parser.
+The design of the scanning and parsing phases of our compiler are
+broken up into five sections: a description of our token data
+structures which are produced by the parser and consumed by the
+scanner. The scanner, which consumes input source code and produces
+tokens. The abstract syntax tree (AST), which is produced by the
+parser and will be used in later assignments. And finally, the parser,
+which consumes tokens and produces the AST.
 
-Some more description. Maybe a code listing or example.
+
+\subsection{Tokens}
+
+The interface between the lexer and the parser is a stream
+(\ttt{Array}) of \ttt{Joos::Token} objects. \ttt{Joos::Token}
+is an abstract base class which encodes the original value of the
+token, the type of the token, and metadata related to where the token
+originated.
+
+Concrete subclasses are created for each keyword, operator, separator,
+and literal type, as defined in the JLS. A concrete class for
+identifiers is also created in the \ttt{Joos::Token}
+namespace. Classes may \ttt{include} modifiers which attach extra
+metadata to a token.
+
+The concrete token class itself specifies the type of the
+token. For instance, a token representing the keyword \ttt{while} will
+be contained by an instance of the \ttt{Joos::Token::While} class, and
+a token representing a litertal \ttt{true} will be contained by an
+instance of the \ttt{Joos::Token::True} class. Identifiers are wrapped
+by \ttt{Joos::Token::Identifier}, literal integers by
+\ttt{Joos::Token::Integer}, and so on.
+
+Each token will contain metadata that can be used for diagnostic
+purposes including, but not limited to, the relative path to the file
+where the token comes from, the line in the file where the token comes
+from, and the column in the line where the token begins. Additional
+metadata is attached to different groupings of token classes to create
+a sort of hierarchy. Additional metadata include things like the
+\ttt{IllegalToken} modifier which is used to mark the types of tokens
+that are legal Java tokens, but are not used in Joos.
+
+Finally, concrete token classes will validate token values if
+needed. In the case of string and character literals, we check that
+all escape sequences in the string are legal escape sequences. Token
+classes which are marked as illegal will raise an exception in their
+constructor, which will cause the compiler to print an appropriate
+error message and then exit.
 
 
-\section{Lexer}
+\subsection{Lexer}
 
 It does stuff with a DFA and generates a stream of tokens from code
-input.
-
-Rejecting non-ASCII code is handled during this phase.
+input. Rejecting non-ASCII code is handled during this phase.
 
 
-\section{Weeder}
+\subsection{Abstract Syntax Tree}
 
-Magic! Reject all programs that use non-Joos keywords, literal
-integers that are outside of allowed ranges, and strings that include
-invalid escape sequences.
-
-
-\section{Abstract Syntax Tree}
-
-Or whatever data abstraction we end up with for parsing.
+Our goal with the abstract syntax tree is to provide a data structure
+that will make future stages of the compiler easier to implement.
 
 
-\section{Parser}
+\subsection{Parser}
 
 It takes a stream of tokens from the lexer and does some other stuff.
 
 
-\section{Other Requirements}
+\section{Challenges}
 
-Some assignment requirements did not fit well into any other portion
-of the compiler that has been designed so far. Or maybe not\ldots
+
+This is where the interesting shit goes. Talk about anything that did
+not follow simply from class. This is a required section of the report.
+
+
+\subsection{Weeder}
+
+Weeding is performed during both scanning and parsing. Our goal is to
+weed out issues as early as possible in order to make later stages
+easier to implement, and so most weeding is done during scanning.
+
+All keywords and operators not supported by Joos are caught during
+scanning and will never be passed to the parser. Literal floating
+point values and unsupported formats of literal integers are also
+caught during the scanning phase.
+
+However, validating that literal integers are within the signed 32-bit
+range cannot be done during scanning because the range of values
+differs depending on if the integer has a negative or positive value,
+and we cannot determine that information until the tokens have been
+parsed.
+
+
+\subsection{Duplicate String Literals}
+
+Literal string duplication is avoided by overriding how
+\ttt{Joos::Token::String} objects are allocated. We override the
+default allocation method for the class and check if another string
+with the same binary value already exists. If it the string already
+exists we return the existing token instead of a new token. The trade
+off here is that we lose any metadata attached to the duplicate
+literal string, such as the file and line where the string came from;
+so any compilation errors related to the string may point to the
+incorrect string, depending on the type of error. We compare against
+the binary form of the string so that differences in escape sequences
+do not affect the detection of duplicate strings.
+
+I should probably modify this strategy a bit so that we actually keep
+duplicate literal strings during the analysis phase of compilation,
+and just link their in memory address when it comes to code
+generation.
+
+
+\section{Testing}
+
+We wrote tests. And we also have an offline version of marmoset tests
+which we run in the student environment at roflscale.
+
+This section is required, so we have to fill it out at some point\ldots
 
 
 \end{document}

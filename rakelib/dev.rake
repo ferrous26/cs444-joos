@@ -37,7 +37,7 @@ require '#{src_path.sub(/lib\//, '').chomp('.rb')}'
 describe Joos::#{klass_path} do
 
   it 'should have some passing tests' do
-    true.should == false
+    expect(true).to be false
   end
 
 end
