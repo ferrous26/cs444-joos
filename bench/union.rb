@@ -12,7 +12,7 @@ Benchmark.bmbm do |bm|
     [a, c, false]
   ].each do |left, right, value|
 
-    bm.report("- #{value}") { 
+    bm.report("- #{value}") {
       n.times {
         (left - right).empty? && (right - left).empty?
       }
@@ -32,4 +32,3 @@ Benchmark.bmbm do |bm|
 
   end
 end
-

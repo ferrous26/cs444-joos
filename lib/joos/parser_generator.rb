@@ -5,7 +5,8 @@ require 'joos/version'
 class Joos::ParserGenerator
 
   def initialize grammar
-    raise TypeError unless grammar.is_a?(Hash) && !grammar.empty?
+    grammar = Hash(grammar)
+    raise TypeError if grammar.empty?
     @grammar = grammar
     @non_terminals = grammar.keys
     @states = []
@@ -18,10 +19,11 @@ class Joos::ParserGenerator
 
 
   ##
-  # In order to build the finite state machine to be used as the final LALR(1) parser, an intermediate
-  # form is used to contain all metadata needed to construct every state properly. Once all states and
-  # transitions are in place, the inetermediate form is reduced to the final machine and returned to
-  # the caller.
+  # In order to build the finite state machine to be used as the final LALR(1)
+  # parser, an intermediate form is used to contain all metadata needed to
+  # construct every state properly. Once all states and transitions are in
+  # place,the inetermediate form is reduced to the final machine and returned
+  # to the caller.
   #
   # The intermediate form will look as such at any point of its creation:
   #   grammar -> the grammar used to build the parser
@@ -31,13 +33,14 @@ class Joos::ParserGenerator
   #                          represents a symbol that the from_state will need to transition on
   #   transitions -> a hash of the form { from_state => { transition_symbol: next_state } }
   #   states -> an array of the states of the FSM
-  #     state -> an array of items (in the LR parser sense) of the form 
+  #     state -> an array of items (in the LR parser sense) of the form
   #       items -> an array of items (in the LR parser sense) of the form [:left_symbol, [symbols_before_dot], [symbols_after_dot]].
   #                Example: [:A, [:B], [:a, :C]]
   #
   #
-  # The final form being returned to the caller will simply be a hash containing the transitions and reductions
-
+  # The final form being returned to the caller will simply be a hash
+  # containing the transitions and reductions
+  #
   def build_parser
     build_first_sets
     build_follow_sets
@@ -51,9 +54,16 @@ class Joos::ParserGenerator
     @start_state ||= @states.first
   end
 
-  attr_reader :grammar, :non_terminals, :states, :transitions, :reductions, :first, :follow
+  attr_reader :grammar
+  attr_reader :non_terminals
+  attr_reader :states
+  attr_reader :transitions
+  attr_reader :reductions
+  attr_reader :first
+  attr_reader :follow
 
-private
+
+  private
 
   attr_accessor :transition_queue
 
@@ -78,7 +88,8 @@ private
   end
 
   def build_state items
-    raise "#build_state requires a non-empty item array" unless items.is_a?(Array) && !items.empty?
+    items = Array(items) # a little coercion never killed anyone
+    raise '#build_state requires a non-empty item array' if items.empty?
     state = []
     items.uniq! # ensure all items are unique
     added_non_terminals = []
@@ -156,23 +167,25 @@ private
   def find_each_states_complete_item
     @states.each do |state|
       reduction = nil
+
       state.each do |item|
         if item[2].empty?
           this_reduction = [item[0], item[1]]
           unless reduction.nil?
             r1 = "#{reduction.first.to_s} -> #{reduction.last}"
             r2 = "#{this_reduction.first.to_s} -> #{this_reduction.last}"
-            raise "Abiguous Grammar, conflicting rules: " + r1 + "   and   " + r2
+            raise "Abiguous Grammar, conflicting rules: #{r1} and #{r2}"
           end
           reduction = this_reduction
         end
       end
-      @reductions[@states.index state] = [reduction.first, reduction.last.size] unless reduction.nil?
+
+      return unless reduction
+      @reductions[@states.index state] = [reduction.first, reduction.last.size]
     end
   end
 
   def next_symbol item
-
     item.last.first
   end
 
