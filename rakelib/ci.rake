@@ -5,7 +5,7 @@ end
 
 desc 'Run rubocop static analyzer'
 task :rubocop do
-  sh 'rubocop -c config/rubocop.yml'
+  sh 'rubocop'
 end
 
 desc 'Run reek code smell analyzer'
@@ -15,7 +15,7 @@ end
 
 desc 'Run rubocop static analyzer for CI'
 task :rubocop_ci do
-  sh 'rubocop -c config/rubocop.yml --lint'
+  sh 'rubocop --lint'
 end
 
 desc 'Run all CI related tasks'

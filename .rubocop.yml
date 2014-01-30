@@ -29,3 +29,8 @@ WordArray:
 
 RaiseArgs:
   Enabled: false
+
+LineLength:
+  Exclude:
+    - config/
+
