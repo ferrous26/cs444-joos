@@ -3,12 +3,9 @@ task :console do
   sh 'irb -Ilib -rubygems -rjoos'
 end
 
-`which nproc`
-ENV['N'] = if $?.success?
-             `nproc`
-           else
-             `sysctl hw.ncpu | awk '{print $2}'`
-           end
+$LOAD_PATH.unshift File.expand_path('./lib')
+require 'joos/utilities'
+ENV['N'] = Joos::Utilities.number_of_cpu_cores.to_s
 
 require 'rake/testtask'
 namespace :test do
@@ -28,4 +25,3 @@ require 'rspec/core/rake_task'
 RSpec::Core::RakeTask.new(:spec) do |spec|
   spec.pattern = FileList['spec/**/*_spec.rb']
 end
-

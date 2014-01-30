@@ -1,15 +1,15 @@
 GRAMMAR = {
-  :CompilationUnit => [
+  CompilationUnit: [
     [:ImportDeclarations],
     [:ImportDeclarations, :TypeDeclaration],
     [:Package, :QualifiedIdentifier, :Semicolon, :ImportDeclarations],
-    [:Package, :QualifiedIdentifier, :Semicolon, :ImportDeclarations, :TypeDeclaration],
+    [:Package, :QualifiedIdentifier, :Semicolon, :ImportDeclarations, :TypeDeclaration]
   ],
-  :QualifiedIdentifier => [
+  QualifiedIdentifier: [
     [:Identifier, :Dot, :QualifiedIdentifier],
     [:Identifier]
   ],
-  :Literal => [
+  Literal: [
     [:IntegerLiteral],
     [:FloatingPointLiteral],
     [:CharacterLiteral],
@@ -17,33 +17,33 @@ GRAMMAR = {
     [:BooleanLiteral],
     [:NullLiteral]
   ],
-  :Expression => [
+  Expression: [
     [:Expression2, :Equals, :Expression2],
     [:Expression2]
   ],
-  :Type => [
+  Type: [
     [:QualifiedIdentifier, :BracketsOpt],
     [:BasicType]
   ],
-  :StatementExpression => [
+  StatementExpression: [
     [:Expression]
   ],
-  :ConstantExpression => [
+  ConstantExpression: [
     [:Expression]
   ],
-  :Expression2 => [
+  Expression2: [
     [:Expression3, :Expression2Rest],
     [:Expression3]
   ],
-  :Expression2Rest => [
+  Expression2Rest: [
     [:InfixopExpression3],
     [:Expression3, :instanceof, :Type]
   ],
-  :InfixopExpression3 => [
+  InfixopExpression3: [
     [:Infixop, :Expression3, :InfixopExpression3],
     []
   ],
-  :Infixop => [
+  Infixop: [
     [:LazyOr],
     [:LazyAnd],
     [:EagerOr],
@@ -60,17 +60,21 @@ GRAMMAR = {
     [:Divide],
     [:Modulo]
   ],
-  :Expression3 => [
+  Expression3: [
+    [:NegativeInteger],
     [:PrefixOp, :Expression3],
     [:OpenParen, :Expression, :CloseParen, :Expression3],
     [:OpenParen, :Type, :CloseParen, :Expression3],
     [:Primary, :Selectors]
   ],
-  :Selectors => [
+  NegativeInteger: [
+    [:Minus, :Integer, :Selectors]
+  ],
+  Selectors: [
     [:Selectors, :Selector],
     []
   ],
-  :Primary => [
+  Primary: [
     [:OpenParen, :Expression, :CloseParen],
     [:This],
     [:This, :Arguments],
@@ -82,7 +86,7 @@ GRAMMAR = {
     [:BasicType, :BracketsOpt, :Dot, :Class], # COME BACK
     [:Void, :Dot, :Class] # COME BACK
   ],
-  :IdentifierSuffix => [
+  IdentifierSuffix: [
     [:OpenStaple, :CloseStaple, :BracketsOpt, :Dot, :Class],
     [:OpenStaple, :Expression, :CloseStaple],
     [:Arguments],
@@ -91,11 +95,11 @@ GRAMMAR = {
     [:Dot, :Super, :Arguments], # COME BACK
     [:Dot, :New, :InnerCreator]
   ],
-  :PrefixOp => [
+  PrefixOp: [
     [:Not],
     [:Minus]
   ],
-  :Selector => [
+  Selector: [
     [:Dot, :Identifier],
     [:Dot, :Identifier, :Arguments],
     [:Dot, :This],
@@ -103,69 +107,69 @@ GRAMMAR = {
     [:Dot, :New, :InnerCreator],
     [:OpenStaple, :Expression, :CloseStaple]
   ],
-  :SuperSuffix => [
+  SuperSuffix: [
     [:Arguments],
     [:Dot, :Identifier],
     [:Dot, :Identifier, :Arguments]
   ],
-  :BasicType => [
+  BasicType: [
     [:Byte],
     [:Char],
     [:Int],
     [:Boolean]
   ],
-  :ArgumentsOpt => [
+  ArgumentsOpt: [
     [:Arguments],
     []
   ],
-  :Arguments => [
+  Arguments: [
     [:OpenParen, :CloseParen],
     [:OpenParen, :Expressions, :CloseParen]
   ],
-  :Expressions => [
+  Expressions: [
     [:Expression, :Comma, :Expressions],
-    [:Expression],
+    [:Expression]
   ],
-  :BracketsOpt => [
+  BracketsOpt: [
     [:OpenStaple, :CloseStaple], # COME BACK
     []
   ],
-  :Creator => [
+  Creator: [
     [:QualifiedIdentifier, :ArrayCreatorRest],
     [:QualifiedIdentifier, :ClassCreatorRest]
   ],
-  :InnerCreator => [
+  InnerCreator: [
     [:IdentifierSuffix, :ClassCreatorRest]
   ],
-  :ArrayCreatorRest => [
+  ArrayCreatorRest: [
     [:OpenStaple, :Expression, :CloseStaple]
   ],
-  :ClassCreatorRest => [
+  ClassCreatorRest: [
     [:Arguments, :ClassBody], # Not sure if we need this - can classes be defined at run time?
     [:Arguments] # COME BACK
   ],
-  :VariableInitializer => [
+  VariableInitializer: [
     [:Expression]
   ],
-  :ParExpression => [
+  ParExpression: [
     [:OpenParen, :Expression, :CloseParen]
   ],
-  :Block => [
+  Block: [
     [:OpenBrace, :BlockStatements, :CloseBrace]
   ],
-  :BlockStatements => [
+  BlockStatements: [
     [:BlockStatement, :BlockStatements],
     []
   ],
-  :BlockStatement => [
+  BlockStatement: [
     [:LocalVariableDeclarationStatement],
     [:ClassOrInterfaceDeclaration], # MAY NOT NEED
     [:Statement]
   ],
-  :LocalVariableDeclarationStatement => [
+  LocalVariableDeclarationStatement: [
     [:Type, :VariableDeclarator, :Semicolon]
   ],
-  :Statement => [
+  Statement: [
     [:Block],
     [:If, :ParExpression, :Statement],
     [:If, :ParExpression, :Statement, :Else, :Statement],
@@ -177,22 +181,22 @@ GRAMMAR = {
     [:Semicolon],
     [:ExpressionStatement]
   ],
-  :MoreStatementExpressions => [
+  MoreStatementExpressions: [
     [:Comma, :StatementExpression, :MoreStatementExpressions],
     []
   ],
-  :ForInit => [
+  ForInit: [
     [:StatementExpression, :MoreStatementExpressions],
     [:Type, :VariableDeclarator]
   ],
-  :ForUpdate => [
+  ForUpdate: [
     [:StatementExpression, :MoreStatementExpressions]
   ],
-  :ModifiersOpt => [
+  ModifiersOpt: [
     [:Modifier, :ModifiersOpt],
     []
   ],
-  :Modifier => [
+  Modifier: [
     [:Public],
     [:Protected],
     [:Static],
@@ -200,131 +204,131 @@ GRAMMAR = {
     [:Final],
     [:Native] # COME BACK
   ],
-  :VariableDeclarator => [
+  VariableDeclarator: [
     [:Identifier, :VariableDeclaratorRest]
   ],
-  :ConstantDeclarator => [
+  ConstantDeclarator: [
     [:Identifier, :ConstantDeclaratorRest]
   ],
-  :VariableDeclaratorRest => [
+  VariableDeclaratorRest: [
     [:BracketsOpt],
     [:BracketsOpt, :Equals, :VariableInitializer]
   ],
-  :ConstantDeclaratorRest => [
+  ConstantDeclaratorRest: [
     [:BracketsOpt, :Equals, :VariableInitializer]
   ],
-  :VariableDeclaratorId => [
+  VariableDeclaratorId: [
     [:Identifier, :BracketsOpt]
   ],
-  :ImportDeclarations => [
+  ImportDeclarations: [
     [:ImportDeclaration, :ImportDeclarations],
     []
   ],
-  :ImportDeclaration => [
+  ImportDeclaration: [
     [:Import, :QualifiedIdentifier, :Semicolon],
     [:Import, :QualifiedIdentifier, :Dot, :Multiply, :Semicolon]
   ],
-  :TypeDeclaration => [
+  TypeDeclaration: [
     [:ClassOrInterfaceDeclaration],
     [:Semicolon]
   ],
-  :ClassOrInterfaceDeclaration => [
+  ClassOrInterfaceDeclaration: [
     [:ModifiersOpt, :ClassDeclaration],
     [:ModifiersOpt, :InterfaceDeclaration]
   ],
-  :ClassDeclaration => [
+  ClassDeclaration: [
     [:Class, :Identifier, :ClassBody],
     [:Class, :Identifier, :Extends, :Type, :ClassBody],
     [:Class, :Identifier, :Implements, :TypeList, :ClassBody],
     [:Class, :Identifier, :Extends, :Type, :Implements, :TypeList, :ClassBody]
   ],
-  :InterfaceDeclaration => [
+  InterfaceDeclaration: [
     [:Interface, :Identifier, :InterfaceBody],
     [:Interface, :Identifier, :Extends, :TypeList, :InterfaceBody]
   ],
-  :TypeList => [
+  TypeList: [
     [:Type, :CommaType]
   ],
-  :CommaType => [
+  CommaType: [
     [:Comma, :Type, :CommaType],
     []
   ],
-  :ClassBody => [
+  ClassBody: [
     [:OpenBrace, :ClassBodyDeclarations, :CloseBrace]
   ],
-  :ClassBodyDeclarations => [
+  ClassBodyDeclarations: [
     [:ClassBodyDeclaration, :ClassBodyDeclarations],
     []
   ],
-  :InterfaceBody => [
+  InterfaceBody: [
     [:OpenBrace, :InterfaceBodyDeclarations, :CloseBrace]
   ],
-  :InterfaceBodyDeclarations => [
+  InterfaceBodyDeclarations: [
     [:InterfaceBodyDeclaration, :InterfaceBodyDeclarations],
     []
   ],
-  :ClassBodyDeclaration => [
+  ClassBodyDeclaration: [
     [:Semicolon],
     [:Block], # COME BACK
     [:ModifiersOpt, :MemberDecl]
   ],
-  :MemberDecl => [
+  MemberDecl: [
     [:MethodOrFieldDecl],
     [:Void, :Identifier, :MethodDeclaratorRest],
     [:Identifier, :ConstructorDeclaratorRest]
   ],
-  :MethodOrFieldDecl => [
+  MethodOrFieldDecl: [
     [:Type, :Identifier, :MethodOrFieldRest]
   ],
-  :MethodOrFieldRest => [
+  MethodOrFieldRest: [
     [:VariableDeclaratorRest],
     [:MethodDeclaratorRest]
   ],
-  :InterfaceBodyDeclaration => [
+  InterfaceBodyDeclaration: [
     [:Semicolon],
     [:ModifiersOpt, :InterfaceMemberDecl]
   ],
-  :InterfaceMemberDecl => [
+  InterfaceMemberDecl: [
     [:InterfaceMethodOrFieldDecl],
-    [:Void, :Identifier, :VoidInterfaceMethodDeclaratorRest],
+    [:Void, :Identifier, :VoidInterfaceMethodDeclaratorRest]
   ],
-  :InterfaceMethodOrFieldDecl => [
+  InterfaceMethodOrFieldDecl: [
     [:Type, :Identifier, :InterfaceMethodOrFieldRest]
   ],
-  :InterfaceMethodOrFieldRest => [
+  InterfaceMethodOrFieldRest: [
     [:ConstantDeclaratorRest, :Semicolon],
     [:InterfaceMethodDeclaratorRest]
   ],
-  :MethodDeclaratorRest => [
+  MethodDeclaratorRest: [
     [:FormalParameters, :BracketsOpt, :MethodBody],
     [:FormalParameters, :BracketsOpt, :Semicolon]
   ],
-  :VoidMethodDeclaratorRest => [
+  VoidMethodDeclaratorRest: [
     [:FormalParameters, :MethodBody],
     [:FormalParameters, :Semicolon]
   ],
-  :InterfaceMethodDeclaratorRest => [
+  InterfaceMethodDeclaratorRest: [
     [:FormalParameters, :BracketsOpt, :Semicolon]
   ],
-  :VoidInterfaceMethodDeclaratorRest => [
+  VoidInterfaceMethodDeclaratorRest: [
     [:FormalParameters, :Semicolon]
   ],
-  :ConstructorDeclaratorRest => [
+  ConstructorDeclaratorRest: [
     [:FormalParameters, :MethodBody]
   ],
-  :FormalParameters => [
+  FormalParameters: [
     [:OpenParen, :CloseParen],
     [:OpenParen, :FormalParameter, :CommaFormalParameter, :CloseParen]
   ],
-  :CommaFormalParameter => [
+  CommaFormalParameter: [
     [:Comma, :FormalParameter, :CommaFormalParameter],
     []
   ],
-  :FormalParameter => [
+  FormalParameter: [
     [:Type, :VariableDeclaratorId],
     [:Final, :Type, :VariableDeclaratorId]
   ],
-  :MethodBody => [
+  MethodBody: [
     [:Block]
   ]
 }

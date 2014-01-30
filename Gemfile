@@ -1,8 +1,9 @@
 source 'https://rubygems.org'
 
 group :development do
+  gem 'reek'
   gem 'yard'
-  gem 'kramdown'
+  gem 'redcarpet'
   gem 'flog'
   gem 'simplecov'
   gem 'yardstick'
