@@ -3,6 +3,15 @@ require 'joos'
 
 describe Joos::Compiler do
 
+  before :each do
+    @stderr = $stderr
+    $stderr = StringIO.new
+  end
+
+  after :each do
+    $stderr = @stderr
+  end
+
   it 'accepts a list of files at init' do
     c = Joos::Compiler.new('mah files', 'herp derp')
     expect(c.files).to be == ['mah files', 'herp derp']
@@ -23,12 +32,9 @@ describe Joos::Compiler do
 
   it 'responds reasonably when a file path is incorrect' do
     c = Joos::Compiler.new('herpDerp.java')
-    hack = $stderr
-    $stderr = StringIO.new
     c.compile
     expect(c.result).to be == Joos::Compiler::ERROR
     expect($stderr.string).to match(/no such file or directory/i)
-    $stderr = hack
   end
 
   it 'does not allow exceptions to crash the program' do
