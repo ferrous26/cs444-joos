@@ -13,7 +13,7 @@ class Joos::ScannerDFA < Joos::DFA
   SINGLE_CHAR_TOKENS = '+-*/%<>=&|!&|' # ^?:~
 
   ##
-  # @todo DOCUMENT ME
+  # Characters which are not in themselves tokens, but which require special handling
   SPECIAL_CHARS = "'\"\\\n"
 
   ##
@@ -76,13 +76,15 @@ class Joos::ScannerDFA < Joos::DFA
     (SINGLE_CHAR_TOKENS + SEPARATORS).each_char do |token|
       transitions[:start][token] = token
     end
-    MULTI_CHAR_TOKENS.each do |token|
-      transitions[token[0]] ||= {}
-      transitions[token[0]][token[1]] = token
-    end
-    MULTI_CHAR_ILLEGAL_TOKENS.each do |token|
-      transitions[token[0]] ||= {}
-      transitions[token[0]][token[1]] = :illegal_token
+    (MULTI_CHAR_TOKENS + MULTI_CHAR_ILLEGAL_TOKENS).each do |token|
+      # Create a state for each prefix of the token and transitions as appropriate
+      state = token[0]
+      transitions[:start][token[0]] = state
+      token[1..-1].each_char do |char|
+        transitions[state] ||= {}
+        transitions[state][char] = state + char
+        state += char
+      end
     end
 
     super transitions, accept_states
@@ -90,15 +92,17 @@ class Joos::ScannerDFA < Joos::DFA
 
 
   def classify character
+    if UNCLASSIFIED_CHARACTERS.include? character
+      return character
+    end
+
     case character
-    when /[_a-zA-Z]/
+    when /[_a-zA-Z$]/
       :alpha
     when /[0-9]/
       :digit
     when /[ \t]/
       :space
-    when UNCLASSIFIED_CHARACTERS[character]
-      character
     else
       # Need to check Java spec for what is allowed in strings, comments, etc
       :invalid
