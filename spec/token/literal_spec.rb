@@ -175,16 +175,23 @@ describe Joos::Token::Literal do
   end
 
   describe Joos::Token::Integer do
-    it 'raises an error from #validate! if the value has too much magnitude' do
+    it 'raises an error from #validate if the value has too much magnitude' do
       [
        Joos::Token::Integer::INT_MIN - 1,
        Joos::Token::Integer::INT_MAX + 1,
        9_000_000_000
       ].each do |num|
         expect {
-          Joos::Token::Integer.new(num.to_s, '', nil, nil).validate!
+          Joos::Token::Integer.new(num.to_s, '', nil, nil).validate
         }.to raise_error Joos::Token::Integer::OutOfRangeError
       end
+    end
+
+    it 'can flip the sign of its value with #flip_sign' do
+      int = Joos::Token::Integer.new('1', 'file', 1, 0)
+      expect(int.to_i).to be == 1
+      int.flip_sign
+      expect(int.to_i).to be == -1
     end
 
     it 'accepts reasonable values of integers' do
@@ -197,7 +204,7 @@ describe Joos::Token::Literal do
        Joos::Token::Integer::INT_MIN
       ].each do |num|
         expect {
-          Joos::Token::Integer.new(num.to_s, '', nil, nil).validate!
+          Joos::Token::Integer.new(num.to_s, '', nil, nil).validate
         }.to_not raise_error
       end
     end

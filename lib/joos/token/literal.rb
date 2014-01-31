@@ -266,8 +266,6 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
       end
     end
 
-    # @return [Fixnum]
-    attr_reader :to_i
 
     # @param token [String]
     # @param file [String]
@@ -276,14 +274,35 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     def initialize token, file, line, column
       super
       raise BadFormatting.new(self) unless PATTERN.match token
-      @to_i = value.to_i
+    end
+
+    # @return [Fixnum]
+    def to_i
+      token.to_i
     end
 
     ##
+    # Flip the polarity of the integer
     #
-    # @return [Boolean]
-    def validate!
-      raise OutOfRangeError.new(self) unless INT_RANGE.cover? @to_i
+    # Negative integers become positive and positive integers become negative.
+    #
+    # @return [String]
+    def flip_sign
+      @token = (- to_i).to_s
+    end
+
+
+    # @!group Validation
+
+    ##
+    # Check that {#value} of the integer is valid.
+    #
+    # @raise [OutOfRangeError] if the value is not in the range of a
+    #   32-bit signed integer
+    #
+    # @return [Void]
+    def validate
+      raise OutOfRangeError.new(self) unless INT_RANGE.cover? to_i
     end
   end
 
