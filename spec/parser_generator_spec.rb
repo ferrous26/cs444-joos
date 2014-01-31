@@ -15,13 +15,13 @@ describe Joos::ParserGenerator do
     end
 
     it 'should be properly initialized with a grammar hash' do
-      grammar = { A: [] }
+      grammar = { rules: {A: []}, terminals: [], non_terminals: [:A] }
       parser_generator = Joos::ParserGenerator.new(grammar)
-      parser_generator.grammar.should eq grammar
+      parser_generator.grammar.should eq grammar[:rules]
     end
 
     it 'should not have any initialized states' do
-      @parser_generator = Joos::ParserGenerator.new(RULES)
+      @parser_generator = Joos::ParserGenerator.new(GRAMMAR)
       @parser_generator.states.should be_empty
     end
   end
@@ -33,39 +33,46 @@ describe Joos::ParserGenerator do
 
     it "should build the nullable set properly" do
       first_and_nullable_grammar = {
+        rules: {
 
-        Z: [
-          [:d],
-          [:X, :Y, :Z]
-        ],
+          Z: [
+            [:d],
+            [:X, :Y, :Z]
+          ],
 
-        Y: [
-          [:c],
-          []
-        ],
+          Y: [
+            [:c],
+            []
+          ],
 
-        X: [
-          [:Y],
-          [:a]
-        ]
+          X: [
+            [:Y],
+            [:a]
+          ]
+        },
+
+        terminals: [:a,:c,:d],
+        non_terminals: [:X, :Y, :Z]
 
       }
       nullable = [:Y, :X]
-      first = { X: [:c, :a], Y: [:c], Z: [:d, :c, :a], a: [:a], c: [:c], d: [:d] }
+      first = { X: Set.new([:c, :a]), 
+                Y: Set.new([:c]), 
+                Z: Set.new([:d, :c, :a]), 
+                a: Set.new([:a]), 
+                c: Set.new([:c]), 
+                d: Set.new([:d]) }
 
       @parser_generator = Joos::ParserGenerator.new(first_and_nullable_grammar)
       @parser_generator.send :build_first_and_nullable
       @parser_generator.nullable.should eq nullable
       @parser_generator.first.should eq first
-      # These tests were verified by a failing test at first - the first and
-      # nullable sets were correct, but not ordered correctly. The current
-      # order allows the tests to pass :)
     end
   end
 
   context "#build_start_state" do
     before :each do
-      @parser_generator = Joos::ParserGenerator.new(RULES)
+      @parser_generator = Joos::ParserGenerator.new(GRAMMAR)
       @parser_generator.send :build_start_state
     end
 
@@ -75,10 +82,10 @@ describe Joos::ParserGenerator do
 
     it 'should properly add all items to the start state and none else' do
       @parser_generator.start_state.size.should eq 4
-      @parser_generator.start_state.should include [:S, [], [:A, :B]]
-      @parser_generator.start_state.should include [:A, [], [:A, :B, :a]]
-      @parser_generator.start_state.should include [:A, [], [:B, :a, :C]]
-      @parser_generator.start_state.should include [:B, [], [:b, :c, :C]]
+      @parser_generator.start_state.should include [:S, [], [:A, :B], Set.new]
+      @parser_generator.start_state.should include [:A, [], [:A, :B, :a], Set.new([:b])]
+      @parser_generator.start_state.should include [:A, [], [:B, :a, :C], Set.new([:b])]
+      @parser_generator.start_state.should include [:B, [], [:b, :c, :C], Set.new([:a])]
     end
 
     it 'fills the transition queue with needed transitions from start_state' do
@@ -96,7 +103,7 @@ describe Joos::ParserGenerator do
 
   context '#build_parser_generator' do
     before :each do
-      @parser_generator = Joos::ParserGenerator.new(RULES)
+      @parser_generator = Joos::ParserGenerator.new(GRAMMAR)
     end
 
     it 'should build a parser_generator without error' do
