@@ -24,7 +24,7 @@ describe Joos::Scanner do
   it 'does not accept non-ascii characters' do
     expect {
       Joos::Scanner.scan_file 'test/fixture/unicode'
-    }.to raise_error Joos::Scanner::NonASCIIError
+    }.to raise_error Joos::ScannerDFA::NonASCIIError
   end
 
 end

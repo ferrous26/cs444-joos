@@ -6,16 +6,6 @@ require 'joos/token'
 class Joos::Scanner
 
   ##
-  # Exception raised when non-ASCII characters are detected during scanning.
-  class NonASCIIError < Exception
-    # @param file [String]
-    # @param line [Fixnum]
-    def initialize file, line
-      super "Non-ASCII character found in #{file} on line #{line}"
-    end
-  end
-
-  ##
   # Scan the given set of strings as a compilation unit.
   #
   # If any errors are encountered then an exception will be raised.
@@ -24,11 +14,26 @@ class Joos::Scanner
   # @return [Array<Joos::Token>]
   def self.scan_file path
     raise "#{path} is a non-existant file" unless File.exists? path
-    File.readlines(path).each_with_index do |line, index|
-      raise NonASCIIError.new(path, index) unless line.ascii_only?
 
-      # @todo Riel: change this as required
+    dfa = Joos::ScannerDFA.new
+    state = nil
+    tokens = []
+
+    File.readlines(path).each_with_index do |line, index|
+      begin
+        scanner_tokens, state = dfa.tokenize line, state
+        scanner_tokens.each do |t|
+          # TODO: create actual Token from scanner tokens
+        end
+      rescue Joos::CompilerException => e
+        # Add line and file info to exception
+        e.line = index
+        e.file = path
+        raise e
+      end
     end
+
+    tokens
   end
 
 end

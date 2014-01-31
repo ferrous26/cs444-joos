@@ -20,11 +20,9 @@ class Joos::DFA
   # on a non-accepting state.
   class UnexpectedCharacter < Joos::CompilerException
     attr_accessor :character
-    def self.from_char character, column
-      r = new "Lexer encountered an unexpected character '#{character}'", column=column
-      r.character = character
-
-      r
+    def initialize character, column
+      super "Unexpected character '#{character}'", column: column
+      @character = character
     end
   end
 
@@ -55,9 +53,7 @@ class Joos::DFA
   #
   # @return [(Array<DFA::Token>, DFA::AutomatonState)]
   def tokenize input, start_state = nil
-    if input.empty?
-      return [[], start_state]
-    end
+    return [[], start_state] if input.empty?
 
     state = start_state || start
 
@@ -66,7 +62,13 @@ class Joos::DFA
     column = 0
 
     input.each_char do |character|
-      next_state = state.next character
+      begin
+        next_state = state.next character
+      rescue Joos::CompilerException => e
+        # Add column info to exceptions
+        e.column = column
+        raise e
+      end
 
       if next_state.error?
         # If there is no allowed transition, create a token restart
@@ -79,7 +81,7 @@ class Joos::DFA
         else
           # Previous state didn't accept, or can't start any token from the
           # current character -> lexing error
-          raise UnexpectedCharacter.from_char(character, column)
+          raise UnexpectedCharacter.new(character, column)
         end
       end
 

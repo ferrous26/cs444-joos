@@ -32,6 +32,21 @@ class Joos::ScannerDFA < Joos::DFA
                                '<<=', '>>=', '>>>='
                               ] # ^=
 
+
+  ##
+  # Exception raised when non-ASCII characters are detected during scanning.
+  class NonASCIIError < Joos::CompilerException
+    # @return [String]
+    attr_accessor :character
+
+    # @param character [String] - The offending character
+    def initialize character
+      super "Non-ASCII character '#{character}'."
+      @character = character
+    end
+  end
+
+
   def initialize
     transitions = {
                    start: {
@@ -77,7 +92,7 @@ class Joos::ScannerDFA < Joos::DFA
       transitions[:start][token] = token
     end
     (MULTI_CHAR_TOKENS + MULTI_CHAR_ILLEGAL_TOKENS).each do |token|
-      # Create a state for each prefix of the token and transitions as appropriate
+      # Create a state for each prefix of the token, with transitions
       state = token[0]
       transitions[:start][token[0]] = state
       token[1..-1].each_char do |char|
@@ -92,7 +107,9 @@ class Joos::ScannerDFA < Joos::DFA
 
 
   def classify character
-    if UNCLASSIFIED_CHARACTERS.include? character
+    if !character.ascii_only?
+      raise NonASCIIError.new(character)
+    elsif UNCLASSIFIED_CHARACTERS.include? character
       return character
     end
 
@@ -101,7 +118,7 @@ class Joos::ScannerDFA < Joos::DFA
       :alpha
     when /[0-9]/
       :digit
-    when /[ \t]/
+    when /[ \t\r\f]/
       :space
     else
       # Need to check Java spec for what is allowed in strings, comments, etc

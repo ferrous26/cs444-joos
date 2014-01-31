@@ -13,11 +13,11 @@ class Joos::CompilerException < RuntimeError
   # @return [fixnum]
   attr_accessor :column
 
-  def initialize msg=nil, file=nil, line=nil, column=nil
+  def initialize msg = nil, file: nil, line: nil, column: nil
+    super msg
     @file = file
     @line = line
     @column = column
-    super msg
   end
 
 end
