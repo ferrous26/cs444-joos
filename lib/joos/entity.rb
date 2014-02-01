@@ -8,7 +8,7 @@ class Joos::Entity
 
   # @todo A way to separate by simple and qualified names
   # @todo A way to resolve names
-  # @todo A way to separate name and identifier (declaratio and use)
+  # @todo A way to separate name and identifier (declaration and use)
 
   ##
   # The canonical name of the entity
@@ -16,7 +16,7 @@ class Joos::Entity
   # @return [Joos::Token::Identifier]
   attr_reader :name
 
-  # @param name [Joos::Token::Identifier]
+  # @param name [Joos::AST::QualifiedIdentifier]
   def initialize name
     @name = name
   end
@@ -33,17 +33,87 @@ class Joos::Entity
   end
 
   ##
+  # A simple string identifier for the entity's type and source location.
+  def to_s
+    klass = self.class.to_s.split('::').last
+    "#{klass}:#{name.value} @ #{name.file}:#{name.line}"
+  end
+
+
+  # @!group Mixins
+
+  ##
+  # Code common to all compilation units (classes and interfaces)
+  module CompilationUnit
+    ##
+    # Error raised when the name of the class/interface does not match the
+    # name of the file.
+    #
+    class EntityNameDoesNotMatchFileNameError < Exception
+      # @param unit [CompilationUnit]
+      def initialize unit
+        super "#{unit.name.value} does not match file name #{unit.name.file}"
+      end
+    end
+
+    # @return [self]
+    def to_compilation_unit
+      self
+    end
+
+
+    private
+
+    ##
+    # Joos source files require that any compilation units in the file have
+    # the same name as the file itself.
+    #
+    def ensure_that_class_name_matches_file_name
+      raise EntityNameDoesNotMatchFileNameError.new(self) unless
+        File.basename(name.file, '.java') == name.value
+    end
+  end
+
+
+  # @!group Concrete Entities
+
+  ##
+  # @todo Need to have an implicit "unnamed" package
+  #
   # Entity representing the definition of a package.
+  #
+  # Package declarationsnames are always
   class Package < self
     ##
-    # All subpackages, classes, and interfaces that are contained in the
-    # namespace of the receiver.
+    # Packages, classes, and interfaces that are contained in the namespace
+    # of the receiver.
+    #
+    # This does not include classes and interfaces that are inside a package
+    # that is in this namespace (nested package entities).
     #
     # @return [Array<Package, Class, Interface>]
     attr_reader :members
 
+    # @param name [Joos::AST::QualifiedIdentifier]
+    def initialize name
+      # @todo we actually have to do a few more things here...
+      super name
+      @members = []
+    end
+
+    # @param member [Package, Class, Interface]
+    def add_member member
+      # @todo ensure that the name is not already being used
+      members << member.to_compilation_unit
+    end
+
+    # @return [self]
+    def to_compilation_unit
+      self
+    end
+
     def validate
-      nil # This cannot fail in Assignment 1
+      members.each(&:validate)
     end
   end
 
@@ -53,6 +123,13 @@ class Joos::Entity
   # This will include definitions of static methods and fields, and
   # so it can be used to access those references as well.
   class Class < self
+    include CompilationUnit
+
+    ##
+    # Modifiers on the receiver.
+    #
+    # @return [Joos::Token::Modifier]
+    attr_reader :modifiers
 
     ##
     # The superclass of the receiver.
@@ -67,12 +144,6 @@ class Joos::Entity
     # @return [Array<Joos::Entity::Interface>]
     attr_reader :implements
     alias_method :interfaces, :implements
-
-    ##
-    # Modifiers on the receiver.
-    #
-    # @return [Joos::Token::Modifier]
-    attr_reader :modifiers
 
     ##
     # Constructors implemented on the class.
@@ -91,10 +162,48 @@ class Joos::Entity
     # @return [Array<Fields, Methods>]
     attr_reader :members
 
+    # @param modifiers  [Array<Modifier>]
+    # @param name       [Joos::AST::QualifiedIdentifier]
+    # @param extends    [Class, nil]
+    # @param implements [Array<Interface>]
+    def initialize modifiers, name, extends, implements
+      super name
+      @modifiers    = modifiers
+      @extends      = extends
+      @implements   = implements
+      @constructors = []
+      @members      = []
+    end
+
+    # @param constructor [Constructor]
+    def add_constructor constructor
+      @constructors << constructor.to_constructor
+    end
+
+    # @param member [Field, Method]
+    def add_member member
+      @constructors << constructor.to_member
+    end
+
     def validate
-      raise 'must contain a constructor' if constructors.empty?
-      members.each do |member|
-      end
+      ensure_at_least_one_constructor
+      ensure_not_both_final_and_abstract
+      ensure_that_class_name_matches_file_name
+      constructors.each(&:validate)
+      members.each(&:validate)
+    end
+
+
+    private
+
+    def ensure_at_least_one_constructor
+      raise NoConstructorsError.new(self) if constructors.empty?
+    end
+
+    def ensure_not_both_final_and_abstract
+      raise FinalAbstractClassError.new(self) if
+        modifiers.include?(Joos::Token::Final) &&
+        modifiers.include?(Joos::Token::Abstract)
     end
   end
 
@@ -107,17 +216,59 @@ class Joos::Entity
   # In Joos, interfaces are not allowed to have fields or constructors.
   #
   class Interface < self
-    # @return [Array<Method>]
-    attr_reader :members
-  end
+    include CompilationUnit
 
-  ##
-  # Entity representing the declaration of an array.
-  #
-  class Array < self
-    # members is statically defined
-    # @return [Array<Class, Interface, Joos::Primitive>]
-    attr_reader :type
+    ##
+    # Modifiers on the receiver.
+    #
+    # @return [Joos::Token::Modifier]
+    attr_reader :modifiers
+
+    ##
+    # The superclass of the receiver.
+    #
+    # @return [Joos::Entity::Class]
+    attr_reader :extends
+    alias_method :superclass, :extends
+
+    ##
+    # All fields and methods defined on the class.
+    #
+    # Not including fields and methods defined in ancestor classes or
+    # interfaces.
+    #
+    # @return [Array<Fields, Methods>]
+    attr_reader :members
+
+    # @param modifiers [Array<Joos::Token::Modifier>]
+    # @param name      [Joos::AST::QualifiedIdentifier]
+    # @param extends   [Array<Joos::Token::Modifier>]
+    def initialize modifiers, name, extends
+      super name
+      @modifiers = modifiers
+      @extends   = extends
+      @members   = []
+    end
+
+    # @param member [Method]
+    def add_member member
+      @members << member.to_member
+    end
+
+    def validate
+      ensure_that_class_name_matches_file_name
+      ensure_methods_are_not_static_final_or_native
+    end
+
+
+    private
+
+    def ensure_methods_are_not_static_final_or_native
+      mods = [Joos::Token::Static, Joos::Token::Final, Joos::Token::Native]
+      members.each do |member|
+        raise IllegalModifier.new(self) unless (member.modifiers & mods).empty?
+      end
+    end
   end
 
   ##
@@ -146,7 +297,6 @@ class Joos::Entity
   #
   class Parameter < self
     attr_reader :type
-    attr_reader :method
   end
 
   ##
@@ -163,8 +313,8 @@ class Joos::Entity
   # In Joos, interfaces cannot have constructors.
   #
   class Constructor < self
-    # @return [Class]
-    attr_reader :class
+    # @return [Array<Joos::Token::Modifier>]
+    attr_reader :modifiers
   end
 
 end
