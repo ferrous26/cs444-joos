@@ -17,10 +17,7 @@ describe Joos::DFA do
   it 'tokenizes the empty string to an empty list' do
     tokens, state = ap.tokenize ''
     expect(tokens).to be == []
-    expect(state).to be_a Joos::DFA::AutomatonState
-    expect(state.state).to be == :start
-    expect(state.dfa).to be == ap
-    expect(state.input_read).to be == ''
+    expect(state).to be_nil
   end
 
   it 'tokenizes a simple regular expression' do
@@ -29,14 +26,13 @@ describe Joos::DFA do
     expect(tokens[0].lexeme).to be == 'aaa'
     expect(tokens[0].state).to be == :a
     expect(tokens[0].column).to be == 0
-    expect(state.state).to be == :start
-    expect(state.input_read).to be == ''
+    expect(state).to be_nil
   end
 
   it 'throws on illegal character' do
     expect(ap.transition(:a, 'b')).to be     == :error
     expect(ap.transition(:start, 'b')).to be == :error
-    expect { ap.tokenize 'ab' }.to raise_error # FIXME
+    expect { ap.tokenize 'ab' }.to raise_error(Joos::DFA::UnexpectedCharacter)
   end
 
   # DFA for /a+|b+/

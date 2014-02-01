@@ -1,4 +1,4 @@
-require 'joos/version'
+require 'joos/exceptions'
 
 ##
 # Deterministic Finite Automaton.
@@ -13,6 +13,18 @@ require 'joos/version'
 # it with a transition table and set of accept states, and probably override
 # {DFA#classify}.
 class Joos::DFA
+
+  ##
+  # Exception raised when `#tokenize` hits a character it can't handle,
+  # either because it can't transition from `:start`, or needs to split
+  # on a non-accepting state.
+  class UnexpectedCharacter < Joos::CompilerException
+    attr_accessor :character
+    def initialize character, column
+      super "Unexpected character '#{character}'", column: column
+      @character = character
+    end
+  end
 
   # @return [Hash{ Symbol => Hash }]
   attr_reader :transitions
@@ -37,22 +49,26 @@ class Joos::DFA
   # multiline comments.
   #
   # @param input [String]
-  # @param start_state [Symbol, DFA::AutomatonState]
+  # @param start_state [DFA::AutomatonState]
   #
   # @return [(Array<DFA::Token>, DFA::AutomatonState)]
-  def tokenize input, start_state = :start
-    state = if start_state.is_a? Symbol
-              start start_state
-            else
-              start_state
-            end
+  def tokenize input, start_state = nil
+    return [[], start_state] if input.empty?
+
+    state = start_state || start
 
     tokens = []
     last_column = 0
     column = 0
 
     input.each_char do |character|
-      next_state = state.next character
+      begin
+        next_state = state.next character
+      rescue Joos::CompilerException => e
+        # Add column info to exceptions
+        e.column = column
+        raise e
+      end
 
       if next_state.error?
         # If there is no allowed transition, create a token restart
@@ -65,7 +81,7 @@ class Joos::DFA
         else
           # Previous state didn't accept, or can't start any token from the
           # current character -> lexing error
-          raise "Lexing error - unexpected character '#{character}'"
+          raise UnexpectedCharacter.new(character, column)
         end
       end
 
@@ -77,7 +93,7 @@ class Joos::DFA
     # Else, return it so we can resume lexing later, e.g. on the next line
     if state.accept?
       tokens.push Token.new(state.state, state.input_read, last_column)
-      state = start
+      state = nil
     end
 
     [tokens, state]
@@ -119,9 +135,8 @@ class Joos::DFA
   #
   # @return [Symbol] `:error` if there is no transition
   def transition state, char_type
-    t = @transitions[state]
-    t &&= t[char_type]
-    t || :error
+    return :error unless @transitions.key? state
+    @transitions[state].fetch char_type, :error
   end
 
 
@@ -162,11 +177,11 @@ class Joos::DFA
     ##
     # Check if the current state is an error
     def error?
-      @state == :error
+      :error == @state
     end
 
     def to_s
-      "(AutomatonState #{ @state }; read '#{ @input_read }']"
+      "[AutomatonState #@state; read '#@input_read']"
     end
   end
 

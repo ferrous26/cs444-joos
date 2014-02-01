@@ -3,17 +3,15 @@ require 'joos/scanner_dfa'
 
 describe Joos::ScannerDFA do
 
-  class TestDFA < Joos::ScannerDFA
-    def check_simple lexeme, state
-      tokens, end_state = tokenize lexeme
-      tokens.length.should    == 1
-      tokens[0].lexeme.should == lexeme
-      tokens[0].state.should  == state
-      end_state.state.should  == :start
-    end
+  def check_simple dfa, lexeme, state
+    tokens, end_state = dfa.tokenize lexeme
+    expect(tokens.length).to be == 1
+    expect(tokens[0].lexeme).to be == lexeme
+    expect(tokens[0].state).to be == state
+    expect(end_state).to be_nil
   end
 
-  dfa = TestDFA.new
+  dfa = Joos::ScannerDFA.new
 
   it 'accepts simple identifiers' do
     [
@@ -28,13 +26,13 @@ describe Joos::ScannerDFA do
      'CamelNotes',
      'snake_case'
     ].each do |id|
-      dfa.check_simple id, :identifier
+      check_simple dfa, id, :identifier
     end
   end
 
   it 'accepts integers' do
-    dfa.check_simple '123', :integer
-    dfa.check_simple '0',   :integer
+    check_simple dfa, '123', :integer
+    check_simple dfa, '0',   :integer
   end
 
   it 'accepts literal chars' do
@@ -45,7 +43,7 @@ describe Joos::ScannerDFA do
      "'\''",
      "'\\'"
     ].each do |char|
-      dfa.check_simple char, :char
+      check_simple dfa, char, :char
     end
   end
 
@@ -59,31 +57,31 @@ describe Joos::ScannerDFA do
      '"\\"',
      '"\""'
     ].each do |string|
-      dfa.check_simple string, :string
+      check_simple dfa, string, :string
     end
   end
 
   it 'does not include surrounding quotes in literal string tokens'
 
   it 'accepts literal true/false/null' do
-    dfa.check_simple 'true',  :true
-    dfa.check_simple 'false', :false
-    dfa.check_simple 'null',  :null
+    check_simple dfa, 'true',  :true
+    check_simple dfa, 'false', :false
+    check_simple dfa, 'null',  :null
   end
 
   it 'accepts keywords' do
-    dfa.check_simple 'while', :keyword
-    dfa.check_simple 'class', :keyword
+    check_simple dfa, 'while', :keyword
+    check_simple dfa, 'class', :keyword
   end
 
   it 'accepts single line comments' do
-    dfa.check_simple '// herp de derp', :comment
+    check_simple dfa, '// herp de derp', :comment
   end
 
   it 'accepts multiline comments' do
-    dfa.check_simple '/*hi there*/', :comment
-    dfa.check_simple '/*hi /*/',     :comment
-    dfa.check_simple "/*\n there*/", :comment
+    check_simple dfa, '/*hi there*/', :comment
+    check_simple dfa, '/*hi /*/',     :comment
+    check_simple dfa, "/*\n there*/", :comment
   end
 
   it 'should accept whitespace' do
@@ -98,19 +96,19 @@ describe Joos::ScannerDFA do
      "\f",
      "  \t\n"
     ].each do |ws|
-      dfa.check_simple ws, :whitespace
+      check_simple dfa, ws, :whitespace
     end
   end
 
   it 'accepts operators and separators' do
     Joos::ScannerDFA::SEPARATORS.each_char do |token|
-      dfa.check_simple token, token
+      check_simple dfa, token, token
     end
     Joos::ScannerDFA::SINGLE_CHAR_TOKENS.each_char do |token|
-      dfa.check_simple token, token
+      check_simple dfa, token, token
     end
     Joos::ScannerDFA::MULTI_CHAR_TOKENS.each do |token|
-      dfa.check_simple token, token
+      check_simple dfa, token, token
     end
   end
 

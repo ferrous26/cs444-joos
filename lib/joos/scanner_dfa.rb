@@ -13,7 +13,7 @@ class Joos::ScannerDFA < Joos::DFA
   SINGLE_CHAR_TOKENS = '+-*/%<>=&|!&|' # ^?:~
 
   ##
-  # @todo DOCUMENT ME
+  # Characters which are not in themselves tokens, but which require special handling
   SPECIAL_CHARS = "'\"\\\n"
 
   ##
@@ -31,6 +31,21 @@ class Joos::ScannerDFA < Joos::DFA
                                '+=', '-=', '*=', '/=', '&=', '|=', '%=',
                                '<<=', '>>=', '>>>='
                               ] # ^=
+
+
+  ##
+  # Exception raised when non-ASCII characters are detected during scanning.
+  class NonASCIIError < Joos::CompilerException
+    # @return [String]
+    attr_accessor :character
+
+    # @param character [String] - The offending character
+    def initialize character
+      super "Non-ASCII character '#{character}'."
+      @character = character
+    end
+  end
+
 
   def initialize
     transitions = {
@@ -76,13 +91,15 @@ class Joos::ScannerDFA < Joos::DFA
     (SINGLE_CHAR_TOKENS + SEPARATORS).each_char do |token|
       transitions[:start][token] = token
     end
-    MULTI_CHAR_TOKENS.each do |token|
-      transitions[token[0]] ||= {}
-      transitions[token[0]][token[1]] = token
-    end
-    MULTI_CHAR_ILLEGAL_TOKENS.each do |token|
-      transitions[token[0]] ||= {}
-      transitions[token[0]][token[1]] = :illegal_token
+    (MULTI_CHAR_TOKENS + MULTI_CHAR_ILLEGAL_TOKENS).each do |token|
+      # Create a state for each prefix of the token, with transitions
+      state = token[0]
+      transitions[:start][token[0]] = state
+      token[1..-1].each_char do |char|
+        transitions[state] ||= {}
+        transitions[state][char] = state + char
+        state += char
+      end
     end
 
     super transitions, accept_states
@@ -90,15 +107,19 @@ class Joos::ScannerDFA < Joos::DFA
 
 
   def classify character
+    if !character.ascii_only?
+      raise NonASCIIError.new(character)
+    elsif UNCLASSIFIED_CHARACTERS.include? character
+      return character
+    end
+
     case character
-    when /[_a-zA-Z]/
+    when /[_a-zA-Z$]/
       :alpha
     when /[0-9]/
       :digit
-    when /[ \t]/
+    when /[ \t\r\f]/
       :space
-    when UNCLASSIFIED_CHARACTERS[character]
-      character
     else
       # Need to check Java spec for what is allowed in strings, comments, etc
       :invalid
