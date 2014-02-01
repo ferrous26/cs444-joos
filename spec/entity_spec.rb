@@ -45,9 +45,6 @@ describe Joos::Entity do
   describe Joos::Entity::Interface do
   end
 
-  describe Joos::Entity::Array do
-  end
-
   describe Joos::Entity::Field do
   end
 
