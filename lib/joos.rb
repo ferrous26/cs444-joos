@@ -51,7 +51,7 @@ class Joos::Compiler
       Thread.new do scan_and_parse(file) end
     end
 
-    threads.map(&:join).each do |ast|
+    threads.map(&:value).each do |ast|
       if ast.kind_of? Exception
         $stderr.puts ast.backtrace if $DEBUG # used internally
         $stderr.puts ast.message
