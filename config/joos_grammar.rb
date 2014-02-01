@@ -296,7 +296,7 @@ GRAMMAR = {
     [:Type, :Identifier, :InterfaceMethodOrFieldRest]
   ],
   InterfaceMethodOrFieldRest: [
-    [:ConstantDeclaratorRest, :Semicolon],
+#    [:ConstantDeclaratorRest, :Semicolon], # interface fields not supported
     [:InterfaceMethodDeclaratorRest]
   ],
   MethodDeclaratorRest: [
