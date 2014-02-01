@@ -258,6 +258,7 @@ class Joos::Entity
     def validate
       ensure_that_class_name_matches_file_name
       ensure_methods_are_not_static_final_or_native
+      members.each(&:validate)
     end
 
 
