@@ -47,28 +47,17 @@ class Joos::Compiler
   # For each {#files}, a `.s` file will be created with the appropriate
   # assembly code.
   def compile
-    q = Queue.new
-    @files.each do |file| q.push file end
+    threads = @files.map do |file|
+      Thread.new do
+        scan_and_parse file
+      end
+    end
 
-    thread_count = [Joos::Utilities.number_of_cpu_cores, @files.size].min
-    threads      = Array.new(thread_count) do make_scan_and_parse_job(q) end
-    thread_count.times do q.push nil end
     threads.each(&:join)
   end
 
 
   private
-
-  # @param q [Queue]
-  def make_scan_and_parse_job q
-    Thread.new do
-      loop do
-        job = q.pop
-        break unless job
-        scan_and_parse job
-      end
-    end
-  end
 
   # @param job [String] path to the file to work on
   def scan_and_parse job
