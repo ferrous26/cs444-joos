@@ -57,6 +57,10 @@ class Joos::ParserGenerator
     { transitions: @transitions, reductions: @reductions }
   end
 
+  def save_parser
+    puts @reductions
+  end
+
   def start_state
     @start_state ||= @states.first
   end
@@ -95,6 +99,7 @@ class Joos::ParserGenerator
           rule.each_with_index do |symbol, index|
             if rule.take(index).all? { |right_symbol| @nullable.include?(right_symbol) }
               if @non_terminals.include? symbol
+                puts left_symbol
                 new_first = @first[left_symbol] + @first[symbol]
                 unless (new_first - @first[left_symbol]).empty?
                   @first[left_symbol] = new_first
@@ -167,6 +172,7 @@ class Joos::ParserGenerator
   end
 
   def find_matching_state state
+    puts @states.size
     @states.each do |existing_state|
       if (existing_state - state).empty? && (state - existing_state).empty?
         return @states.index existing_state
