@@ -137,7 +137,6 @@ GRAMMAR = {
   ],
   BlockStatement: [
     [:LocalVariableDeclarationStatement],
-    [:ClassOrInterfaceDeclaration], # MAY NOT NEED
     [:Statement]
   ],
   LocalVariableDeclarationStatement: [
@@ -176,7 +175,7 @@ GRAMMAR = {
     [:Static],
     [:Abstract],
     [:Final],
-    [:Native] # COME BACK
+    [:Native]
   ],
   VariableDeclarator: [
     [:Identifier, :VariableDeclaratorRest]
