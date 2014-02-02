@@ -78,7 +78,6 @@ GRAMMAR = {
     [:OpenParen, :Expression, :CloseParen],
     [:This],
     [:This, :Arguments],
-    [:Super, :SuperSuffix],
     [:Literal],
     [:New, :Creator],
     [:QualifiedIdentifier],
@@ -86,7 +85,6 @@ GRAMMAR = {
   ],
   IdentifierSuffix: [
     [:Dot, :This], # COME BACK
-    [:Dot, :Super, :Arguments], # COME BACK
     [:OpenStaple, :Expression, :CloseStaple], # COME BACK
     [:Arguments], # @todo What is this case?
   ],
@@ -98,13 +96,7 @@ GRAMMAR = {
     [:Dot, :Identifier],
     [:Dot, :Identifier, :Arguments],
     [:Dot, :This],
-    [:Dot, :Super, :SuperSuffix], # COME BACK
     [:OpenStaple, :Expression, :CloseStaple]
-  ],
-  SuperSuffix: [
-    [:Arguments],
-    [:Dot, :Identifier],
-    [:Dot, :Identifier, :Arguments]
   ],
   BasicType: [
     [:Byte],
