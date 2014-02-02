@@ -3,16 +3,39 @@ require 'joos/dfa'
 
 describe Joos::DFA do
 
+  dsl_dfa = Joos::DFA.new
+  it 'has DSL methods for specifying accept states' do
+    dsl_dfa.state :foo do
+      accept
+    end
+    expect(dsl_dfa.accept_states).to be == [:foo]
+    expect(dsl_dfa.accepts? :foo).to be == true
+  end
+
+  it 'has DSL methods for specifying transitions' do
+    dsl_dfa.state :foo do
+      transition :x do |char|
+        raise "Test error" if char == 'x'
+        false
+      end
+      transition :a do |char|
+        char == 'a'
+      end
+      transition :b, 'b'
+      transition :num, /[0-9]/
+    end
+    expect{dsl_dfa.transition :foo, 'x'}.to raise_error("Test error")
+    expect(dsl_dfa.transition :foo, 'a').to be == :a
+    expect(dsl_dfa.transition :foo, 'b').to be == :b
+    expect(dsl_dfa.transition :foo, '9').to be == :num
+  end
+
+
   # DFA for /a+/
-  ap_transitions = {
-                    start: {
-                            'a' => :a
-                           },
-                    a: {
-                        'a' => :a
-                       }
-                   }
-  ap = Joos::DFA.new ap_transitions, [:a]
+  ap = Joos::DFA.new
+  ap.add_transition :start, :a, 'a'
+  ap.add_transition :a, :a, 'a'
+  ap.accept :a
 
   it 'tokenizes the empty string to an empty list' do
     tokens, state = ap.tokenize ''
@@ -36,22 +59,19 @@ describe Joos::DFA do
   end
 
   # DFA for /a+|b+/
-  aorb_transitions = {
-                      start: {
-                              'a' => :a,
-                              'b' => :b
-                             },
-                      a: {
-                          'a' => :a
-                         },
-                      b: {
-                          'b' => :b
-                         }
-                     }
-  aorb = Joos::DFA.new aorb_transitions, [:a, :b]
+  aorb = Joos::DFA.new
+  aorb.state :start do
+    transition :a, 'a'
+    transition :b, 'b'
+  end
+  aorb.add_transition :a, :a, 'a'
+  aorb.add_transition :b, :b, 'b'
+  aorb.accept :a, :b
 
   it 'tokenizes multiple tokens' do
-    tokens, _ = aorb.tokenize 'aabb'
+    tokens, state = aorb.tokenize 'aabb'
+
+    expect(state).to be_nil
     expect(tokens.length).to be == 2
 
     expect(tokens[0].lexeme).to be == 'aa'

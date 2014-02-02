@@ -3,7 +3,7 @@ require 'joos/exceptions'
 ##
 # Deterministic Finite Automaton.
 #
-# This class encapsulates the (immutable) structure of an automaton - its
+# This class encapsulates the structure of an automaton - its
 # transition table and accepting states.
 #
 # For the possibly mutable state of a run through the automaton, see the
@@ -26,7 +26,7 @@ class Joos::DFA
     end
   end
 
-  # @return [Hash{ Symbol => Hash }]
+  # @return [Hash{ Symbol => Array<()>}]
   attr_reader :transitions
 
   # @return [Array<Symbol>]
@@ -34,9 +34,73 @@ class Joos::DFA
 
   # @param transition_table [Hash{ Symbol => Hash{ #to_s => Symbol } }]
   # @param accepting_states [Array<Symbol>]
-  def initialize transition_table, accepting_states
+  def initialize transition_table={}, accepting_states=[]
     @transitions   = transition_table
     @accept_states = accepting_states
+  end
+
+  ##
+  # DSL class for building DFAs
+  class StateBuilder
+    def initialize dfa, state
+      @dfa = dfa
+      @state = state
+    end
+
+    def accept
+      @dfa.accept @state
+    end
+
+    def transition to_state, pred=nil, &pred_block
+      @dfa.add_transition @state, to_state, pred, &pred_block
+    end
+
+  end
+
+  ##
+  # Add a state to the DFA's list of accept states.
+  # @param state [Symbol]
+  def accept *states
+    states.each do |state|
+      @accept_states.push state
+    end
+  end
+
+  ##
+  # Add an entry to the DFA's transition table
+  # @param from_state [Symbol]
+  # @param to_state [Symbol]
+  # @param pred [String, Regexp, #call] 
+  #   Optional predicate to test characters if no block is passed
+  #
+  # @yield [char] Return true iff the DFA should transition on the given input
+  # @yieldreturn [Bool]
+  def add_transition from_state, to_state, pred=nil, &pred_block
+    if pred_block
+      b = pred_block
+    else
+      case pred
+      when Regexp
+        b = Proc.new {|char| pred =~ char}
+      when String, Array
+        b = Proc.new {|char| pred.include? char}
+      else
+        b = pred
+      end
+    end
+
+    @transitions[from_state] ||= []
+    @transitions[from_state].push [b, to_state]
+  end
+
+  ##
+  # Add a state and transitions to the DFA's transition table
+  # @param state [Symbol]
+  # @yield []
+  def state s, &block
+    @transitions[s] ||= []
+    builder = StateBuilder.new self, s
+    builder.instance_eval &block if block_given?
   end
 
 
@@ -134,9 +198,13 @@ class Joos::DFA
   # transition.
   #
   # @return [Symbol] `:error` if there is no transition
-  def transition state, char_type
-    return :error unless @transitions.key? state
-    @transitions[state].fetch char_type, :error
+  def transition state, char
+    state_transitions = @transitions[state] or return :error
+    index = state_transitions.index do |pair|
+      pair[0].call char
+    end
+    return state_transitions[index][1] if index
+    :error
   end
 
 

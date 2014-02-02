@@ -22,6 +22,7 @@ describe Joos::Compiler do
   end
 
   it 'responds reasonably when a file path is incorrect' do
+    pending "Waiting on parser implementation"
     hack    = $stderr
     $stderr = StringIO.new
     Joos::Compiler.new('herpyDerp.java').compile
