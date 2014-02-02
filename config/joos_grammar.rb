@@ -325,8 +325,7 @@ GRAMMAR = {
     []
   ],
   FormalParameter: [
-    [:Type, :VariableDeclaratorId],
-    [:Final, :Type, :VariableDeclaratorId]
+    [:Type, :VariableDeclaratorId]
   ],
   MethodBody: [
     [:Block]
