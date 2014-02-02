@@ -89,7 +89,6 @@ GRAMMAR = {
     [:Arguments],
     [:Dot, :This], # COME BACK
     [:Dot, :Super, :Arguments], # COME BACK
-    [:Dot, :New, :InnerCreator]
   ],
   PrefixOp: [
     [:Not],
@@ -100,7 +99,6 @@ GRAMMAR = {
     [:Dot, :Identifier, :Arguments],
     [:Dot, :This],
     [:Dot, :Super, :SuperSuffix], # COME BACK
-    [:Dot, :New, :InnerCreator],
     [:OpenStaple, :Expression, :CloseStaple]
   ],
   SuperSuffix: [
@@ -132,17 +130,10 @@ GRAMMAR = {
   ],
   Creator: [
     [:QualifiedIdentifier, :ArrayCreatorRest],
-    [:QualifiedIdentifier, :ClassCreatorRest]
-  ],
-  InnerCreator: [
-    [:IdentifierSuffix, :ClassCreatorRest]
+    [:QualifiedIdentifier]
   ],
   ArrayCreatorRest: [
     [:OpenStaple, :Expression, :CloseStaple]
-  ],
-  ClassCreatorRest: [
-    [:Arguments, :ClassBody], # Not sure if we need this - can classes be defined at run time?
-    [:Arguments] # COME BACK
   ],
   VariableInitializer: [
     [:Expression]
