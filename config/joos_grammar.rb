@@ -23,7 +23,7 @@ GRAMMAR = {
   ],
   Type: [
     [:QualifiedIdentifier, :BracketsOpt],
-    [:BasicType]
+    [:BasicType] # I think :BracketsOpts should be included here...
   ],
   StatementExpression: [
     [:Expression]
@@ -85,10 +85,10 @@ GRAMMAR = {
     [:QualifiedIdentifier, :IdentifierSuffix],
   ],
   IdentifierSuffix: [
-    [:OpenStaple, :Expression, :CloseStaple],
-    [:Arguments],
     [:Dot, :This], # COME BACK
     [:Dot, :Super, :Arguments], # COME BACK
+    [:OpenStaple, :Expression, :CloseStaple], # COME BACK
+    [:Arguments], # @todo What is this case?
   ],
   PrefixOp: [
     [:Not],
@@ -125,7 +125,7 @@ GRAMMAR = {
     [:Expression]
   ],
   BracketsOpt: [
-    [:OpenStaple, :CloseStaple], # COME BACK
+    [:OpenStaple, :CloseStaple],
     []
   ],
   Creator: [
@@ -198,14 +198,13 @@ GRAMMAR = {
     [:Identifier, :ConstantDeclaratorRest]
   ],
   VariableDeclaratorRest: [
-    [:BracketsOpt],
-    [:BracketsOpt, :Equals, :VariableInitializer]
+    [:Equals, :VariableInitializer]
   ],
   ConstantDeclaratorRest: [
-    [:BracketsOpt, :Equals, :VariableInitializer]
+    [:Equals, :VariableInitializer]
   ],
   VariableDeclaratorId: [
-    [:Identifier, :BracketsOpt]
+    [:Identifier]
   ],
   ImportDeclarations: [
     [:ImportDeclaration, :ImportDeclarations],
@@ -287,15 +286,15 @@ GRAMMAR = {
     [:InterfaceMethodDeclaratorRest]
   ],
   MethodDeclaratorRest: [
-    [:FormalParameters, :BracketsOpt, :MethodBody],
-    [:FormalParameters, :BracketsOpt, :Semicolon]
+    [:FormalParameters, :MethodBody],
+    [:FormalParameters, :Semicolon]
   ],
   VoidMethodDeclaratorRest: [
     [:FormalParameters, :MethodBody],
     [:FormalParameters, :Semicolon]
   ],
   InterfaceMethodDeclaratorRest: [
-    [:FormalParameters, :BracketsOpt, :Semicolon]
+    [:FormalParameters, :Semicolon]
   ],
   VoidInterfaceMethodDeclaratorRest: [
     [:FormalParameters, :Semicolon]
