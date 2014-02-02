@@ -246,7 +246,6 @@ GRAMMAR = {
   ],
   ClassBodyDeclaration: [
     [:Semicolon],
-    [:Block], # COME BACK
     [:ModifiersOpt, :MemberDecl]
   ],
   MemberDecl: [
