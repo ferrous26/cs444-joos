@@ -103,10 +103,6 @@ GRAMMAR = {
     [:Int],
     [:Boolean]
   ],
-  ArgumentsOpt: [
-    [:Arguments],
-    []
-  ],
   Arguments: [
     [:OpenParen, :CloseParen],
     [:OpenParen, :Expressions, :CloseParen]
