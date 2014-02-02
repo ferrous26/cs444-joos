@@ -77,16 +77,15 @@ GRAMMAR = {
   Primary: [
     [:OpenParen, :Expression, :CloseParen],
     [:This],
-    [:This, :Arguments],
     [:Literal],
     [:New, :Creator],
     [:QualifiedIdentifier],
     [:QualifiedIdentifier, :IdentifierSuffix],
   ],
   IdentifierSuffix: [
-    [:Dot, :This], # COME BACK
     [:OpenStaple, :Expression, :CloseStaple], # COME BACK
     [:Arguments], # @todo What is this case?
+    [:Dot, :This], # COME BACK (qualified this?)
   ],
   PrefixOp: [
     [:Not],
@@ -95,7 +94,7 @@ GRAMMAR = {
   Selector: [
     [:Dot, :Identifier],
     [:Dot, :Identifier, :Arguments],
-    [:Dot, :This],
+    [:Dot, :This], # COME BACK (qualified this?)
     [:OpenStaple, :Expression, :CloseStaple]
   ],
   BasicType: [
