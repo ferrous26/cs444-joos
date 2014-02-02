@@ -83,14 +83,10 @@ GRAMMAR = {
     [:New, :Creator],
     [:QualifiedIdentifier],
     [:QualifiedIdentifier, :IdentifierSuffix],
-    [:BasicType, :BracketsOpt, :Dot, :Class], # COME BACK
-    [:Void, :Dot, :Class] # COME BACK
   ],
   IdentifierSuffix: [
-    [:OpenStaple, :CloseStaple, :BracketsOpt, :Dot, :Class],
     [:OpenStaple, :Expression, :CloseStaple],
     [:Arguments],
-    [:Dot, :Class],
     [:Dot, :This], # COME BACK
     [:Dot, :Super, :Arguments], # COME BACK
     [:Dot, :New, :InnerCreator]
