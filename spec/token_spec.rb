@@ -104,6 +104,13 @@ describe Joos::Token do
       token = klass.new('pie', 'pie.java', 23, 32)
       expect(token.value).to be == marker
     end
+
+    it 'allows comparison using symbols' do
+      token = Joos::Token::Public.new('public', 'file', 1, 0)
+      expect(token).to be == :public
+      expect(token).to be == token
+      expect(token).to_not be == :pubic
+    end
   end
 
 end

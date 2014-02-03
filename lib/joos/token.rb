@@ -124,6 +124,10 @@ Bad input token found at #{token.source}
   # as a string.
   #
   module ConstantToken
+
+    # @return [Symbol]
+    attr_reader :to_sym
+
     ##
     # Override the default constructor for tokens so that we can avoid
     # avoid storing duplicates of the same string, since Ruby won't know
@@ -131,9 +135,25 @@ Bad input token found at #{token.source}
     #
     def initialize token, file, line, column
       @token  = self.class.token
+      @to_sym = @token.to_sym
       @file   = file.dup
       @line   = line
       @column = column
+    end
+
+    ##
+    # This override allows any constant token to be compared with a symbol
+    # that has the equivalent token `#value`. Furthermore, equivalence no
+    # longer requires that the source of the token be equal.
+    #
+    # @example
+    #
+    #   Joos::Token::Public.new(...) == :public  # => true
+    #   Joos::Token::Public.new(...) == :private # => false
+    #
+    # @param other [#to_sym, Joos::ConstantToken]
+    def == other
+      @to_sym == other.to_sym
     end
   end
 
