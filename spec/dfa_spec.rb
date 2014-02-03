@@ -24,10 +24,25 @@ describe Joos::DFA do
       transition :b, 'b'
       transition :num, /[0-9]/
     end
+
     expect{dsl_dfa.transition :foo, 'x'}.to raise_error("Test error")
     expect(dsl_dfa.transition :foo, 'a').to be == :a
     expect(dsl_dfa.transition :foo, 'b').to be == :b
     expect(dsl_dfa.transition :foo, '9').to be == :num
+  end
+
+  it 'has a DSL method for specifying constant tokens' do
+    last_state = nil
+    dsl_dfa.state :start do
+      last_state = constant 'qwe'
+    end
+    dsl_dfa.accept last_state
+
+    expect(last_state).to be == 'qwe'
+    tokens, state = dsl_dfa.tokenize "qwe"
+    expect(state).to be_nil
+    expect(tokens.length).to be == 1
+    expect(tokens[0].state).to be == 'qwe'
   end
 
 
@@ -48,6 +63,7 @@ describe Joos::DFA do
     expect(tokens.length).to be == 1
     expect(tokens[0].lexeme).to be == 'aaa'
     expect(tokens[0].state).to be == :a
+
     expect(tokens[0].column).to be == 0
     expect(state).to be_nil
   end
@@ -82,4 +98,5 @@ describe Joos::DFA do
     expect(tokens[1].state).to be  == :b
     expect(tokens[1].column).to be == 2
   end
+
 end

@@ -55,6 +55,18 @@ class Joos::DFA
       @dfa.add_transition @state, to_state, pred, &pred_block
     end
 
+    def constant const
+      last_state = @state
+      prefix = ''
+      const.each_char do |char|
+        prefix += char
+        @dfa.add_transition last_state, prefix, char
+        last_state = prefix
+      end
+
+      last_state
+    end
+
   end
 
   ##
@@ -175,15 +187,6 @@ class Joos::DFA
 
 
   ##
-  # Translate an input character into a symbol in the {DFA}'s alphabet.
-  #
-  # Implementations should probably override this.
-  def classify character
-    character
-  end
-
-
-  ##
   # Check whether a state is an accept state.
   def accepts? state
     @accept_states.include? state
@@ -207,6 +210,22 @@ class Joos::DFA
     :error
   end
 
+  ##
+  # Determine whether an input character is valid, and potentially transform it.
+  #
+  # @ param character [String]
+  def classify character
+    character
+  end
+
+  def debug_trace input
+    s = start
+    input.each_char do |char|
+      puts s
+      s.next! char
+    end
+    puts s
+  end
 
   ##
   # Encapsulates the state of a run through the DFA.
@@ -237,6 +256,18 @@ class Joos::DFA
     end
 
     ##
+    # Follow a DFA transition from the current state - impure mutating version.
+    # Mainly for debugginh in irb.
+    def next! character
+      char_type = @dfa.classify character
+      @input_read += character
+      @state = @dfa.transition @state, char_type
+
+      # This is the debug part
+      to_s
+    end
+
+    ##
     # Check if the current state is an accept state
     def accept?
       @dfa.accepts? @state
@@ -249,7 +280,7 @@ class Joos::DFA
     end
 
     def to_s
-      "[AutomatonState #@state; read '#@input_read']"
+      "[AutomatonState :#@state; read #@input_read]"
     end
   end
 

@@ -10,28 +10,28 @@ class Joos::ScannerDFA < Joos::DFA
 
   ##
   # All the single character Joos operators
-  SINGLE_CHAR_TOKENS = '+-*/%<>=&|!&|' # ^?:~
-
-  ##
-  # Characters which are not in themselves tokens, but which require special handling
-  SPECIAL_CHARS = "'\"\\\n"
-
-  ##
-  # Joos tokens which do not have a classification
-  UNCLASSIFIED_CHARACTERS = SEPARATORS + SINGLE_CHAR_TOKENS + SPECIAL_CHARS
+  SINGLE_CHAR_OPS = '+-*/%<>=&|!&' # ^?:~
 
   ##
   # Joos operators which are more than one character long
-  MULTI_CHAR_TOKENS = ['==', '!=', '>=', '<=', '&&', '||']
+  MULTI_CHAR_OPS = ['==', '!=', '>=', '<=', '&&', '||']
 
   ##
   # Java tokens which are not in Joos, but which we must catch
-  MULTI_CHAR_ILLEGAL_TOKENS = [
-                               '++', '--', '<<', '>>', '>>>',
-                               '+=', '-=', '*=', '/=', '&=', '|=', '%=',
-                               '<<=', '>>=', '>>>='
-                              ] # ^=
+  ILLEGAL_OPS = [
+    '++', '--', '<<', '>>', '>>>',
+    '+=', '-=', '*=', '/=', '&=', '|=', '%=',
+    '<<=', '>>=', '>>>='
+  ] # ^=
 
+  ## Characters acceptable at the beginning of an identifier
+  ALPHA_RE = /[a-zA-Z_$]/
+
+  ## Digits
+  DIGIT_RE = /[0-9]/
+
+  ## Whitespace 
+  SPACE_RE = /[ \t\r\f\n]/
 
   ##
   # Exception raised when non-ASCII characters are detected during scanning.
@@ -46,83 +46,118 @@ class Joos::ScannerDFA < Joos::DFA
     end
   end
 
-
   def initialize
-    transitions = {
-                   start: {
-                           alpha: :identifier,
-                           space: :whitespace,
-                           digit: :integer,
-                           "\n" => :whitespace
-                          },
-                   identifier: {
-                                alpha: :identifier,
-                                digit: :identifier
-                               },
-                   integer: {
-                             digit: :integer,
-                             # floats are explicitly disallowed -
-                             # this is an early out check
-                             '.' => :illegal_token
-                            },
-                   whitespace: {
-                                space: :whitespace,
-                                "\n" => :whitespace
-                               },
-                   string: {
-                            # TODO
-                           },
-                   char: {
-                          # TODO
-                         },
-                   illegal_token: {
-                                   # no transitions, non-accepting
-                                   # this state will raise lexer error
-                                  }
-                  }
+    super
 
-    accept_states =
-      [:identifier, :integer, :whitespace] +
-      SEPARATORS.split(//)                 +
-      SINGLE_CHAR_TOKENS.split(//)         +
-      MULTI_CHAR_TOKENS
+    always = Proc.new {|char| true}
+    dfa = self
 
-    # Add transitions for constant tokens
-    (SINGLE_CHAR_TOKENS + SEPARATORS).each_char do |token|
-      transitions[:start][token] = token
-    end
-    (MULTI_CHAR_TOKENS + MULTI_CHAR_ILLEGAL_TOKENS).each do |token|
-      # Create a state for each prefix of the token, with transitions
-      state = token[0]
-      transitions[:start][token[0]] = state
-      token[1..-1].each_char do |char|
-        transitions[state] ||= {}
-        transitions[state][char] = state + char
-        state += char
+    state :start do
+      transition :whitespace, SPACE_RE
+      transition :identifier, ALPHA_RE
+      transition :integer, DIGIT_RE
+
+      transition :char_part, "'"
+      transition :string_part, '"'
+
+      (SEPARATORS + SINGLE_CHAR_OPS).each_char do |char|
+        constant char
+        dfa.accept char
       end
+
+      MULTI_CHAR_OPS.each do |op|
+        constant op
+        dfa.accept op
+      end
+
+      ILLEGAL_OPS.each do |op|
+        constant op
+      end
+
+      constant '0x'
+    end
+    
+    # Easy stuff
+    state :identifier do
+      transition :identifier, ALPHA_RE
+      transition :identifier, DIGIT_RE
+      accept
     end
 
-    super transitions, accept_states
+    state :integer do
+      transition :integer, DIGIT_RE
+      accept
+
+      transition :float, '.'
+      transition :float, 'ef'
+    end
+
+    state :whitespace do
+      transition :whitespace, SPACE_RE
+      accept
+    end
+
+    state '.' do
+      transition :float, DIGIT_RE
+      accept
+    end
+
+    # Chars and strings
+    state :char_part do
+      transition :char_escape, '\\'
+      transition :char, "'"
+      transition :char_part, always
+    end
+    state :char_escape do
+      transition :char_part, always
+    end
+
+    state :string_part do
+      transition :string_escape, '\\'
+      transition :string, '"'
+      transition :string_part, always
+    end
+    state :string_escape do
+      transition :string_part, always
+    end
+
+    accept :char
+    accept :string
+
+    # Comments
+    state '/' do
+      transition :line_comment, '/'
+      transition :block_comment_part, '*'
+    end
+
+    state :line_comment do
+      transition :line_comment do |char|
+        char != "\n"
+      end
+      accept
+    end
+
+    state :block_comment_part do
+      transition :block_comment_almost, '*'
+      transition :block_comment_part, always
+    end
+    state :block_comment_almost do
+      transition :block_comment, '/'
+      transition :block_comment_part, always
+    end
+    accept :block_comment
+
   end
 
-
+  ##
+  # Test if character is `ascii_only?`.
+  # We do this at character level instead of at line level so we can
+  # get column info.
   def classify character
     if !character.ascii_only?
       raise NonASCIIError.new(character)
-    elsif UNCLASSIFIED_CHARACTERS.include? character
-      return character
     end
 
-    case character
-    when /[_a-zA-Z$]/
-      :alpha
-    when /[0-9]/
-      :digit
-    when /[ \t\r\f]/
-      :space
-    else
-      # Need to check Java spec for what is allowed in strings, comments, etc
-      :invalid
-    end
+    character
   end
 end

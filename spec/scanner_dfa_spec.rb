@@ -3,14 +3,13 @@ require 'joos/scanner_dfa'
 
 describe Joos::ScannerDFA do
 
-  pending "DFA refactor" do
 
   def check_simple dfa, lexeme, state
     tokens, end_state = dfa.tokenize lexeme
+    expect(end_state).to be_nil, "expected nil end state, got #{end_state}"
     expect(tokens.length).to be == 1
     expect(tokens[0].lexeme).to be == lexeme
     expect(tokens[0].state).to be == state
-    expect(end_state).to be_nil
   end
 
   dfa = Joos::ScannerDFA.new
@@ -37,53 +36,56 @@ describe Joos::ScannerDFA do
     check_simple dfa, '0',   :integer
   end
 
-  it 'accepts literal chars' do
-    [
-     "'a'",
-     "'\t'",
-     "'\045'",
-     "'\''",
-     "'\\'"
-    ].each do |char|
-      check_simple dfa, char, :char
-    end
+  it 'transitions into :char_escape from :char on \\' do
+    tokens, state = dfa.tokenize "'\\"
+    expect(state.state).to be == :char_escape
+    tokens, state = dfa.tokenize "'\\a"
+    expect(state.state).to be == :char_part
+    tokens, state = dfa.tokenize "'\\a'"
+    expect(state).to be_nil
+    expect(tokens.length).to be == 1
+    expect(tokens[0].state).to be == :char
   end
 
-  it 'does not include surrounding quotes in literal char tokens'
+  it 'accepts literal chars' do
+    check_simple dfa, "'a'", :char
+    check_simple dfa, "'\\t'", :char
+    check_simple dfa, "'\\045'", :char
+    check_simple dfa, "'\\''", :char
+    check_simple dfa, "'\\\\'", :char
+  end
+
+
+  #it 'does not include surrounding quotes in literal char tokens'
+  # Yes, it does
 
   it 'accepts literal strings' do
-    [
-     '"hi there"',
-     '"a"',
-     '"\n\045!"',
-     '"\\"',
-     '"\""'
-    ].each do |string|
-      check_simple dfa, string, :string
-    end
+     check_simple dfa, '"hi there"', :string
+     check_simple dfa, '"a"', :string
+     check_simple dfa, '"\\n\\045!"', :string
+     check_simple dfa, '"\\\\"', :string
+     check_simple dfa, '"\\""', :string
   end
 
-  it 'does not include surrounding quotes in literal string tokens'
+  #it 'does not include surrounding quotes in literal string tokens'
+  # Yes, it does
 
-  it 'accepts literal true/false/null' do
-    check_simple dfa, 'true',  :true
-    check_simple dfa, 'false', :false
-    check_simple dfa, 'null',  :null
-  end
-
-  it 'accepts keywords' do
-    check_simple dfa, 'while', :keyword
-    check_simple dfa, 'class', :keyword
+  it 'treats keywords as identifiers' do
+    check_simple dfa, 'true',  :identifier
+    check_simple dfa, 'false', :identifier
+    check_simple dfa, 'null',  :identifier
+    check_simple dfa, 'while', :identifier
+    check_simple dfa, 'class', :identifier
   end
 
   it 'accepts single line comments' do
-    check_simple dfa, '// herp de derp', :comment
+    check_simple dfa, '// herp de derp', :line_comment
   end
 
   it 'accepts multiline comments' do
-    check_simple dfa, '/*hi there*/', :comment
-    check_simple dfa, '/*hi /*/',     :comment
-    check_simple dfa, "/*\n there*/", :comment
+    check_simple dfa, '/*hi there*/', :block_comment
+    check_simple dfa, '/*hi /*/',     :block_comment
+    check_simple dfa, "/*\n there*/", :block_comment
   end
 
   it 'should accept whitespace' do
@@ -106,15 +108,15 @@ describe Joos::ScannerDFA do
     Joos::ScannerDFA::SEPARATORS.each_char do |token|
       check_simple dfa, token, token
     end
-    Joos::ScannerDFA::SINGLE_CHAR_TOKENS.each_char do |token|
+    Joos::ScannerDFA::SINGLE_CHAR_OPS.each_char do |token|
       check_simple dfa, token, token
     end
-    Joos::ScannerDFA::MULTI_CHAR_TOKENS.each do |token|
+    Joos::ScannerDFA::MULTI_CHAR_OPS.each do |token|
       check_simple dfa, token, token
     end
   end
 
-  it 'does not accept float literals' do
+  it 'does not accept float literals if they have anything after' do
     [
      '1e1f',
      '2.f',
@@ -131,8 +133,12 @@ describe Joos::ScannerDFA do
      '1e137',
      '12345.12345'
     ].each do |num|
-      # FIXME: test for specific error class/message
-      expect { dfa.tokenize num }.to raise_error
+      # The requirement that something comes after to raise an error is because
+      # #tokenize can't distinguish between errors and incomplete input when
+      # the token is at the end of the line. This shouldn't be an issue
+      # in practice, since the scanner needs to raise an error when it hits
+      # EOF and there is a continuation state (e.g. unterminated /* )
+      expect { dfa.tokenize(num + ' ')}.to raise_error(Joos::DFA::UnexpectedCharacter), "Expected not to lex #{num}"
     end
   end
 
@@ -140,5 +146,4 @@ describe Joos::ScannerDFA do
   it 'does not accept unused operators'
   it 'does not accept octal or hex literal integers'
   it 'does not accept literal integers tagged as long integers'
-  end
 end
