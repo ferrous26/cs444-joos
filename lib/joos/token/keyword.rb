@@ -115,7 +115,7 @@ class Joos::Token
    ['class',        Declaration],
    ['float',        IllegalToken],
    ['native',       MethodModifier], # only "static native int m(int i)"
-   ['super',        ReferenceLiteral],
+   ['super',        IllegalToken],
    ['while',        ControlFlow],
    ['const',        IllegalToken],
    ['for',          ControlFlow],

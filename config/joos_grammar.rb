@@ -24,7 +24,7 @@ GRAMMAR = {
     ],
     Type: [
       [:QualifiedIdentifier, :BracketsOpt],
-      [:BasicType]
+      [:BasicType] # I think :BracketsOpts should be included here...
     ],
     StatementExpression: [
       [:Expression]
@@ -38,7 +38,7 @@ GRAMMAR = {
     ],
     Expression2Rest: [
       [:InfixopExpression3],
-      [:Expression3, :Instanceof, :Type]
+      [:Expression3, :instanceof, :Type]
     ],
     InfixopExpression3: [
       [:Infixop, :Expression3, :InfixopExpression3],
@@ -62,39 +62,27 @@ GRAMMAR = {
       [:Modulo]
     ],
     Expression3: [
-      [:NegativeInteger],
       [:PrefixOp, :Expression3],
       [:OpenParen, :Expression, :CloseParen, :Expression3],
       [:OpenParen, :Type, :CloseParen, :Expression3],
       [:Primary, :Selectors]
     ],
-    NegativeInteger: [
-      [:Minus, :Integer, :Selectors]
-    ],
     Selectors: [
-      [:Selectors, :Selector],
+      [:Selector, :Selectors],
       []
     ],
     Primary: [
       [:OpenParen, :Expression, :CloseParen],
       [:This],
-      [:This, :Arguments],
-      [:Super, :SuperSuffix],
       [:Literal],
       [:New, :Creator],
       [:QualifiedIdentifier],
       [:QualifiedIdentifier, :IdentifierSuffix],
-      [:BasicType, :BracketsOpt, :Dot, :Class], # COME BACK
-      [:Void, :Dot, :Class] # COME BACK
     ],
     IdentifierSuffix: [
-      [:OpenStaple, :CloseStaple, :BracketsOpt, :Dot, :Class],
-      [:OpenStaple, :Expression, :CloseStaple],
-      [:Arguments],
-      [:Dot, :Class],
-      [:Dot, :This], # COME BACK
-      [:Dot, :Super, :Arguments], # COME BACK
-      [:Dot, :New, :InnerCreator]
+      [:OpenStaple, :Expression, :CloseStaple], # COME BACK
+      [:Arguments], # @todo What is this case?
+      [:Dot, :This], # COME BACK (qualified this?)
     ],
     PrefixOp: [
       [:Not],
@@ -103,25 +91,14 @@ GRAMMAR = {
     Selector: [
       [:Dot, :Identifier],
       [:Dot, :Identifier, :Arguments],
-      [:Dot, :This],
-      [:Dot, :Super, :SuperSuffix], # COME BACK
-      [:Dot, :New, :InnerCreator],
+      [:Dot, :This], # COME BACK (qualified this?)
       [:OpenStaple, :Expression, :CloseStaple]
-    ],
-    SuperSuffix: [
-      [:Arguments],
-      [:Dot, :Identifier],
-      [:Dot, :Identifier, :Arguments]
     ],
     BasicType: [
       [:Byte],
       [:Char],
       [:Int],
       [:Boolean]
-    ],
-    ArgumentsOpt: [
-      [:Arguments],
-      []
     ],
     Arguments: [
       [:OpenParen, :CloseParen],
@@ -132,22 +109,15 @@ GRAMMAR = {
       [:Expression]
     ],
     BracketsOpt: [
-      [:OpenStaple, :CloseStaple], # COME BACK
+      [:OpenStaple, :CloseStaple],
       []
     ],
     Creator: [
       [:QualifiedIdentifier, :ArrayCreatorRest],
-      [:QualifiedIdentifier, :ClassCreatorRest]
-    ],
-    InnerCreator: [
-      [:IdentifierSuffix, :ClassCreatorRest]
+      [:QualifiedIdentifier]
     ],
     ArrayCreatorRest: [
       [:OpenStaple, :Expression, :CloseStaple]
-    ],
-    ClassCreatorRest: [
-      [:Arguments, :ClassBody], # Not sure if we need this - can classes be defined at run time?
-      [:Arguments] # COME BACK
     ],
     VariableInitializer: [
       [:Expression]
@@ -164,7 +134,6 @@ GRAMMAR = {
     ],
     BlockStatement: [
       [:LocalVariableDeclarationStatement],
-      [:ClassOrInterfaceDeclaration], # MAY NOT NEED
       [:Statement]
     ],
     LocalVariableDeclarationStatement: [
@@ -177,8 +146,8 @@ GRAMMAR = {
       [:For, :OpenParen, :ForInitOpt, :Semicolon, :Semicolon, :ForUpdateOpt, :CloseParen, :Statement],
       [:For, :OpenParen, :ForInitOpt, :Semicolon, :Expression, :Semicolon, :ForUpdateOpt, :CloseParen, :Statement],
       [:While, :ParExpression, :Statement],
-      [:Return],
-      [:Return, :Expression],
+      [:Return, :Semicolon],
+      [:Return, :Expression, :Semicolon],
       [:Semicolon],
       [:ExpressionStatement]
     ],
@@ -203,7 +172,7 @@ GRAMMAR = {
       [:Static],
       [:Abstract],
       [:Final],
-      [:Native] # COME BACK
+      [:Native]
     ],
     VariableDeclarator: [
       [:Identifier, :VariableDeclaratorRest]
@@ -212,14 +181,13 @@ GRAMMAR = {
       [:Identifier, :ConstantDeclaratorRest]
     ],
     VariableDeclaratorRest: [
-      [:BracketsOpt],
-      [:BracketsOpt, :Equals, :VariableInitializer]
+      [:Equals, :VariableInitializer]
     ],
     ConstantDeclaratorRest: [
-      [:BracketsOpt, :Equals, :VariableInitializer]
+      [:Equals, :VariableInitializer]
     ],
     VariableDeclaratorId: [
-      [:Identifier, :BracketsOpt]
+      [:Identifier]
     ],
     ImportDeclarations: [
       [:ImportDeclaration, :ImportDeclarations],
@@ -270,7 +238,6 @@ GRAMMAR = {
     ],
     ClassBodyDeclaration: [
       [:Semicolon],
-      [:Block], # COME BACK
       [:ModifiersOpt, :MemberDecl]
     ],
     MemberDecl: [
@@ -297,19 +264,18 @@ GRAMMAR = {
       [:Type, :Identifier, :InterfaceMethodOrFieldRest]
     ],
     InterfaceMethodOrFieldRest: [
-  #    [:ConstantDeclaratorRest, :Semicolon], # interface fields not supported
       [:InterfaceMethodDeclaratorRest]
     ],
     MethodDeclaratorRest: [
-      [:FormalParameters, :BracketsOpt, :MethodBody],
-      [:FormalParameters, :BracketsOpt, :Semicolon]
+      [:FormalParameters, :MethodBody],
+      [:FormalParameters, :Semicolon]
     ],
     VoidMethodDeclaratorRest: [
       [:FormalParameters, :MethodBody],
       [:FormalParameters, :Semicolon]
     ],
     InterfaceMethodDeclaratorRest: [
-      [:FormalParameters, :BracketsOpt, :Semicolon]
+      [:FormalParameters, :Semicolon]
     ],
     VoidInterfaceMethodDeclaratorRest: [
       [:FormalParameters, :Semicolon]
@@ -326,8 +292,7 @@ GRAMMAR = {
       []
     ],
     FormalParameter: [
-      [:Type, :VariableDeclaratorId],
-      [:Final, :Type, :VariableDeclaratorId]
+      [:Type, :VariableDeclaratorId]
     ],
     MethodBody: [
       [:Block]
@@ -335,7 +300,7 @@ GRAMMAR = {
   },
 
   terminals: [:Package, :Semicolon, :Identifier, :Dot, :IntegerLiteral, :FloatingPointLiteral, :CharacterLiteral, :StringLiteral,
-              :BooleanLiteral, :NullLiteral, :Equals, :Instanceof, :LazyOr, :LazyAnd, :EagerOr, :EagerAnd, :Equality, :NotEqual,
+              :BooleanLiteral, :NullLiteral, :Equals, :instanceof, :LazyOr, :LazyAnd, :EagerOr, :EagerAnd, :Equality, :NotEqual,
               :LessThan, :GreaterThan, :LessOrEqual, :GreaterOrEqual, :Plus, :Minus, :Multiply, :Divide, :Modulo, :OpenParen,
               :CloseParen, :OpenBrace, :CloseBrace, :OpenStaple, :CloseStaple, :Byte, :Char, :Int, :Boolean, :Not, :This, :Void,
               :Class, :New, :Super, :Comma, :If, :Else, :For, :While, :Return, :Public, :Protected, :Static, :Abstract, :Final,
