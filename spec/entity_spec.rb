@@ -14,10 +14,10 @@ describe Joos::Entity do
      'Package',
      'Class',
      'Interface',
-     'Array',
      'Field',
      'Method',
-     'Parameter',
+     'InterfaceMethod',
+     'FormalParameter',
      'LocalVariable',
      'Constructor'
     ].each do |type|
@@ -30,34 +30,18 @@ describe Joos::Entity do
     expect(e.name).to be == 'hi'
   end
 
-  it 'raises an error #validate' do
-    expect {
-      Joos::Entity.new('hi').validate
-    }.to raise_error NotImplementedError
+  it 'provides nice trace info via #to_s' do
+    token  = Joos::Token::Identifier.new('canopy', 'roof.java', 1, 3)
+    entity = Joos::Entity.new(token)
+    expect(entity.to_s).to be == 'Entity:canopy @ roof.java:1'
   end
 
-  describe Joos::Entity::Package do
-  end
-
-  describe Joos::Entity::Class do
-  end
-
-  describe Joos::Entity::Interface do
-  end
-
-  describe Joos::Entity::Field do
-  end
-
-  describe Joos::Entity::Method do
-  end
-
-  describe Joos::Entity::Parameter do
-  end
-
-  describe Joos::Entity::LocalVariable do
-  end
-
-  describe Joos::Entity::Constructor do
+  context '#validate' do
+    it 'always passes for an abstract entity due to no constraints' do
+      expect {
+        Joos::Entity.new('hi').validate
+      }.to_not raise_error
+    end
   end
 
 end
