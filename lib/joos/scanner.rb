@@ -15,22 +15,24 @@ class Joos::Scanner
   def self.scan_file path
     raise "#{path} is a non-existant file" unless File.exists? path
 
-    dfa = Joos::ScannerDFA.new
-    state = nil
-    tokens = []
+    begin
+      dfa = Joos::ScannerDFA.new
+      state = nil
+      tokens = []
+      line_number = 0
 
-    File.readlines(path).each_with_index do |line, index|
-      begin
+      File.readlines(path).each_with_index do |line, index|
+        line_number = index
         scanner_tokens, state = dfa.tokenize line, state
-        scanner_tokens.each do |t|
-          # TODO: create actual Token from scanner tokens
-        end
-      rescue Joos::CompilerException => e
-        # Add line and file info to exception
-        e.line = index
-        e.file = path
-        raise e
+        dfa.raise_if_illegal_line_end! state
+        tokens += scanner_tokens.map{ |token| dfa.make_token token, path, line}.compact
       end
+      dfa.raise_if_illegal_eof! state
+    rescue Joos::CompilerException => e
+      # Add file name and line number to exceptions
+      e.file = path
+      e.line = line_number
+      raise e
     end
 
     tokens

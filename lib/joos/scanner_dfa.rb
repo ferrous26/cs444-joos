@@ -1,8 +1,44 @@
 require 'joos/dfa'
+require 'joos/token'
 
 ##
 # @todo Documentation
 class Joos::ScannerDFA < Joos::DFA
+
+  ##
+  # Joos keywords, including the unused ones
+  KEYWORDS = %w[
+    abstract
+    boolean
+    byte
+    char
+    class
+    else
+    extends
+    false
+    final
+    for
+    if
+    implements
+    import
+    instanceof
+    int
+    interface
+    native
+    new
+    null
+    package
+    protected
+    public
+    return
+    short
+    static
+    super
+    this
+    true
+    void
+    while
+  ]
 
   ##
   # All the Joos separators
@@ -24,6 +60,12 @@ class Joos::ScannerDFA < Joos::DFA
     '<<=', '>>=', '>>>='
   ] # ^=
 
+  ##
+  # All tokens which have a fixed lexeme
+  CONSTANT_TOKENS = KEYWORDS + MULTI_CHAR_OPS +
+    (SINGLE_CHAR_OPS + SEPARATORS).split(//)
+
+
   ## Characters acceptable at the beginning of an identifier
   ALPHA_RE = /[a-zA-Z_$]/
 
@@ -32,6 +74,7 @@ class Joos::ScannerDFA < Joos::DFA
 
   ## Whitespace 
   SPACE_RE = /[ \t\r\f\n]/
+
 
   ##
   # Exception raised when non-ASCII characters are detected during scanning.
@@ -46,6 +89,28 @@ class Joos::ScannerDFA < Joos::DFA
     end
   end
 
+  ##
+  # Exception raised input ends (either EOL or EOF) on a partial token.
+  class UnexpectedEnd < Joos::CompilerException
+    # @return [Symbol]
+    attr_accessor :end_type
+
+    def self.new_eol
+      ret = self.new "Unexpected end of line"
+      ret.end_type = :line
+
+      ret
+    end
+
+    def self.new_eof
+      ret = self.new "Unexpected end of file"
+      ret.end_type = :file
+
+      ret
+    end
+  end
+
+
   def initialize
     super
 
@@ -53,6 +118,8 @@ class Joos::ScannerDFA < Joos::DFA
     dfa = self
 
     state :start do
+      transition :zero, '0'
+
       transition :whitespace, SPACE_RE
       transition :identifier, ALPHA_RE
       transition :integer, DIGIT_RE
@@ -73,8 +140,15 @@ class Joos::ScannerDFA < Joos::DFA
       ILLEGAL_OPS.each do |op|
         constant op
       end
+    end
 
-      constant '0x'
+    state :zero do
+      accept
+
+      transition :octal_int, DIGIT_RE
+      transition :hex_int, 'xX'
+      transition :float, '.fF'
+      transition :long_int, 'lL'
     end
     
     # Easy stuff
@@ -90,6 +164,7 @@ class Joos::ScannerDFA < Joos::DFA
 
       transition :float, '.'
       transition :float, 'ef'
+      transition :long_int, 'lL'
     end
 
     state :whitespace do
@@ -159,5 +234,55 @@ class Joos::ScannerDFA < Joos::DFA
     end
 
     character
+  end
+
+  ##
+  # Raise UnexpectedCharacter if a continuation state is not allowed to occur
+  # at the end of a line (everything except unclosed block comments)
+  # @param state [AutomatonState]
+  def raise_if_illegal_line_end! state
+    return nil if state.nil? || state.state == :block_comment_part
+    e = UnexpectedEnd.new_eol
+    raise e
+  end
+
+  ##
+  # Raise UnexpectedCharacter if a continuation state is not allowed to occur at
+  # the end of a file (everything)
+  def raise_if_illegal_eof! state
+    return nil if state.nil?
+    e = UnexpectedEnd.new_eof
+    raise e
+  end
+
+  ##
+  # @param [DFA::Token]
+  def meaningful? dfa_token
+    !%i[line_comment block_comment whitespace].include? dfa_token.state
+  end
+
+  TOKEN_CLASSES = {
+    zero: Joos::Token::Integer,
+    integer: Joos::Token::Integer,
+    string: Joos::Token::String,
+    char: Joos::Token::Character,
+  }
+
+  ##
+  # @param dfa_token [DFA::Token]
+  # @param file [String]
+  # @param line [Fixnum]
+  # @return [Joos::Token]
+  def make_token dfa_token, file, line
+    return nil unless meaningful? dfa_token
+    
+    klass = TOKEN_CLASSES[dfa_token.state]
+    klass ||= Joos::Token::IllegalToken if ILLEGAL_OPS.include? dfa_token.lexeme
+    klass ||= Joos::Token::CLASSES[dfa_token.lexeme] if CONSTANT_TOKENS.include? dfa_token.lexeme
+    klass ||= Joos::Token::Identifier if dfa_token.state == :identifier
+
+    puts dfa_token if klass.nil?
+
+    klass.new dfa_token.lexeme, file, line, dfa_token.column
   end
 end

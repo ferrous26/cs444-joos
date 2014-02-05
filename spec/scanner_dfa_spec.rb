@@ -33,7 +33,10 @@ describe Joos::ScannerDFA do
 
   it 'accepts integers' do
     check_simple dfa, '123', :integer
-    check_simple dfa, '0',   :integer
+  end
+
+  it 'has a separate state for zero' do
+    check_simple dfa, '0', :zero
   end
 
   it 'transitions into :char_escape from :char on \\' do
@@ -142,8 +145,57 @@ describe Joos::ScannerDFA do
     end
   end
 
-  it 'does not accept unused keywords'
-  it 'does not accept unused operators'
-  it 'does not accept octal or hex literal integers'
-  it 'does not accept literal integers tagged as long integers'
+  it 'allows open block comments at the end of a line, but not the end of a file' do
+    tokens, state = dfa.tokenize 'herp derp /* more derping'
+    expect(tokens.length).to be == 4
+    expect(state.state).to be == :block_comment_part
+    expect(dfa.raise_if_illegal_line_end! state).to be_nil
+    expect{ dfa.raise_if_illegal_eof! state}.to raise_error Joos::ScannerDFA::UnexpectedEnd
+  end
+
+  it 'does not accept unused operators' do
+    Joos::ScannerDFA::ILLEGAL_OPS.each do |op|
+      expect { dfa.tokenize (op + ' ') }.to raise_error Joos::DFA::UnexpectedCharacter
+    end
+  end
+
+  it 'accepts unused keywords' do
+    check_simple dfa, 'goto', :identifier
+  end
+
+  it 'does not accept hex literal integers' do
+    expect { dfa.tokenize '0x123 ' }.to raise_error Joos::DFA::UnexpectedCharacter
+    expect { dfa.tokenize '0X123 ' }.to raise_error Joos::DFA::UnexpectedCharacter
+  end
+
+  it 'does not accept octal literal integers' do
+    expect { dfa.tokenize '00123 ' }.to raise_error Joos::DFA::UnexpectedCharacter
+    expect { dfa.tokenize '00 ' }.to raise_error Joos::DFA::UnexpectedCharacter
+  end
+
+  it 'does not accept literal integers tagged as long integers' do
+    expect { dfa.tokenize '0L ' }.to raise_error Joos::DFA::UnexpectedCharacter
+    expect { dfa.tokenize '123L ' }.to raise_error Joos::DFA::UnexpectedCharacter
+    expect { dfa.tokenize '0l ' }.to raise_error Joos::DFA::UnexpectedCharacter
+    expect { dfa.tokenize '123l ' }.to raise_error Joos::DFA::UnexpectedCharacter
+  end
+
+  it 'makes Tokens' do
+    s = <<-TEST
+      int main(int argc, argv[]) {
+        // I am aware this is not proper Java
+        return 123 + "456" * '7'; /* Doesn't type check */
+      }
+    TEST
+
+    scanner_tokens, state = dfa.tokenize s
+    expect(state).to be_nil
+    tokens = scanner_tokens.map{ |token| dfa.make_token token, 'doesnt-exist.java', 9 }.compact
+    expect(tokens.length).to be == 16
+    expect(tokens.map {|token| token.class.name }).to be == %w[
+      Int Identifier LeftParen Int Identifier Comma Identifier LeftStaple RightStaple LeftBrace
+        Return Integer Plus String Times Character Semicolon
+      RightBrace
+    ]
+  end
 end
