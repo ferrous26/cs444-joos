@@ -78,6 +78,11 @@ describe Joos::Token do
     expect(Joos::Token::ConstantToken).to be_kind_of Module
   end
 
+  it 'raises a NotImplementedError for #type' do
+    token = Joos::Token.new('hello', 'there.c', 3, 21)
+    expect { token.type }.to raise_error NotImplementedError
+  end
+
   describe Joos::Token::IllegalToken do
     it 'raises an error during initialization' do
       klass = Class.new(Joos::Token) do

@@ -70,7 +70,6 @@ class Joos::Token
   def token
     @token.dup
   end
-
   alias_method :value, :token
 
   ##
@@ -79,6 +78,14 @@ class Joos::Token
   # @return [String]
   def source
     "#{file} line:#{line}, column:#{column}"
+  end
+
+  ##
+  # Find out what type of token the receiver is.
+  #
+  # @return [Symbol]
+  def type
+    raise NotImplementedError
   end
 
   ##

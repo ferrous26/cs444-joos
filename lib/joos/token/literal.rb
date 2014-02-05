@@ -18,6 +18,10 @@ class Joos::Token
   module Bool
     include Joos::Token::Literal
     include Joos::Token::ConstantToken
+
+    def type
+      :BooleanLiteral
+    end
   end
 
   ##
@@ -205,6 +209,10 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     end
 
     CLASSES['null'] = self
+
+    def type
+      :NullLiteral
+    end
   end
 
   ##
@@ -289,6 +297,10 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     # @return [String]
     def flip_sign
       @token = (- to_i).to_s
+    end
+
+    def type
+      :IntegerLiteral
     end
 
 
@@ -381,6 +393,10 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     def disallowed_char
       "'"
     end
+
+    def type
+      :CharacterLiteral
+    end
   end
 
   ##
@@ -443,6 +459,10 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     # @return [Fixnum]
     def length
       @to_binary.length
+    end
+
+    def type
+      :StringLiteral
     end
   end
 

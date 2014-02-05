@@ -139,6 +139,11 @@ describe Joos::Token::Literal do
       expect(Joos::Token::CLASSES['true']).to be Joos::Token::True
     end
 
+    it 'returns :BooleanLiteral from #type' do
+      token = Joos::Token::True.new('', '', 3, 4)
+      expect(token.type).to be == :BooleanLiteral
+    end
+
     it 'returns the binary representation from #to_binary'
   end
 
@@ -155,6 +160,11 @@ describe Joos::Token::Literal do
       expect(Joos::Token::CLASSES['false']).to be Joos::Token::False
     end
 
+    it 'returns :BooleanLiteral from #type' do
+      token = Joos::Token::False.new('', '', 3, 4)
+      expect(token.type).to be == :BooleanLiteral
+    end
+
     it 'returns the binary representation from #to_binary'
   end
 
@@ -169,6 +179,11 @@ describe Joos::Token::Literal do
 
     it 'registers itself with CONSTANT_TOKENS' do
       expect(Joos::Token::CLASSES['null']).to be Joos::Token::Null
+    end
+
+    it 'returns :NullLiteral from #type' do
+      token = Joos::Token::Null.new('', '', 3, 4)
+      expect(token.type).to be == :NullLiteral
     end
 
     it 'returns the binary representation from #to_binary'
@@ -226,6 +241,11 @@ describe Joos::Token::Literal do
       num = rand 1_000_000
       int = Joos::Token::Integer.new(num.to_s, '', nil, nil)
       expect(int.to_i).to be == num
+    end
+
+    it 'returns :IntegerLiteral from #type' do
+      token = Joos::Token::Integer.new('0', '', 3, 4)
+      expect(token.type).to be == :IntegerLiteral
     end
 
     it 'returns a 32-bit binary representation from #to_binary'
@@ -319,6 +339,11 @@ describe Joos::Token::Literal do
         expect(Joos::Token::Character.new(char, '', 1, 2).value).to be == char
       end
     end
+
+    it 'returns :CharacterLiteral from #type' do
+      token = Joos::Token::Character.new('e', 'be', 3, 4)
+      expect(token.type).to be == :CharacterLiteral
+    end
   end
 
   describe Joos::Token::String do
@@ -374,6 +399,11 @@ describe Joos::Token::Literal do
 
     it 'allows the empty string' do
       expect(Joos::Token::String.new('', '', 4, 4).to_binary).to be_empty
+    end
+
+    it 'returns :StringLiteral from #type' do
+      token = Joos::Token::String.new('e', 'be', 3, 4)
+      expect(token.type).to be == :StringLiteral
     end
   end
 
