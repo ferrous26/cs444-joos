@@ -58,10 +58,6 @@ describe Joos::ScannerDFA do
     check_simple dfa, "'\\\\'", :char
   end
 
-
-  #it 'does not include surrounding quotes in literal char tokens'
-  # Yes, it does
-
   it 'accepts literal strings' do
      check_simple dfa, '"hi there"', :string
      check_simple dfa, '"a"', :string
@@ -69,9 +65,6 @@ describe Joos::ScannerDFA do
      check_simple dfa, '"\\\\"', :string
      check_simple dfa, '"\\""', :string
   end
-
-  #it 'does not include surrounding quotes in literal string tokens'
-  # Yes, it does
 
   it 'treats keywords as identifiers' do
     check_simple dfa, 'true',  :identifier
@@ -190,12 +183,20 @@ describe Joos::ScannerDFA do
 
     scanner_tokens, state = dfa.tokenize s
     expect(state).to be_nil
-    tokens = scanner_tokens.map{ |token| dfa.make_token token, 'doesnt-exist.java', 9 }.compact
-    expect(tokens.length).to be == 16
-    expect(tokens.map {|token| token.class.name }).to be == %w[
-      Int Identifier LeftParen Int Identifier Comma Identifier LeftStaple RightStaple LeftBrace
-        Return Integer Plus String Times Character Semicolon
-      RightBrace
+    tokens = scanner_tokens.map{ |token| dfa.make_token token, 'doesnt-exist.java', (9) }.compact
+    expect(tokens.length).to be == 19
+    expect(tokens.map {|token| token.class.name.split(/::/)[-1] }).to be == %w[
+      Int Identifier OpenParen Int Identifier Comma Identifier OpenStaple CloseStaple CloseParen OpenBrace
+        Return Integer Plus String Multiply Character Semicolon
+      CloseBrace
     ]
+  end
+
+  it 'does not include quotes in string or character literals when converting to Joos::Tokens' do
+    dfa_tokens, _ = dfa.tokenize '"herp" \'d\''
+    tokens = dfa_tokens.map{|token| dfa.make_token token, 'foo', 42 }.compact
+    expect(tokens.length).to be == 2
+    expect(tokens[0].token).to be == 'herp'
+    expect(tokens[1].token).to be == 'd'
   end
 end

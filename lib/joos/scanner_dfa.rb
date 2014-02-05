@@ -283,6 +283,11 @@ class Joos::ScannerDFA < Joos::DFA
 
     puts dfa_token if klass.nil?
 
-    klass.new dfa_token.lexeme, file, line, dfa_token.column
+    if klass == Joos::Token::Character || klass == Joos::Token::String
+      # Strip quotes from char and string literals
+      klass.new dfa_token.lexeme[1..-2], file, line, dfa_token.column
+    else
+      klass.new dfa_token.lexeme, file, line, dfa_token.column
+    end
   end
 end
