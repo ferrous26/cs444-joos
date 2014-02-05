@@ -51,7 +51,7 @@ class Joos::Parser
   def parse
     until @stream.empty?
       token = @stream.last
-      puts token
+      puts token if $DEBUG
       oracle(token.type).act(@state_stack, @stream, token)
     end
   end
