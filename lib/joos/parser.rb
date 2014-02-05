@@ -29,12 +29,6 @@ class Joos::Parser
         state_stack.push self
       end
     end
-
-    refine NilClass do
-      def act _, _, token
-        raise "Unexpected token: #{token}"
-      end
-    end
   end
 
   ##
@@ -52,7 +46,7 @@ class Joos::Parser
     until @stream.empty?
       token = @stream.last
       puts token if $DEBUG
-      oracle(token.type).act(@state_stack, @stream, token)
+      oracle(token).act(@state_stack, @stream, token)
     end
   end
 
@@ -64,19 +58,21 @@ class Joos::Parser
   end
 
   def oracle token
-    reduction = @reductions[current_state].find { |arr, _| arr.include? token }
+    token_sym = token.type
+    reduction = @reductions[current_state].find { |arr, _|
+      arr.include? token_sym
+    }
 
     # @todo wtf are we calling #to_a on the reduction?
     return reduction.to_a.last if reduction
 
     next_state = @transitions.fetch(current_state) do
-      return puts <<-EOM
-Expected one of #{@reductions[current_state].keys.inspect},
-but got #{token.inspect} from state `#{current_state}'
-      EOM
+      # @todo we should do this with a bit more grace
+      raise("Expected one of #{@reductions[current_state].keys.inspect}" +
+            ", but got #{token.inspect} from state #{current_state}")
     end
 
-    next_state.fetch token
+    next_state.fetch token_sym
   end
 
 end
