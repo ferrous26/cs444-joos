@@ -9,6 +9,7 @@ Winter 2014
 Group:
 
   - Mark Rada (marada@uwaterloo.ca)
+  - Riel Fuller (r3fuller@uwaterloo.ca)
 
 ## Getting Started
 

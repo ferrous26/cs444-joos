@@ -22,12 +22,11 @@ describe Joos::Compiler do
   end
 
   it 'responds reasonably when a file path is incorrect' do
-    c = Joos::Compiler.new('herpDerp.java')
-    hack = $stderr
+    pending "Waiting on parser implementation"
+    hack    = $stderr
     $stderr = StringIO.new
-    c.compile
-    expect(c.result).to be == Joos::Compiler::ERROR
-    expect($stderr.string).to match(/no such file or directory/i)
+    Joos::Compiler.new('herpyDerp.java').compile
+    expect($stderr.string).to be == 'herpyDerp.java is a non-existant file'
     $stderr = hack
   end
 
