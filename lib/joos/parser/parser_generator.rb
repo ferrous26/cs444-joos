@@ -1,4 +1,4 @@
-require 'joos/version'
+require 'joos/parser'
 require 'joos/parser/lr1dfa'
 require 'joos/parser/state'
 require 'joos/parser/item'
@@ -32,7 +32,7 @@ class Joos::Parser::ParserGenerator
 
   def build_parser
     build_start_state #bootstraps generation
-    
+
     until @transition_queue.empty? #main loop
       puts @transition_queue.size.inspect
       from_state, symbol = @transition_queue.shift
@@ -121,15 +121,17 @@ class Joos::Parser::ParserGenerator
   end
 
   def save_parser
-    File.open("config/parser_rules.rb", "w") do |fd|
-      printable_reductions = {}
-      @reductions.each_with_index do |state, index|
-        printable_reductions[index] = Hash[ state.map{ |k2,v2| [k2.to_a, v2] } ]
-      end
-      h = { transitions: @dfa.transitions,
-            reductions: printable_reductions
-          }
-      fd.puts "PARSER_RULES = " + h.inspect
+    File.open('config/parser_rules.rb', 'w') do |fd|
+      fd.puts file_format
+    end
+  end
+
+  def save_pretty_parser
+    require 'pp'
+    File.open('config/parser_rules_pp.rb', 'w') do |fd|
+      p = PP.new(fd)
+      p.pp file_format
+      p.flush
     end
   end
 
@@ -168,6 +170,22 @@ class Joos::Parser::ParserGenerator
         end
       end
     end
+  end
+
+
+  private
+
+  def file_format
+    printable_reductions = {}
+    @reductions.each_with_index do |state, index|
+      printable_reductions[index] =
+        Hash[state.map { |k2, v2| [k2.to_a, v2] }]
+    end
+    h = {
+         transitions: @dfa.transitions,
+         reductions: printable_reductions
+        }
+    'PARSER_RULES = ' + h.inspect
   end
 
 end
