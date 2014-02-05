@@ -83,6 +83,11 @@ describe Joos::Token do
     expect { token.type }.to raise_error NotImplementedError
   end
 
+  it 'responds to #inspect with something human readable for exceptions' do
+    token = Joos::Token.new('hello', 'there.c', 3, 21)
+    expect(token.inspect).to be == 'hello from there.c line:3, column:21'
+  end
+
   describe Joos::Token::IllegalToken do
     it 'raises an error during initialization' do
       klass = Class.new(Joos::Token) do

@@ -89,6 +89,14 @@ class Joos::Token
   end
 
   ##
+  # Formatted output for error messages
+  #
+  # @return [String]
+  def inspect
+    "#{value} from #{file} line:#{line}, column:#{column}"
+  end
+
+  ##
   # Attribute for tokens that are not allowed in Joos 1W.
   #
   # These include keywords, operators, and the like that are part of the
