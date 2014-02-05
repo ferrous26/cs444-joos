@@ -30,7 +30,7 @@ module Joos::Entity::Modifiable
   # Exception raised when 2 modifiers which are mutually exclusive for an
   # entity are applied to the same entity.
   #
-  class MutuallyExclusiveModifiersError < Exception
+  class MutuallyExclusiveModifiers < Exception
     # @param entity [Joos::Entity]
     # @param mods [Array(Joos::Token::Modifier, Joos::Token::Modifier)]
     def initialize entity, mods
@@ -76,7 +76,7 @@ module Joos::Entity::Modifiable
   # @param mods [Array<Joos::Token::Modifier>]
   def ensure_mutually_exclusive_modifiers *mods
     if (modifiers & mods).size > 1
-      raise MutuallyExclusiveModifiersError.new(self, mods)
+      raise MutuallyExclusiveModifiers.new(self, mods)
     end
   end
 
