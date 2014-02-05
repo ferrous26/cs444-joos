@@ -41,6 +41,7 @@ class Joos::Parser::ParserGenerator
       @dfa.add_transition from_state, symbol, next_state
     end
 
+    build_reductions
     true
   end
 
@@ -122,7 +123,7 @@ class Joos::Parser::ParserGenerator
 
   def save_parser
     File.open('config/parser_rules.rb', 'w') do |fd|
-      fd.puts file_format
+      fd.puts('PARSER_RULES = ' + file_format.inspect)
     end
   end
 
@@ -130,6 +131,7 @@ class Joos::Parser::ParserGenerator
     require 'pp'
     File.open('config/parser_rules_pp.rb', 'w') do |fd|
       p = PP.new(fd)
+      fd.puts 'PARSER_RULES = '
       p.pp file_format
       p.flush
     end
@@ -178,14 +180,12 @@ class Joos::Parser::ParserGenerator
   def file_format
     printable_reductions = {}
     @reductions.each_with_index do |state, index|
-      printable_reductions[index] =
-        Hash[state.map { |k2, v2| [k2.to_a, v2] }]
+      printable_reductions[index] = Hash[ state.map{ |k2,v2| [k2.to_a, v2] } ]
     end
-    h = {
-         transitions: @dfa.transitions,
-         reductions: printable_reductions
-        }
-    'PARSER_RULES = ' + h.inspect
+    {
+     transitions: @dfa.transitions,
+     reductions: printable_reductions
+    }
   end
 
 end
