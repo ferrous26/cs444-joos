@@ -51,9 +51,9 @@ describe Joos::Entity::Class do
   it 'allows members to be added after init' do
     name  = Joos::Token::Identifier.new('a', 'b', 0, 1)
     klass = Joos::Entity::Class.new(name)
-    const = Joos::Entity::Constructor.new(name)
-    klass.add_constructor const
-    expect(klass.constructors).to be == [const]
+    const = Joos::Entity::Method.new(name)
+    klass.add_member const
+    expect(klass.members).to be == [const]
   end
 
   it 'validates to make sure at least constructor is present' do

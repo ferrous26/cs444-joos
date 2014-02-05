@@ -20,6 +20,7 @@ class Joos::Entity::Interface < Joos::Entity
   # @return [Array<Joos::Entity::Interface>]
   attr_reader :extends
   alias_method :superinterfaces, :extends
+  alias_method :super_interfaces, :extends
 
   ##
   # All fields and methods defined on the class.
@@ -33,9 +34,9 @@ class Joos::Entity::Interface < Joos::Entity
   # @param modifiers [Array<Joos::Token::Modifier>]
   # @param name      [Joos::AST::QualifiedIdentifier]
   # @param extends   [Array<Joos::Token::Modifier>]
-  def initialize modifiers, name, extends
+  def initialize name, modifiers: [], extends: []
     super name, modifiers
-    @extends = extends || []
+    @extends = extends
     @members = []
   end
 
