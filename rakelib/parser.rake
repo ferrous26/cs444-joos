@@ -9,4 +9,6 @@ task :generate_parser, :file do |_, args|
   p = Joos::Parser::ParserGenerator.new GRAMMAR
   p.build_parser
   p.save_parser
+  p.save_pretty_parser
+
 end
