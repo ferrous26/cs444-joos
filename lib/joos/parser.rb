@@ -26,7 +26,7 @@ class Joos::Parser
     refine Fixnum do
       def act state_stack, stream, token
         stream.pop
-        state_stack self
+        state_stack.push self
       end
     end
 
@@ -34,11 +34,13 @@ class Joos::Parser
       def act _, _, token
         raise "Unexpected token: #{token}"
       end
-
-      def type
-        to_sym
-      end
     end
+  end
+
+  ##
+  # Extensions to the symbol class that are used for debugging
+  class ::Symbol
+    alias_method :type, :to_sym # :)
   end
 
   # unleash the magic (of getting the dispatcher to do our branching)
@@ -74,7 +76,7 @@ but got #{token.inspect} from state `#{current_state}'
       EOM
     end
 
-    next_state.fetch token_symbol
+    next_state.fetch token
   end
 
 end
