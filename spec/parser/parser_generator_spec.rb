@@ -52,7 +52,8 @@ describe Joos::Parser::ParserGenerator do
         },
 
         terminals: [:a,:c,:d],
-        non_terminals: [:X, :Y, :Z]
+        non_terminals: [:X, :Y, :Z],
+        start_symbol: :Z
 
       }
       nullable = [:Y, :X]
@@ -134,7 +135,8 @@ describe Joos::Parser::ParserGenerator do
         ]
       },
       terminals: [:a,:b,:c],
-      non_terminals: [:S, :A, :B, :C]
+      non_terminals: [:S, :A, :B, :C],
+      start_symbol: :S
     }
     pg = Joos::Parser::ParserGenerator.new(some_grammar)
     pg.build_parser
@@ -161,7 +163,8 @@ describe Joos::Parser::ParserGenerator do
         ]
       },
       terminals: [:a, :Equals, :DOLLAR],
-      non_terminals: [:S, :A, :E]
+      non_terminals: [:S, :A, :E],
+      start_symbol: :S
     }
     pg = Joos::Parser::ParserGenerator.new(some_grammar)
     pg.build_parser

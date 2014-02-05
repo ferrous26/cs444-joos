@@ -22,5 +22,6 @@ GRAMMAR = {
   },
 
   terminals: [:a,:b,:c,:d],
-  non_terminals: [:S, :A, :B, :C]
+  non_terminals: [:S, :A, :B, :C],
+  start_symbol: :S
 }

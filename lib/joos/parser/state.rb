@@ -26,8 +26,6 @@ Joos::Parser::State = Struct.new :items do
     matching_item = self.items.find { |state_item| state_item == item }
     if matching_item
       matching_item.merge!(item)
-
-      false
     else
       self.items.push item
 
@@ -38,16 +36,31 @@ Joos::Parser::State = Struct.new :items do
   def new_items_after_transition_on symbol
     items = []
     self.items.each do |item|
-      if item.next == symbol
-        new_item = Joos::Parser::Item.new(item.left_symbol,
+      if item.next == symbol && !item.after_dot.empty?
+        items.push Joos::Parser::Item.new(item.left_symbol,
                                           item.before_dot + [item.after_dot.first],
                                           item.after_dot[1..-1],
                                           item.follow)
-
-        items.push new_item
       end
     end
 
     items
+  end
+
+  def reductions
+    reduction_hash = {}
+    added_to_follow = Set.new
+    complete_items = self.items.select do |item|
+      item.complete?
+    end
+    complete_items.each do |item|
+      if added_to_follow.intersect? item.follow
+        raise "Ambiguous Grammar - #{self.items.inspect}"
+      end
+      added_to_follow += item.follow
+      reduction_hash[item.follow] = [item.left_symbol, item.before_dot.size]
+    end
+
+    reduction_hash
   end
 end

@@ -37,8 +37,8 @@ GRAMMAR = {
       [:Expression3]
     ],
     Expression2Rest: [
-      [:InfixopExpression3],
-      [:Expression3, :instanceof, :Type]
+      [:Infixop, :Expression3, :InfixopExpression3],
+      [:instanceof, :Type]
     ],
     InfixopExpression3: [
       [:Infixop, :Expression3, :InfixopExpression3],
@@ -64,8 +64,8 @@ GRAMMAR = {
     Expression3: [
       [:PrefixOp, :Expression3],
       [:OpenParen, :Expression, :CloseParen, :Expression3],
-      [:OpenParen, :Type, :CloseParen, :Expression3],
-      [:Primary, :Selectors]
+      [:OpenParen, :BasicType, :CloseParen, :Expression3],
+      [:Primary, :Selectors],
     ],
     Selectors: [
       [:Selector, :Selectors],
@@ -77,7 +77,7 @@ GRAMMAR = {
       [:Literal],
       [:New, :Creator],
       [:QualifiedIdentifier],
-      [:QualifiedIdentifier, :IdentifierSuffix],
+      [:QualifiedIdentifier, :IdentifierSuffix]
     ],
     IdentifierSuffix: [
       [:OpenStaple, :Expression, :CloseStaple], # COME BACK
@@ -318,5 +318,7 @@ GRAMMAR = {
                   :MemberDecl, :MethodOrFieldDecl, :MethodOrFieldRest, :InterfaceMemberDecl, :InterfaceMethodOrFieldDecl,
                   :InterfaceMethodOrFieldRest, :MethodDeclaratorRest, :VoidMethodDeclaratorRest, :InterfaceMethodDeclaratorRest,
                   :VoidInterfaceMethodDeclaratorRest, :ConstructorDeclaratorRest, :FormalParameters, :FormalParameter,
-                  :CommaFormalParameter, :MethodBody]
+                  :CommaFormalParameter, :MethodBody],
+
+  start_symbol: :CompilationUnit
 }

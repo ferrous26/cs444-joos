@@ -22,10 +22,9 @@ describe Joos::Parser::State do
   it "should merge similar items" do
     item1 = Joos::Parser::Item.new(:S, [:A], [:B,:c], Set.new([:a]))
     item2 = Joos::Parser::Item.new(:S, [:A], [:B,:c], Set.new([:b]))
-    merged_item = Joos::Parser::Item.new(:S, [:A], [:B,:c], Set.new([:a, :b]))
     state = Joos::Parser::State.new [item1]
     state.add_item item2
-    state.items.should include merged_item
+    state.items.first.follow.should == Set.new([:a, :b])
   end
 
   it "should properly match equivalent states" do
@@ -36,6 +35,14 @@ describe Joos::Parser::State do
     state1 = Joos::Parser::State.new [item1, item2]
     state2 = Joos::Parser::State.new [item2dup, item1dup]
     state1.should == state2
+  end
+
+  it "should not match states if the follow sets of corresponding items are different" do
+    item1 = Joos::Parser::Item.new(:S, [:A], [:B, :c], Set.new([:a]))
+    item2 = Joos::Parser::Item.new(:S, [:A], [:B, :c], Set.new([:b]))
+    state1 = Joos::Parser::State.new [item1]
+    state2 = Joos::Parser::State.new [item2]
+    state1.should_not == state2
   end
 
 end

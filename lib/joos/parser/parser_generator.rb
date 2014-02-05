@@ -7,31 +7,124 @@ require 'joos/parser/item'
 # Used to generate an LALR(1) parser from the parser definition
 class Joos::Parser::ParserGenerator
 
+  attr_reader :grammar
+  attr_reader :terminals
+  attr_reader :non_terminals
+  attr_reader :start_symbol
+  attr_reader :dfa
+  attr_reader :first
+  attr_reader :nullable
+
   def initialize grammar
     grammar = Hash(grammar)
     raise TypeError if grammar.empty?
     @grammar = grammar[:rules]
     @terminals = grammar[:terminals]
     @non_terminals = grammar[:non_terminals]
+    @start_symbol = grammar[:start_symbol]
     @dfa = Joos::Parser::LR1DFA.new
-    @transition_queue = {}
-    @reductions = {}
     @first = {}
     @nullable = []
+    @reductions = []
+    @transition_queue = []
     build_first_and_nullable
   end
 
   def build_parser
-    build_start_state
-    build_remaining_states
-    build_reductions
+    build_start_state #bootstraps generation
+    
+    until @transition_queue.empty? #main loop
+      puts @transition_queue.size.inspect
+      from_state, symbol = @transition_queue.shift
+      items = @dfa.states[from_state].new_items_after_transition_on symbol
+      next_state = build_state items
+      @dfa.add_transition from_state, symbol, next_state
+    end
+
+    true
+  end
+
+  def build_start_state
+    items = []
+    @grammar[@start_symbol].each do |rule|
+      items.push Joos::Parser::Item.new(@start_symbol, [], rule, Set.new)
+    end
+    build_state items
+  end
+
+  def build_state items
+    state = Joos::Parser::State.new
+
+    until items.empty?
+      item = items.shift
+      next unless state.add_item item
+      next_symbol = item.next
+      if @non_terminals.include? next_symbol
+        new_follow = compute_next_symbol_follow item
+        @grammar[next_symbol].each do |rule|
+          items.push Joos::Parser::Item.new(next_symbol, [], rule, new_follow)
+        end
+      end
+    end
+
+    added_state = @dfa.add_state state
+    if added_state == @dfa.states.size-1 #hack ...
+      fill_transition_queue_for_state added_state
+    end
+
+    added_state
+  end
+
+  def compute_next_symbol_follow item
+    after_symbol = item.after_dot[1..-1]
+    new_follow = first(after_symbol)
+    if all_nullable?(after_symbol)
+      new_follow += item.follow
+    end
+
+    new_follow
+  end
+
+  def first symbols
+    first_set = Set.new
+    symbols.each do |symbol|
+      first_set += @first[symbol]
+      break unless @nullable.include? symbol
+    end
+
+    first_set
+  end
+
+  def all_nullable? symbols
+    symbols.each do |symbol|
+      return false unless @nullable.include? symbol
+    end
+
+    true
+  end
+
+  def fill_transition_queue_for_state state_index
+    state = @dfa.states[state_index]
+    finished_symbols = []
+    state.items.each do |item|
+      symbol = item.next
+      next if symbol.nil? || finished_symbols.include?(symbol)
+      finished_symbols.push symbol
+      @transition_queue.push [state_index, symbol]
+    end
+  end
+
+  def build_reductions
+    @dfa.states.each_with_index do |state, index|
+      @reductions[index] = state.reductions
+    end
   end
 
   def save_parser
-    File.open("some_file.rb", "w") do |fd|
+    File.open("config/parser_rules.rb", "w") do |fd|
       printable_reductions = {}
-      @reductions.each_pair do |k,v|
-        printable_reductions[k] = Hash[ v.map{ |k2,v2| [k2.to_a, v2] } ]
+      @reductions.each_with_index do |state, index|
+        printable_reductions[index] = Hash[ state.map{ |k2,v2| [k2.to_a, v2] } ]
       end
       h = { transitions: @dfa.transitions,
             reductions: printable_reductions
@@ -39,18 +132,6 @@ class Joos::Parser::ParserGenerator
       fd.puts "PARSER_RULES = " + h.inspect
     end
   end
-
-  attr_reader :grammar
-  attr_reader :terminals
-  attr_reader :non_terminals
-  attr_reader :dfa
-  attr_reader :reductions
-  attr_reader :first
-  attr_reader :nullable
-
-  private
-
-  attr_accessor :transition_queue
 
   def build_first_and_nullable
     @non_terminals.each do |symbol|
@@ -88,97 +169,5 @@ class Joos::Parser::ParserGenerator
       end
     end
   end
-
-  def build_start_state
-    start_symbol, reductions = @grammar.first
-    items = []
-    reductions.each do |reduction|
-      items.push Joos::Parser::Item.new(start_symbol, [], reduction, Set.new)
-    end
-
-    build_state items
-  end
-
-  def build_state items
-    items = Array(items)
-    raise '#build_state requires a non-empty item array' if items.empty?
-    state = Joos::Parser::State.new
-    until items.empty?
-      item = items.shift
-      next unless state.add_item item
-      symbol = item.next
-      if @non_terminals.include?(symbol)
-        new_follow = build_next_follow_from_item item
-        @grammar[symbol].each do |reduction|
-          items.push Joos::Parser::Item.new(symbol, [], reduction, new_follow)
-        end
-      end
-    end
-
-    state_index = @dfa.add_state state
-    add_transitions_to_queue state_index unless @dfa.transitions[state_index]
-
-    puts @dfa.states.size - 1
-    state_index
-  end
-
-  def add_transitions_to_queue state_index
-    needed_transition_symbols = []
-    state = @dfa.states[state_index]
-    state.items.each do |item|
-      symbol = item.next
-      next if symbol.nil? || needed_transition_symbols.include?(symbol)
-      needed_transition_symbols.push symbol
-    end
-    @transition_queue[state_index] = needed_transition_symbols
-  end
-
-  def build_remaining_states
-    until @transition_queue.empty?
-      transitions_from_state = {}
-      from_state_index, symbols = @transition_queue.shift
-      from_state = @dfa.states[from_state_index]
-      symbols.each do |symbol|
-        items = from_state.new_items_after_transition_on symbol
-        new_state = build_state items
-        @dfa.add_transition from_state_index, symbol, new_state
-      end
-    end
-  end
-
-  def build_reductions
-    @dfa.states.each_with_index do |state, state_index|
-      @reductions[state_index] = {}
-      state.items.each do |item|
-        in_follow_set = Set.new
-        if item.after_dot.empty?
-          if in_follow_set.intersect? item.follow
-            raise "Ambiguous Grammar"
-          end
-          in_follow_set += item.follow
-          @reductions[state_index][item.follow] = [ item.left_symbol, item.before_dot.size ]
-        end
-      end
-    end
-  end
-
-    def build_next_follow_from_item item
-      symbol = item.next
-      new_follow = Set.new
-      return nil unless @non_terminals.include? symbol
-      all_nullable = true
-      item.after_dot.inspect
-      item.after_dot[1..-1].to_a.each do |symbol2|
-        new_follow += @first[symbol2]
-        unless @nullable.include? symbol2
-          all_nullable = false
-          break
-        end
-      end
-
-      new_follow += item.follow if all_nullable
-
-      new_follow
-    end
 
 end

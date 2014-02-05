@@ -8,12 +8,18 @@ Joos::Parser::Item = Struct.new :left_symbol, :before_dot, :after_dot, :follow d
 
   def merge! item2
     raise "Can not merge #{self.inspect} to #{item2.inspect}" unless self == item2
+    
+    changed = !(item2.follow - self.follow).empty?
     self.follow += item2.follow
 
-    self
+    changed
   end
 
   def next
     self.after_dot.first
+  end
+
+  def complete?
+    self.after_dot.empty?
   end
 end
