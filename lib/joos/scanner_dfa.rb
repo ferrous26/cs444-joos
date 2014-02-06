@@ -274,8 +274,8 @@ class Joos::ScannerDFA < Joos::DFA
   # @param line [Fixnum]
   # @return [Joos::Token]
   def make_token dfa_token, file, line
-    return nil unless meaningful? dfa_token
-    
+    return unless meaningful? dfa_token
+
     klass = TOKEN_CLASSES[dfa_token.state]
     klass ||= Joos::Token::IllegalToken if ILLEGAL_OPS.include? dfa_token.lexeme
     klass ||= Joos::Token::CLASSES[dfa_token.lexeme] if CONSTANT_TOKENS.include? dfa_token.lexeme
