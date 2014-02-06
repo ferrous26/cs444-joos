@@ -397,6 +397,11 @@ describe Joos::Token::Literal do
       expect(bytes).to be == [127, 55]
     end
 
+    it 'handles the escape sequence of "\3777" correctly' do
+      bytes = Joos::Token::String.new('"\\3777"', '', 2, 3).to_binary
+      expect(bytes).to be == [255, 55]
+    end
+
     it 'does not allow the disallowed character' do
       expect {
         Joos::Token::String.new('"""', '', 3, 3)
