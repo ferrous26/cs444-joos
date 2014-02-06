@@ -78,7 +78,8 @@ GRAMMAR = {
     UnmodifiedTerm: [
       [:OpenParen, :Expression, :CloseParen, :Term],
       [:OpenParen, :BasicType, :CloseParen, :Term],
-      [:Primary, :Selectors]
+      [:Primary, :Selectors],
+      [:New, :Creator]
     ],
     TermModifier: [
       [:Not],
@@ -88,7 +89,6 @@ GRAMMAR = {
       [:OpenParen, :Expression, :CloseParen],
       [:This],
       [:Literal],
-      [:New, :Creator],
       [:QualifiedIdentifier],
       [:QualifiedIdentifier, :IdentifierSuffix]
     ],
@@ -115,7 +115,8 @@ GRAMMAR = {
       []
     ],
     MoreExpressions: [
-      [:Comma, :Expression, :MoreExpressions]
+      [:Comma, :Expression, :MoreExpressions],
+      []
     ],
     Creator: [
       [:ArrayCreator],
@@ -182,7 +183,7 @@ GRAMMAR = {
       [:Import, :QualifiedIdentifier, :Dot, :Multiply, :Semicolon]
     ],
     TypeDeclaration: [
-      [:ClassOrInterfaceDeclaration],
+      [:Modifier, :Modifiers, :ClassOrInterfaceDeclaration],
       [:Semicolon]
     ],
     ClassOrInterfaceDeclaration: [
@@ -190,17 +191,17 @@ GRAMMAR = {
       [:InterfaceDeclaration]
     ],
     ClassDeclaration: [
-      [:Modifiers, :Class, :Identifier, :ClassBody],
-      [:Modifiers, :Class, :Identifier, :Extends, :Type, :ClassBody],
-      [:Modifiers, :Class, :Identifier, :Implements, :TypeList, :ClassBody],
-      [:Modifiers, :Class, :Identifier, :Extends, :Type, :Implements, :TypeList, :ClassBody]
+      [:Class, :Identifier, :ClassBody],
+      [:Class, :Identifier, :Extends, :QualifiedIdentifier, :ClassBody],
+      [:Class, :Identifier, :Implements, :TypeList, :ClassBody],
+      [:Class, :Identifier, :Extends, :QualifiedIdentifier, :Implements, :TypeList, :ClassBody]
     ],
     InterfaceDeclaration: [
-      [:Modifiers, :Interface, :Identifier, :InterfaceBody],
-      [:Modifiers, :Interface, :Identifier, :Extends, :TypeList, :InterfaceBody]
+      [:Interface, :Identifier, :InterfaceBody],
+      [:Interface, :Identifier, :Extends, :TypeList, :InterfaceBody]
     ],
     TypeList: [
-      [:Type, :CommaType]
+      [:QualifiedIdentifier, :CommaType]
     ],
     CommaType: [
       [:Comma, :Type, :CommaType],
@@ -222,7 +223,7 @@ GRAMMAR = {
     ],
     ClassBodyDeclaration: [
       [:Semicolon],
-      [:Modifiers, :MemberDecl]
+      [:Modifier, :Modifiers, :MemberDecl]
     ],
     MemberDecl: [
       [:MethodOrFieldDecl],
@@ -290,13 +291,13 @@ GRAMMAR = {
               :Class, :New, :Super, :Comma, :If, :Else, :For, :While, :Return, :Public, :Protected, :Static, :Abstract, :Final,
               :Native, :Import, :Implements, :Extends, :Interface, :EndProgram],
 
-  non_terminals: [:CompilationUnit, :QualifiedIdentifier, :Literal, :Expression, :Type, :StatementExpression, :ConstantExpression,
-                  :SubExpression, :MoreTerms, :Infixop, :Term, :NegativeInteger, :Selectors, :Primary, :Assignment,
-                  :IdentifierSuffix, :TermModifier, :Selector, :BasicType, :ArgumentsOpt, :Arguments, :Expressions, :MoreExpressions,
-                  :Creator, :InnerCreator, :ArrayCreator, :ClassCreatorRest, :UnmodifiedTerm,
-                  :Block, :BlockStatement, :BlockStatements, :LocalVariableDeclarationStatement, :Statement, :MoreStatementExpressions,
+  non_terminals: [:CompilationUnit, :QualifiedIdentifier, :Literal, :Expression, :Type, :ConstantExpression,
+                  :SubExpression, :MoreTerms, :Infixop, :Term, :Selectors, :Primary, :Assignment,
+                  :IdentifierSuffix, :TermModifier, :Selector, :BasicType, :Arguments, :Expressions, :MoreExpressions,
+                  :Creator, :ArrayCreator, :UnmodifiedTerm,
+                  :Block, :BlockStatement, :BlockStatements, :LocalVariableDeclarationStatement, :Statement,
                   :ForInit, :ForUpdate, :Modifiers, :Modifier, :VariableDeclarator,
-                  :ConstructorDeclaratorRest, :ImportDeclarations, :ImportDeclaration,
+                  :ImportDeclarations, :ImportDeclaration,
                   :TypeDeclaration, :ClassOrInterfaceDeclaration, :ClassDeclaration, :InterfaceDeclaration, :TypeList, :CommaType, :ClassBody,
                   :ClassBodyDeclarations, :ClassBodyDeclaration, :InterfaceBody, :InterfaceBodyDeclarations, :InterfaceBodyDeclaration,
                   :MemberDecl, :MethodOrFieldDecl, :MethodOrFieldRest, :InterfaceMemberDecl, :InterfaceMethodOrFieldDecl,
