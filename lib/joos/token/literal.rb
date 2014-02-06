@@ -57,7 +57,7 @@ class Joos::Token
 
     ##
     # Exception raised when a string escape sequence is not valid
-    class InvalidEscapeSequence < Exception
+    class InvalidEscapeSequence < RuntimeError
       # @param string [Joos::Token]
       # @param index [Fixnum]
       def initialize string, index
@@ -71,7 +71,7 @@ Invalid escape sequence detected in string/character literal: #{string.source}
 
     ##
     # Exception raised when an octal escape sequence is out of the ASCII range
-    class InvalidOctalEscapeSequence < Exception
+    class InvalidOctalEscapeSequence < RuntimeError
       # @param string [Joos::Token]
       # @param index [Fixnum]
       def initialize string, index
@@ -86,7 +86,7 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     ##
     # Exception raised when the disallowed character is detected without
     # being escaped.
-    class InvalidCharacter < Exception
+    class InvalidCharacter < RuntimeError
       # @param string [Joos::Token]
       # @param index [Fixnum]
       def initialize string, index
@@ -256,7 +256,7 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
 
     ##
     # Error raised when an integer is outside of the signed 32-bit range
-    class OutOfRangeError < Exception
+    class OutOfRangeError < RuntimeError
       # @param i [Joos::Token::Integer] the out of range value
       def initialize i
         # @todo add source information?
@@ -266,7 +266,7 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
 
     ##
     # Error raised when a literal integer is incorrectly formatted
-    class BadFormatting < Exception
+    class BadFormatting < RuntimeError
       # @param i [Joos::Token::Integer] the out of range value
       def initialize i
         # @todo add source information?
@@ -367,7 +367,7 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
 
     ##
     # Exception raised for characters that are not exactly 1 byte in size
-    class InvalidLength < Exception
+    class InvalidLength < RuntimeError
       # @param char [Joos::Token::Character]
       def initialize char
         # @todo proper error message with source info

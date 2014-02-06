@@ -6,41 +6,6 @@ require 'joos/token'
 class Joos::ScannerDFA < Joos::DFA
 
   ##
-  # Joos keywords, including the unused ones
-  KEYWORDS = %w[
-    abstract
-    boolean
-    byte
-    char
-    class
-    else
-    extends
-    false
-    final
-    for
-    if
-    implements
-    import
-    instanceof
-    int
-    interface
-    native
-    new
-    null
-    package
-    protected
-    public
-    return
-    short
-    static
-    super
-    this
-    true
-    void
-    while
-  ]
-
-  ##
   # All the Joos separators
   SEPARATORS = '[]{}(),.;'
 
@@ -59,11 +24,6 @@ class Joos::ScannerDFA < Joos::DFA
     '+=', '-=', '*=', '/=', '&=', '|=', '%=',
     '<<=', '>>=', '>>>=', '^='
   ]
-
-  ##
-  # All tokens which have a fixed lexeme
-  CONSTANT_TOKENS = KEYWORDS + MULTI_CHAR_OPS +
-    (SINGLE_CHAR_OPS + SEPARATORS).split(//)
 
 
   ## Characters acceptable at the beginning of an identifier
@@ -258,7 +218,7 @@ class Joos::ScannerDFA < Joos::DFA
   ##
   # @param [DFA::Token]
   def meaningful? dfa_token
-    !%i[line_comment block_comment whitespace].include? dfa_token.state
+    ![:line_comment, :block_comment, :whitespace].include? dfa_token.state
   end
 
   TOKEN_CLASSES = {
@@ -271,18 +231,17 @@ class Joos::ScannerDFA < Joos::DFA
   ##
   # @param dfa_token [DFA::Token]
   # @param file [String]
-  # @param line [Fixnum]
+  # @param line_number [Fixnum]
   # @return [Joos::Token]
-  def make_token dfa_token, file, line
+  def make_token dfa_token, file, line_number
     return unless meaningful? dfa_token
-
+    
     klass = TOKEN_CLASSES[dfa_token.state]
-    klass ||= Joos::Token::IllegalToken if ILLEGAL_OPS.include? dfa_token.lexeme
-    klass ||= Joos::Token::CLASSES[dfa_token.lexeme] if CONSTANT_TOKENS.include? dfa_token.lexeme
+    klass ||= Joos::Token::CLASSES[dfa_token.lexeme]
     klass ||= Joos::Token::Identifier if dfa_token.state == :identifier
 
     puts dfa_token if klass.nil?
 
-    klass.new dfa_token.lexeme, file, line.chomp, dfa_token.column
+    klass.new dfa_token.lexeme, file, line_number, dfa_token.column
   end
 end

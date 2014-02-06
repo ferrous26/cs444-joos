@@ -90,6 +90,12 @@ describe Joos::Token do
     expect(token.inspect).to be == 'hello from there.c line:3, column:21'
   end
 
+  it 'has exceptions which inherit from RuntimeError, not raw Exception' do
+    expect(Joos::Token::IllegalToken::Exception).to be < RuntimeError
+    expect(Joos::Token::Character::InvalidEscapeSequence).to be < RuntimeError
+    expect(Joos::Token::Identifier::IllegalName).to be < RuntimeError
+  end
+
   describe Joos::Token::IllegalToken do
     it 'raises an error during initialization' do
       klass = Class.new(Joos::Token) do

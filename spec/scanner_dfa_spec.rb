@@ -183,7 +183,7 @@ describe Joos::ScannerDFA do
 
     scanner_tokens, state = dfa.tokenize s
     expect(state).to be_nil
-    tokens = scanner_tokens.map{ |token| dfa.make_token token, 'doesnt-exist.java', (9) }.compact
+    tokens = scanner_tokens.map{ |token| dfa.make_token token, 'inline-fixture', 123 }.compact
     expect(tokens.length).to be == 19
     expect(tokens.map {|token| token.class.name.split(/::/)[-1] }).to be == %w[
       Int Identifier OpenParen Int Identifier Comma Identifier OpenStaple CloseStaple CloseParen OpenBrace
