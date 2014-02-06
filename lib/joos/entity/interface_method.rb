@@ -13,4 +13,11 @@ class Joos::Entity::InterfaceMethod < Joos::Entity::Method
     ensure_modifiers_not_present(:protected, :static, :final, :native)
   end
 
+
+  private
+
+  def ensure_body_presence_if_required
+    # interface methods will not have a body, or else they will fail to parse
+  end
+
 end

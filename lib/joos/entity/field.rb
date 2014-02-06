@@ -13,7 +13,7 @@ class Joos::Entity::Field < Joos::Entity
   # @param modifiers [Array<Joos::Token::Modifier>]
   # @param type      [Class, Interface, Joos::Token::Type]
   # @param name      [Joos::Token::Identifier]
-  def initialize modifiers, type, name
+  def initialize name, modifiers: [], type: nil
     super name, modifiers
     @type = type
   end
