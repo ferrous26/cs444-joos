@@ -49,7 +49,11 @@ describe Joos::Compiler do
     expect(Joos::Compiler::ERROR).to   be == 42
   end
 
-  it 'reports a SUCCESS result for successful compilation'
+  it 'reports a SUCCESS result for successful compilation' do
+    c = Joos::Compiler.new('test/a1/J1_BigInt.java')
+    c.compile
+    expect(c.result).to be == Joos::Compiler::SUCCESS
+  end
 
   it 'reports an ERROR result for compilation failure cases' do
     c = Joos::Compiler.new('herpDerp.java')
