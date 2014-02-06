@@ -72,7 +72,7 @@ describe Joos::Token::Literal do
 
     it 'catches octal escape sequences out of range' do
       expect {
-        StringMock.new('\\256', 'a').validate!
+        StringMock.new('\\400', 'a').validate!
       }.to raise_error Joos::Token::StringHelpers::InvalidOctalEscapeSequence
     end
 

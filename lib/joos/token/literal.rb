@@ -38,7 +38,7 @@ class Joos::Token
     # The maximum allowed value for an octal escape (in base 10 :P)
     #
     # @return [Fixnum]
-    MAX_OCTAL = 127
+    MAX_OCTAL = 255
 
     ##
     # Map of Java escape sequences to their ASCII value
