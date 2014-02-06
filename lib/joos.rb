@@ -1,7 +1,8 @@
 require 'joos/version'
 require 'joos/utilities'
 require 'joos/scanner'
-# require 'joos/parser'
+require 'joos/parser'
+
 
 ##
 # The glue that holds together the various parts of the compiler and acts

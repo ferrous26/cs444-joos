@@ -80,6 +80,16 @@ describe Joos::Token do
     expect(Joos::Token::ConstantToken).to be_kind_of Module
   end
 
+  it 'raises a NotImplementedError for #type' do
+    token = Joos::Token.new('hello', 'there.c', 3, 21)
+    expect { token.type }.to raise_error NotImplementedError
+  end
+
+  it 'responds to #inspect with something human readable for exceptions' do
+    token = Joos::Token.new('hello', 'there.c', 3, 21)
+    expect(token.inspect).to be == 'hello from there.c line:3, column:21'
+  end
+
   describe Joos::Token::IllegalToken do
     it 'raises an error during initialization' do
       klass = Class.new(Joos::Token) do
@@ -105,6 +115,13 @@ describe Joos::Token do
 
       token = klass.new('pie', 'pie.java', 23, 32)
       expect(token.value).to be == marker
+    end
+
+    it 'allows comparison using symbols' do
+      token = Joos::Token::Public.new('public', 'file', 1, 0)
+      expect(token).to be == :public
+      expect(token).to be == token
+      expect(token).to_not be == :pubic
     end
   end
 

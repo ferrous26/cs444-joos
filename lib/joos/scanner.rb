@@ -36,7 +36,11 @@ class Joos::Scanner
     lines.each do |line|
       scanner_tokens, state = dfa.tokenize line, state
       dfa.raise_if_illegal_line_end! state
-      tokens += scanner_tokens.map{ |token| dfa.make_token token, path, line_number}.compact
+      scanner_tokens.map! { |token|
+        dfa.make_token token, path, line
+      }
+      scanner_tokens.compact!
+      tokens += scanner_tokens
       line_number += 1
     end
     

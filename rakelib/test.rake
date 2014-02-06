@@ -1,6 +1,6 @@
 desc 'Start up irb with joos loaded'
 task :console do
-  sh 'irb -Ilib -rubygems -rjoos'
+  sh 'irb -Ilib -Iconfig -rubygems -rjoos'
 end
 
 $LOAD_PATH.unshift File.expand_path('./lib')

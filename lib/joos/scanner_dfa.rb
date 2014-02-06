@@ -11,7 +11,7 @@ class Joos::ScannerDFA < Joos::DFA
 
   ##
   # All the single character Joos operators
-  SINGLE_CHAR_OPS = '+-*/%<>=&|!&' # ^?:~
+  SINGLE_CHAR_OPS = '+-*/%<>=&|!&^?:~'
 
   ##
   # Joos operators which are more than one character long
@@ -22,8 +22,8 @@ class Joos::ScannerDFA < Joos::DFA
   ILLEGAL_OPS = [
     '++', '--', '<<', '>>', '>>>',
     '+=', '-=', '*=', '/=', '&=', '|=', '%=',
-    '<<=', '>>=', '>>>='
-  ] # ^=
+    '<<=', '>>=', '>>>=', '^='
+  ]
 
 
   ## Characters acceptable at the beginning of an identifier
@@ -32,7 +32,7 @@ class Joos::ScannerDFA < Joos::DFA
   ## Digits
   DIGIT_RE = /[0-9]/
 
-  ## Whitespace 
+  ## Whitespace
   SPACE_RE = /[ \t\r\f\n]/
 
 
@@ -110,7 +110,7 @@ class Joos::ScannerDFA < Joos::DFA
       transition :float, '.fF'
       transition :long_int, 'lL'
     end
-    
+
     # Easy stuff
     state :identifier do
       transition :identifier, ALPHA_RE
@@ -210,7 +210,7 @@ class Joos::ScannerDFA < Joos::DFA
   # Raise UnexpectedCharacter if a continuation state is not allowed to occur at
   # the end of a file (everything)
   def raise_if_illegal_eof! state
-    return nil if state.nil?
+    return if state.nil?
     e = UnexpectedEnd.new_eof
     raise e
   end
@@ -234,7 +234,7 @@ class Joos::ScannerDFA < Joos::DFA
   # @param line_number [Fixnum]
   # @return [Joos::Token]
   def make_token dfa_token, file, line_number
-    return nil unless meaningful? dfa_token
+    return unless meaningful? dfa_token
     
     klass = TOKEN_CLASSES[dfa_token.state]
     klass ||= Joos::Token::CLASSES[dfa_token.lexeme]
@@ -242,11 +242,6 @@ class Joos::ScannerDFA < Joos::DFA
 
     puts dfa_token if klass.nil?
 
-    if klass == Joos::Token::Character || klass == Joos::Token::String
-      # Strip quotes from char and string literals
-      klass.new dfa_token.lexeme[1..-2], file, line_number, dfa_token.column
-    else
-      klass.new dfa_token.lexeme, file, line_number, dfa_token.column
-    end
+    klass.new dfa_token.lexeme, file, line_number, dfa_token.column
   end
 end

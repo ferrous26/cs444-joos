@@ -13,13 +13,13 @@ task :reek do
   sh 'reek lib/'
 end
 
-desc 'Generate documentation'
-task :yard do
-  sh 'yard'
+desc 'Run rubocop static analyzer for CI'
+task :rubocop_ci do
+  sh 'rubocop --lint'
 end
 
 desc 'Run all CI related tasks'
-task :ci => [:spec, :test, :flog, :reek, :rubocop, :yard]
+task :ci => [:spec, :test, :flog, :rubocop_ci, :reek, :yard]
 
 5.times do |num|
   task :test => "test:a#{num + 1}"

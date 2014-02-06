@@ -115,7 +115,7 @@ class Joos::Token
    ['class',        Declaration],
    ['float',        IllegalToken],
    ['native',       MethodModifier], # only "static native int m(int i)"
-   ['super',        ReferenceLiteral],
+   ['super',        IllegalToken],
    ['while',        ControlFlow],
    ['const',        IllegalToken],
    ['for',          ControlFlow],
@@ -127,6 +127,8 @@ class Joos::Token
    ['synchronized', IllegalToken]
   ].each do |name, *attributes|
 
+    symbol_name = name.capitalize.to_sym
+
     klass = ::Class.new(self) do
       include Keyword
       attributes.each do |attribute|
@@ -134,9 +136,10 @@ class Joos::Token
       end
 
       define_singleton_method(:token) { name }
+      define_method(:type) { symbol_name }
     end
 
-    const_set(name.capitalize, klass)
+    const_set(symbol_name, klass)
     CLASSES[name] = klass
   end
 

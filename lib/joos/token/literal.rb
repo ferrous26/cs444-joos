@@ -18,6 +18,10 @@ class Joos::Token
   module Bool
     include Joos::Token::Literal
     include Joos::Token::ConstantToken
+
+    def type
+      :BooleanLiteral
+    end
   end
 
   ##
@@ -34,7 +38,7 @@ class Joos::Token
     # The maximum allowed value for an octal escape (in base 10 :P)
     #
     # @return [Fixnum]
-    MAX_OCTAL = 127
+    MAX_OCTAL = 255
 
     ##
     # Map of Java escape sequences to their ASCII value
@@ -205,6 +209,10 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     end
 
     CLASSES['null'] = self
+
+    def type
+      :NullLiteral
+    end
   end
 
   ##
@@ -266,8 +274,6 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
       end
     end
 
-    # @return [Fixnum]
-    attr_reader :to_i
 
     # @param token [String]
     # @param file [String]
@@ -276,14 +282,39 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     def initialize token, file, line, column
       super
       raise BadFormatting.new(self) unless PATTERN.match token
-      @to_i = value.to_i
+    end
+
+    # @return [Fixnum]
+    def to_i
+      token.to_i
     end
 
     ##
+    # Flip the polarity of the integer
     #
-    # @return [Boolean]
-    def validate!
-      raise OutOfRangeError.new(self) unless INT_RANGE.cover? @to_i
+    # Negative integers become positive and positive integers become negative.
+    #
+    # @return [String]
+    def flip_sign
+      @token = (- to_i).to_s
+    end
+
+    def type
+      :IntegerLiteral
+    end
+
+
+    # @!group Validation
+
+    ##
+    # Check that {#value} of the integer is valid.
+    #
+    # @raise [OutOfRangeError] if the value is not in the range of a
+    #   32-bit signed integer
+    #
+    # @return [Void]
+    def validate
+      raise OutOfRangeError.new(self) unless INT_RANGE.cover? to_i
     end
   end
 
@@ -349,7 +380,7 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
 
     # overridden to validate input
     def initialize token, file, line, column
-      super
+      super token[1..-2], file, line, column
       @to_binary = validate!
       raise InvalidLength.new(self) unless @to_binary.length == 1
     end
@@ -361,6 +392,10 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     # @return [String]
     def disallowed_char
       "'"
+    end
+
+    def type
+      :CharacterLiteral
     end
   end
 
@@ -391,7 +426,7 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     # @return [Joos::Token::String]
     def self.new token, file, line, column
       string = allocate
-      string.send :initialize, token, file, line, column
+      string.send :initialize, token[1..-2], file, line, column
       STRINGS.fetch string.to_binary do |_|
         STRINGS[string.to_binary] = string
       end
@@ -424,6 +459,10 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     # @return [Fixnum]
     def length
       @to_binary.length
+    end
+
+    def type
+      :StringLiteral
     end
   end
 

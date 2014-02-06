@@ -27,6 +27,10 @@ class Joos::Token::Identifier < Joos::Token
     validate
   end
 
+  def type
+    :Identifier
+  end
+
   ##
   # Generic exception raised when there is a problem with an id name
   class IllegalName < Exception; end

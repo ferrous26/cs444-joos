@@ -41,6 +41,9 @@ describe Joos::Token::Identifier do
     end
   end
 
-  it 'should allow linking with other instances of identifiers' # maybe?
+  it 'has a type of :Identifier' do
+    id = Joos::Token::Identifier.new('hi', 'bye', 1, 0)
+    expect(id.type).to be == :Identifier
+  end
 
 end

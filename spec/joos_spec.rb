@@ -3,6 +3,15 @@ require 'joos'
 
 describe Joos::Compiler do
 
+  before :each do
+    @stderr = $stderr
+    $stderr = StringIO.new
+  end
+
+  after :each do
+    $stderr = @stderr
+  end
+
   it 'accepts a list of files at init' do
     c = Joos::Compiler.new('mah files', 'herp derp')
     expect(c.files).to be == ['mah files', 'herp derp']
@@ -22,12 +31,10 @@ describe Joos::Compiler do
   end
 
   it 'responds reasonably when a file path is incorrect' do
-    pending "Waiting on parser implementation"
-    hack    = $stderr
-    $stderr = StringIO.new
-    Joos::Compiler.new('herpyDerp.java').compile
-    expect($stderr.string).to be == 'herpyDerp.java is a non-existant file'
-    $stderr = hack
+    c = Joos::Compiler.new('herpDerp.java')
+    c.compile
+    expect(c.result).to be == Joos::Compiler::ERROR
+    expect($stderr.string).to match(/herpDerp.java is a non-existant file/i)
   end
 
   it 'does not allow exceptions to crash the program' do
@@ -42,7 +49,11 @@ describe Joos::Compiler do
     expect(Joos::Compiler::ERROR).to   be == 42
   end
 
-  it 'reports a SUCCESS result for successful compilation'
+  it 'reports a SUCCESS result for successful compilation' do
+    c = Joos::Compiler.new('test/a1/J1_BigInt.java')
+    c.compile
+    expect(c.result).to be == Joos::Compiler::SUCCESS
+  end
 
   it 'reports an ERROR result for compilation failure cases' do
     c = Joos::Compiler.new('herpDerp.java')

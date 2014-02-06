@@ -29,6 +29,7 @@ class Joos::Token
     klass = ::Class.new(self) do
       include Separator
       define_singleton_method(:token) { symbol }
+      define_method(:type) { name }
     end
 
     const_set(name, klass)
