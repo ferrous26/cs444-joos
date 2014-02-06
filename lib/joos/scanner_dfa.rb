@@ -46,7 +46,7 @@ class Joos::ScannerDFA < Joos::DFA
 
   ##
   # All the single character Joos operators
-  SINGLE_CHAR_OPS = '+-*/%<>=&|!&' # ^?:~
+  SINGLE_CHAR_OPS = '+-*/%<>=&|!&^?:~'
 
   ##
   # Joos operators which are more than one character long
@@ -57,8 +57,8 @@ class Joos::ScannerDFA < Joos::DFA
   ILLEGAL_OPS = [
     '++', '--', '<<', '>>', '>>>',
     '+=', '-=', '*=', '/=', '&=', '|=', '%=',
-    '<<=', '>>=', '>>>='
-  ] # ^=
+    '<<=', '>>=', '>>>=', '^='
+  ]
 
   ##
   # All tokens which have a fixed lexeme
@@ -72,7 +72,7 @@ class Joos::ScannerDFA < Joos::DFA
   ## Digits
   DIGIT_RE = /[0-9]/
 
-  ## Whitespace 
+  ## Whitespace
   SPACE_RE = /[ \t\r\f\n]/
 
 
@@ -150,7 +150,7 @@ class Joos::ScannerDFA < Joos::DFA
       transition :float, '.fF'
       transition :long_int, 'lL'
     end
-    
+
     # Easy stuff
     state :identifier do
       transition :identifier, ALPHA_RE
