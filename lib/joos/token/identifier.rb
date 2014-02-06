@@ -33,7 +33,7 @@ class Joos::Token::Identifier < Joos::Token
 
   ##
   # Generic exception raised when there is a problem with an id name
-  class IllegalName < Exception; end
+  class IllegalName < RuntimeError; end
 
   ##
   # Specific error raised when the identifier name starts a number or other
