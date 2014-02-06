@@ -283,6 +283,6 @@ class Joos::ScannerDFA < Joos::DFA
 
     puts dfa_token if klass.nil?
 
-    klass.new dfa_token.lexeme, file, line, dfa_token.column
+    klass.new dfa_token.lexeme, file, line.chomp, dfa_token.column
   end
 end
