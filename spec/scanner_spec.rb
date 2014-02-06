@@ -18,7 +18,7 @@ describe Joos::Scanner do
   it 'raises an exception when an input token is not valid' do
     expect {
       Joos::Scanner.scan_file 'test/a1/Je_Throws.java'
-    }.to raise_error Joos::Token::Identifier::ReservedWord
+    }.to raise_error Joos::Token::IllegalToken::Exception
   end
 
   it 'does not accept non-ascii characters' do
