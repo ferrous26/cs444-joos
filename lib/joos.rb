@@ -52,10 +52,10 @@ class Joos::Compiler
       Thread.new do scan_and_parse(file) end
     end
 
-    threads.map(&:value).each do |ast|
-      if ast.kind_of? Exception
-        $stderr.puts ast.backtrace if $DEBUG # used internally
-        $stderr.puts ast.message
+    threads.map(&:value).each do |cst|
+      if cst.kind_of? Exception
+        $stderr.puts cst.backtrace if $DEBUG # used internally
+        $stderr.puts cst.message
       end
     end
   end
@@ -71,7 +71,7 @@ class Joos::Compiler
   # @return [Joos::AST, Joos::CompilerException]
   def scan_and_parse job
     Joos::Parser.new(Joos::Scanner.scan_file job).parse
-  rescue => exception
+  rescue Exception => exception
     @result = ERROR
     exception
   end
