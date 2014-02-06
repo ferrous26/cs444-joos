@@ -380,7 +380,7 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
 
     # overridden to validate input
     def initialize token, file, line, column
-      super
+      super token[1..-2], file, line, column
       @to_binary = validate!
       raise InvalidLength.new(self) unless @to_binary.length == 1
     end
@@ -426,7 +426,7 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     # @return [Joos::Token::String]
     def self.new token, file, line, column
       string = allocate
-      string.send :initialize, token, file, line, column
+      string.send :initialize, token[1..-2], file, line, column
       STRINGS.fetch string.to_binary do |_|
         STRINGS[string.to_binary] = string
       end
