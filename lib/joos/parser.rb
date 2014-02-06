@@ -1,17 +1,21 @@
 require 'joos/token'
+require 'joos/cst'
 
 ##
 # @todo Documentation
 class Joos::Parser
   eval File.read('config/parser_rules.rb')
 
+  attr_reader :token_stream
+  attr_reader :state_stack
+  attr_reader :cst_stack
+
   def initialize token_stream
-    puts token_stream
-    @stream      = Array(token_stream).reverse
-    @state_stack = [0]
-    @transitions = PARSER_RULES[:transitions]
-    @reductions  = PARSER_RULES[:reductions]
-    @cst_node    = []
+    @token_stream = Array(token_stream).reverse
+    @state_stack  = [0]
+    @cst_stack    = []
+    @transitions  = PARSER_RULES[:transitions]
+    @reductions   = PARSER_RULES[:reductions]
   end
 
   ##
@@ -19,21 +23,18 @@ class Joos::Parser
   # code flow.
   module ParserRefinements
     refine Array do
-      def act state_stack, stream, cst, token
-        state_stack.pop last
-        puts self.inspect
-        puts "CST: " + ((cst.pop last).map(&:type)).inspect
-        puts
-        stream.push first
+      def process parser, token
+        parser.state_stack.pop last
+        klass = Joos::CST.const_get(first, false)
+        parser.token_stream.push klass.new(parser.cst_stack.pop last)
       end
     end
 
     refine Fixnum do
-      def act state_stack, stream, cst, token
-        stream.pop
-        # end the AST node
-        state_stack.push self
-        cst.push token
+      def process parser, token
+        parser.token_stream.pop
+        parser.state_stack.push self
+        parser.cst_stack.push token
       end
     end
   end
@@ -50,10 +51,10 @@ class Joos::Parser
   using ParserRefinements
 
   def parse
-    until @stream.empty?
-      token = @stream.last
+    until @token_stream.empty?
+      token = @token_stream.last
       puts token if $DEBUG
-      oracle(token).act(@state_stack, @stream, @cst_node, token)
+      oracle(token).process(self, token)
     end
   end
 
