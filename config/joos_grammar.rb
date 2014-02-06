@@ -24,7 +24,7 @@ GRAMMAR = {
     ],
     Type: [
       [:QualifiedIdentifier, :BracketsOpt],
-      [:BasicType] # I think :BracketsOpts should be included here...
+      [:BasicType, :BracketsOpt]
     ],
     StatementExpression: [
       [:Expression]
@@ -114,7 +114,8 @@ GRAMMAR = {
     ],
     Creator: [
       [:QualifiedIdentifier, :ArrayCreatorRest],
-      [:QualifiedIdentifier]
+      [:QualifiedIdentifier],
+      [:BasicType, :ArrayCreatorRest]
     ],
     ArrayCreatorRest: [
       [:OpenStaple, :Expression, :CloseStaple]
