@@ -1,7 +1,8 @@
 require 'joos/version'
 require 'joos/utilities'
-# require 'joos/scanner'
+require 'joos/scanner'
 require 'joos/parser'
+
 
 ##
 # The glue that holds together the various parts of the compiler and acts
@@ -48,26 +49,31 @@ class Joos::Compiler
   # assembly code.
   def compile
     threads = @files.map do |file|
-      Thread.new do
-        scan_and_parse file
-      end
+      Thread.new do scan_and_parse(file) end
     end
 
-    threads.each(&:join)
+    threads.map(&:value).each do |ast|
+      if ast.kind_of? Exception
+        $stderr.puts ast.backtrace if $DEBUG # used internally
+        $stderr.puts ast.message
+      end
+    end
   end
 
 
   private
 
+  ##
+  # Returns an exception if scanning or parsing failed, otherwise returns
+  # the generated AST.
+  #
   # @param job [String] path to the file to work on
+  # @return [Joos::AST, Joos::CompilerException]
   def scan_and_parse job
-    input = File.readlines(job)
-#    raise 'joosc only accepts ASCII input' unless input.all?(&:ascii_only?)
-    Joos::Parser.new(Joos::Scanner.new(input).consume_input).parse
-  rescue => e
-    $stderr.puts e.message
-    $stderr.puts e.backtrace if $DEBUG # used internally
+    Joos::Parser.new(Joos::Scanner.scan_file job).parse
+  rescue => exception
     @result = ERROR
+    exception
   end
 
 end

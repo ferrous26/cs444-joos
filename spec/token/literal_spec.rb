@@ -391,7 +391,7 @@ describe Joos::Token::Literal do
       expect(bytes).to be == [127, 55]
     end
 
-    it 'does not allowed the disallowed character' do
+    it 'does not allow the disallowed character' do
       expect {
         Joos::Token::String.new('""', '', 3, 3)
       }.to raise_error Joos::Token::StringHelpers::InvalidCharacter

@@ -31,10 +31,11 @@ describe Joos::Compiler do
   end
 
   it 'responds reasonably when a file path is incorrect' do
-    c = Joos::Compiler.new('herpDerp.java')
-    c.compile
-    expect(c.result).to be == Joos::Compiler::ERROR
-    expect($stderr.string).to match(/no such file or directory/i)
+    pending "Waiting on parser implementation"
+    hack    = $stderr
+    $stderr = StringIO.new
+    Joos::Compiler.new('herpyDerp.java').compile
+    expect($stderr.string).to be == 'herpyDerp.java is a non-existant file'
   end
 
   it 'does not allow exceptions to crash the program' do

@@ -9,7 +9,9 @@ describe Joos::Token do
     expect(Joos::Token::CLASSES['+']).to be == Joos::Token::Plus
     expect(Joos::Token::CLASSES['&&']).to be == Joos::Token::LazyAnd
     expect(Joos::Token::CLASSES['.']).to be == Joos::Token::Dot
+    expect(Joos::Token::CLASSES[',']).to be == Joos::Token::Comma
     expect(Joos::Token::CLASSES['}']).to be == Joos::Token::CloseBrace
+    expect(Joos::Token::CLASSES['{']).to be == Joos::Token::OpenBrace
     expect(Joos::Token::CLASSES['false']).to be == Joos::Token::False
     expect(Joos::Token::CLASSES['true']).to be == Joos::Token::True
     expect(Joos::Token::CLASSES['null']).to be == Joos::Token::Null

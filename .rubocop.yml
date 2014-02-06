@@ -34,3 +34,6 @@ LineLength:
   Exclude:
     - config/
 
+Void:
+  Exclude:
+    - spec/scanner_dfa_spec.rb
