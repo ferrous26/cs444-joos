@@ -250,7 +250,7 @@ class Joos::ScannerDFA < Joos::DFA
   # Raise UnexpectedCharacter if a continuation state is not allowed to occur at
   # the end of a file (everything)
   def raise_if_illegal_eof! state
-    return nil if state.nil?
+    return if state.nil?
     e = UnexpectedEnd.new_eof
     raise e
   end
