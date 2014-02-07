@@ -93,7 +93,7 @@ class Joos::Token
   #
   # @return [String]
   def inspect
-    "#{value} from #{file} line:#{line}, column:#{column}"
+    "#<#{type} from #{file}:#{line}:#{column} with value #{value.inspect}>"
   end
 
   ##
