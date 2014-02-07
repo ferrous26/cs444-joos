@@ -26,7 +26,7 @@ GRAMMAR = {
       [:SubExpression]
     ],
     Assignment: [
-      [:Idenfitifer, :Equals, :SubExpression]
+      [:SubExpression, :Equals, :SubExpression]
     ],
     Type: [
       [:ArrayType],
@@ -41,11 +41,14 @@ GRAMMAR = {
       [:Byte],
       [:Char],
       [:Int],
-      [:Boolean]
+      [:Boolean],
+      [:Short]
+    ],
+    ConstantExpression: [
+      [:Expression]
     ],
     SubExpression: [
       [:Term, :MoreTerms],
-      [:Term, :Instanceof, :QualifiedIdentifier]
     ],
     MoreTerms: [
       [:Infixop, :Term, :MoreTerms],
@@ -66,17 +69,19 @@ GRAMMAR = {
       [:Minus],
       [:Multiply],
       [:Divide],
-      [:Modulo]
+      [:Modulo],
+      [:Instanceof]
     ],
     Term: [
       [:TermModifier, :Term],
       [:UnmodifiedTerm]
     ],
     UnmodifiedTerm: [
-      [:OpenParen, :Expression, :CloseParen, :Term],
+      [:OpenParen, :Expression, :OpenStaple, :CloseStaple, :CloseParen, :Term],
+      [:OpenParen, :Expression, :CloseParen, :Term],      
+      [:OpenParen, :BasicType, :OpenStaple, :CloseStaple, :CloseParen, :Term],
       [:OpenParen, :BasicType, :CloseParen, :Term],
-      [:Primary, :Selectors],
-      [:New, :Creator]
+      [:Primary, :Selectors]
     ],
     TermModifier: [
       [:Not],
@@ -87,7 +92,8 @@ GRAMMAR = {
       [:This],
       [:Literal],
       [:QualifiedIdentifier],
-      [:QualifiedIdentifier, :IdentifierSuffix]
+      [:QualifiedIdentifier, :IdentifierSuffix],
+      [:New, :Creator]
     ],
     Selectors: [
       [:Selector, :Selectors],
@@ -118,7 +124,7 @@ GRAMMAR = {
     Creator: [
       [:ArrayCreator],
       [:QualifiedIdentifier],
-      [:QualifiedIdentifier, :OpenParen, :Expression, :CloseParen]
+      [:QualifiedIdentifier, :Arguments]
     ],
     ArrayCreator: [
       [:QualifiedIdentifier, :OpenStaple, :Expression, :CloseStaple],
@@ -136,7 +142,7 @@ GRAMMAR = {
       [:Statement]
     ],
     LocalVariableDeclarationStatement: [
-      [:Type, :Assignment, :Semicolon]
+      [:Type, :VariableDeclarator, :Semicolon]
     ],
     Statement: [
       [:Block],
@@ -151,11 +157,14 @@ GRAMMAR = {
       [:Semicolon],
     ],
     ForInit: [
-      [:Assignment],
-      [:Type, :Assignment]
+      [],
+      [:Expression],
+      [:Type, :VariableDeclarator]
     ],
     ForUpdate: [
-      [:Assignment]
+      [],
+      [:Expression],
+      [:VariableDeclarator]
     ],
     Modifiers: [
       [:Modifier, :Modifiers],
@@ -168,6 +177,9 @@ GRAMMAR = {
       [:Abstract],
       [:Final],
       [:Native]
+    ],
+    VariableDeclarator: [
+      [:Identifier, :Equals, :Expression]
     ],
     ImportDeclarations: [
       [:ImportDeclaration, :ImportDeclarations],
@@ -269,14 +281,14 @@ GRAMMAR = {
               :LessThan, :GreaterThan, :LessOrEqual, :GreaterOrEqual, :Plus, :Minus, :Multiply, :Divide, :Modulo, :OpenParen,
               :CloseParen, :OpenBrace, :CloseBrace, :OpenStaple, :CloseStaple, :Byte, :Char, :Int, :Boolean, :Not, :This, :Void,
               :Class, :New, :Super, :Comma, :If, :Else, :For, :While, :Return, :Public, :Protected, :Static, :Abstract, :Final,
-              :Native, :Import, :Implements, :Extends, :Interface, :EndProgram],
+              :Native, :Import, :Implements, :Extends, :Interface, :Short, :EndProgram],
 
-  non_terminals: [:CompilationUnit, :QualifiedIdentifier, :Literal, :Expression, :Type,
+  non_terminals: [:CompilationUnit, :QualifiedIdentifier, :Literal, :Expression, :Type, :ConstantExpression,
                   :SubExpression, :MoreTerms, :Infixop, :Term, :Selectors, :Primary, :Assignment,
                   :IdentifierSuffix, :TermModifier, :Selector, :BasicType, :Arguments, :Expressions, :MoreExpressions,
                   :Creator, :ArrayCreator, :UnmodifiedTerm,
                   :Block, :BlockStatement, :BlockStatements, :LocalVariableDeclarationStatement, :Statement,
-                  :ForInit, :ForUpdate, :Modifiers, :Modifier,
+                  :ForInit, :ForUpdate, :Modifiers, :Modifier, :VariableDeclarator,
                   :ImportDeclarations, :ImportDeclaration,
                   :TypeDeclaration, :ClassDeclaration, :InterfaceDeclaration, :TypeList, :CommaType, :ClassBody,
                   :ClassBodyDeclarations, :ClassBodyDeclaration, :InterfaceBody, :InterfaceBodyDeclarations, :InterfaceBodyDeclaration,
