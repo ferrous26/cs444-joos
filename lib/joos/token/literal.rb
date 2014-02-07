@@ -156,12 +156,19 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     # @param accum [Array<Fixnum>]
     # @return [Fixnum]
     def validate_octal index, accum
-      m = token[index..-1].match(/^[0-7]{1,3}/).to_s
-      raise InvalidOctalEscapeSequence.new(self, index) if m.empty?
-      n = m.to_i(8)
-      raise InvalidOctalEscapeSequence.new(self, index) if n > MAX_OCTAL
-      accum << n
-      index + m.length - 1
+      match  = token[index..-1].match(/^[0-7]{1,3}/).to_s
+      raise InvalidOctalEscapeSequence.new(self, index) if match.empty?
+      match_num = match.to_i(8)
+
+      # try and take only the first 2 octal digits
+      if match_num > MAX_OCTAL
+        match     = match[0..1]
+        match_num = match.to_i(8)
+      end
+
+      raise InvalidOctalEscapeSequence.new(self, index) if match_num > MAX_OCTAL
+      accum << match_num
+      index + match.length - 1
     end
   end
 
