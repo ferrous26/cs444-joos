@@ -232,6 +232,7 @@ GRAMMAR = {
       [:Type, :Identifier, :MethodOrFieldRest]
     ],
     MethodOrFieldRest: [
+      [:Semicolon],
       [:Equals, :Expression, :Semicolon],
       [:MethodDeclaratorRest]
     ],

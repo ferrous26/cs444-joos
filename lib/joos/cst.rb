@@ -176,7 +176,7 @@ class Joos::CST
           else
             decl = node.MethodOrFieldDecl
             rest = decl.MethodOrFieldRest
-            if rest.Expression # is a field
+            if rest.Semicolon # is a field
               field = Joos::Entity::Field.new(decl.Identifier,
                                               modifiers: modifiers,
                                               type: decl.type)
