@@ -179,7 +179,8 @@ class Joos::CST
             if rest.Semicolon # is a field
               field = Joos::Entity::Field.new(decl.Identifier,
                                               modifiers: modifiers,
-                                              type: decl.type)
+                                              type: decl.type,
+                                              init: rest.Expression)
               klass.add_member field
 
             else # must be a method
