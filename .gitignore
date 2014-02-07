@@ -19,3 +19,5 @@ marmoset.zip
 *.out
 .idea
 *.synctex.gz
+*.class
+

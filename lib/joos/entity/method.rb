@@ -55,8 +55,7 @@ class Joos::Entity::Method < Joos::Entity
 
   def validate
     super
-    ensure_mutually_exclusive_modifiers(:abstract, :static)
-    ensure_mutually_exclusive_modifiers(:abstract, :final)
+    ensure_mutually_exclusive_modifiers(:Abstract, :Static, :Final)
     ensure_native_method_is_static
     ensure_body_presence_if_required
   end
@@ -65,7 +64,7 @@ class Joos::Entity::Method < Joos::Entity
   private
 
   def ensure_body_presence_if_required
-    no_body = [:abstract, :native]
+    no_body = [:Abstract, :Native]
     if (modifiers & no_body).empty?
       raise ExpectedBody.new(self) unless body
     else
@@ -74,8 +73,8 @@ class Joos::Entity::Method < Joos::Entity
   end
 
   def ensure_native_method_is_static
-    if modifiers.include? :native
-      raise NonStaticNativeMethod.new(self) unless modifiers.include? :static
+    if modifiers.include? :Native
+      raise NonStaticNativeMethod.new(self) unless modifiers.include? :Static
     end
   end
 end

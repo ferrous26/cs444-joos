@@ -10,6 +10,7 @@ SimpleCov.start do
   add_group 'Joos', 'lib/'
 end
 
+$LOAD_PATH.unshift File.expand_path('./config')
 gem 'rspec'
 require 'rspec'
 require 'joos'

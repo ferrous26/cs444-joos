@@ -72,10 +72,6 @@ describe Joos::Token::Literal do
 
     it 'catches octal escape sequences out of range' do
       expect {
-        StringMock.new('\\400', 'a').validate!
-      }.to raise_error Joos::Token::StringHelpers::InvalidOctalEscapeSequence
-
-      expect {
         StringMock.new('\\80', 'a').validate!
       }.to raise_error Joos::Token::StringHelpers::InvalidOctalEscapeSequence
     end
@@ -407,6 +403,11 @@ describe Joos::Token::Literal do
     it 'handles the escape sequence of "\3777" correctly' do
       bytes = Joos::Token::String.new('"\\3777"', '', 2, 3).to_binary
       expect(bytes).to be == [255, 55]
+    end
+
+    it 'handles the escape sequence of "\400" as a two character string' do
+      bytes = Joos::Token::String.new('"\\400"', '', 2, 3).to_binary
+      expect(bytes).to be == [32, 48]
     end
 
     it 'does not allow the disallowed character' do

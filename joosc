@@ -1,6 +1,9 @@
 #!/usr/bin/env ruby
 
+$DEBUG = true if ENV['DEBUG']
+
 $LOAD_PATH.unshift File.expand_path('./lib')
+$LOAD_PATH.unshift File.expand_path('./config')
 require 'joos'
 
 compiler = Joos::Compiler.new ARGV

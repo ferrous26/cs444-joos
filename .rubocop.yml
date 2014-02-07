@@ -37,3 +37,12 @@ LineLength:
 Void:
   Exclude:
     - spec/scanner_dfa_spec.rb
+
+Eval:
+  Exclude:
+    - lib/joos/parser.rb
+    - lib/joos/cst.rb
+
+RescueException:
+  Exclude:
+    - lib/joos.rb

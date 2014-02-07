@@ -39,6 +39,17 @@ module Joos::Entity::Modifiable
     end
   end
 
+  ##
+  # Exception raised when 0 or 2 visibilty modifiers are used on the same
+  # entity.
+  #
+  class MissingVisibilityModifier < Exception
+    # @param entity [Joos::Entity]
+    def initialize entity
+      super "#{entity} must have exactly one visibility modifier (i.e. public)"
+    end
+  end
+
 
   ##
   # Modifiers of the receiver.
@@ -50,17 +61,21 @@ module Joos::Entity::Modifiable
   # @param modifiers [Array<Joos::Token::Modifier>]
   def initialize name, modifiers
     super name
-    @modifiers = modifiers.map(&:to_sym)
+    @modifiers = extract_modifiers modifiers
   end
 
   def validate
     super
     ensure_no_duplicate_modifiers
-    ensure_only_one_visibility_modifier
+    ensure_exactly_one_visibility_modifier
   end
 
 
   private
+
+  def extract_modifiers mods
+    mods.nodes.map { |node| node.nodes.first }.map(&:type)
+  end
 
   def ensure_no_duplicate_modifiers
     uniq_size = modifiers.uniq.size
@@ -80,7 +95,11 @@ module Joos::Entity::Modifiable
     end
   end
 
-  def ensure_only_one_visibility_modifier
-    ensure_mutually_exclusive_modifiers(:public, :protected)
+  def ensure_exactly_one_visibility_modifier
+    ensure_mutually_exclusive_modifiers(:Public, :Protected)
+    unless (modifiers & [:Public, :Protected]).size == 1
+      raise MissingVisibilityModifier.new(self)
+    end
   end
+
 end

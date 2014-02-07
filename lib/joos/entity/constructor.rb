@@ -27,6 +27,6 @@ class Joos::Entity::Constructor < Joos::Entity
 
   def validate
     super
-    ensure_modifiers_not_present(:static, :abstract, :final, :native)
+    ensure_modifiers_not_present(:Static, :Abstract, :Final, :Native)
   end
 end
