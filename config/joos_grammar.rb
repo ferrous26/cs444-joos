@@ -183,7 +183,7 @@ GRAMMAR = {
       [:Import, :QualifiedIdentifier, :Dot, :Multiply, :Semicolon]
     ],
     TypeDeclaration: [
-      [:Modifier, :Modifiers, :ClassOrInterfaceDeclaration],
+      [:Modifiers, :ClassOrInterfaceDeclaration],
       [:Semicolon]
     ],
     ClassOrInterfaceDeclaration: [
