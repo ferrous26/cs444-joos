@@ -7,9 +7,14 @@ task :generate_parser do
   require 'joos_grammar'
   require 'joos/parser/parser_generator'
 
+  puts 'Starting...'
+  start = Time.now
+
   p = Joos::Parser::ParserGenerator.new GRAMMAR
   p.build_parser
   p.save_parser
   p.save_pretty_parser
+
+  puts "Done! Generation took #{Time.now - start} seconds"
 
 end
