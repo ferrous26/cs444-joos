@@ -75,8 +75,8 @@ class Joos::Entity::Class < Joos::Entity
 
   def validate
     super
-    ensure_modifiers_not_present(:protected, :native, :static)
-    ensure_mutually_exclusive_modifiers(:final, :abstract)
+    ensure_modifiers_not_present(:Protected, :Native, :Static)
+    ensure_mutually_exclusive_modifiers(:Final, :Abstract)
     ensure_at_least_one_constructor
     constructors.each(&:validate)
     members.each(&:validate)

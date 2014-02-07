@@ -47,7 +47,7 @@ class Joos::Entity::Interface < Joos::Entity
 
   def validate
     super
-    ensure_modifiers_not_present(:protected, :final, :native, :static)
+    ensure_modifiers_not_present(:Protected, :Final, :Native, :Static)
     members.each(&:validate)
   end
 end

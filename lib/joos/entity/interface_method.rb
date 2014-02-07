@@ -10,7 +10,7 @@ class Joos::Entity::InterfaceMethod < Joos::Entity::Method
 
   def validate
     super
-    ensure_modifiers_not_present(:protected, :static, :final, :native)
+    ensure_modifiers_not_present(:Protected, :Static, :Final, :Native)
   end
 
 
