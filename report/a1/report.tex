@@ -73,9 +73,53 @@ error message and then exit.
 
 \subsection{Lexer}
 
-It does stuff with a DFA and generates a stream of tokens from code
-input. Rejecting non-ASCII code is handled during this phase.
+The lexical analysis portion of our compiler consists of 3 classes: 
+\ttt{Scanner}, which simply feeds lines into the \ttt{tokenize}
+function; \ttt{DFA}, a general deterministic finite automaton class;
+and \ttt{ScannerDFA}, a subclass of \ttt{DFA} which contains the
+Joos-specific lexing rules.
 
+\ttt{DFA} contains the structure of a finite automaton: its
+transition table and accepting states, with an implicit start symbol
+named \ttt{:start}. The transition table maps a state symbol to an
+array of \ttt{(predicate, state)} pairs. The \ttt{transition} function
+looks up a transition from a state on a given input character by
+first calling \ttt{classify} to map the character to the DFA's alphabet.
+\ttt{classify} is overridden in \ttt{ScannerDFA} to raise an exception
+if the input is non-ASCII. \ttt{transition} looks up the state in the
+transition table and checks each predicate in order aginst the input
+to determine which state to follow. Invalid transitions return the
+state \ttt{:error}. Not all valid states need be in the table --
+we have accepting states like \ttt{:line\_comment} that contain
+no transitions, as well as error states like \ttt{:float} for
+catching certain illegal tokens.
+
+To perform tokenization, \ttt{DFA} has a function \ttt{tokenize}
+which runs the maximal munch algorithm against an input string. The
+algorithm doesn't implement backtracking, since it is unnecessary.
+\ttt{tokenize} returns 2 values: an array of \ttt{DFA::Token}s, which
+are simple structures that later get mapped to full \ttt{Joos::Token}s,
+and an \ttt{AutomatonState}, which represents the final state of the
+algorithm. \ttt{AutomatonState} is a nested class that holds the internal
+state of a run through the DFA -- the current state symbol and input seen so
+far. Tokenization is performed line-by-line (except in tests). The
+returned \ttt{AutomatonState} `continuation' is passed to the next
+call to \ttt{tokenize} to handle the case of block comments, which may
+span multiple lines.
+
+The use of a continuation state, however, requires us to implement two
+addition \ttt{ScannerDFA} methods: \ttt{raise\_if\_illegal\_line\_end!} and 
+\ttt{raise\_if\_illegal\_eof!}. These methods check that we haven't
+ended on any incomplete tokens.
+
+\ttt{DFA} also has a few convenience methods for initializing the
+transition table. The principal method is \ttt{state} which provides a
+Ruby DSL (implemented in the \ttt{StateBuilder} nested class) for
+concisely specifying a state and its transitions.
+
+One simplifying design choice we made is to scan keywords and identifiers
+using the same rule and only differentiate between them when later
+constructing \ttt{Token}s.
 
 \subsection{Abstract Syntax Tree}
 
@@ -93,6 +137,19 @@ It takes a stream of tokens from the lexer and does some other stuff.
 
 This is where the interesting shit goes. Talk about anything that did
 not follow simply from class. This is a required section of the report.
+
+\subsection{Lexer}
+
+In the lexer, one challenge was the process of building the transition
+table. Originally, the \ttt{DFA} class had a nested map from states
+to input symbols to transition states. The \ttt{classify} function
+mapped some characters to character classes (symbols) in order to avoid
+having many similar transitions. This approach, however, became
+unwieldy for strings and comments, which needed a transition for
+essentially every character. Changing the map from inputs to states
+into an ordered array of \ttt{(predicate, state)} pairs greatly simplified
+the rules for strings and comments by having a few transitions for
+exceptional cases then a final transition for everything else.
 
 
 \subsection{Weeder}
