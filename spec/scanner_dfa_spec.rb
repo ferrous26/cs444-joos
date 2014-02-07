@@ -82,6 +82,7 @@ describe Joos::ScannerDFA do
     check_simple dfa, '/*hi there*/', :block_comment
     check_simple dfa, '/*hi /*/',     :block_comment
     check_simple dfa, "/*\n there*/", :block_comment
+    check_simple dfa, "/** Lots of stars **/", :block_comment
   end
 
   it 'should accept whitespace' do

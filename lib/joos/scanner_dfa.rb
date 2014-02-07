@@ -55,15 +55,15 @@ class Joos::ScannerDFA < Joos::DFA
     # @return [Symbol]
     attr_accessor :end_type
 
-    def self.new_eol
-      ret = self.new "Unexpected end of line"
+    def self.new_eol state
+      ret = self.new "Unexpected end of line - state #{state}"
       ret.end_type = :line
 
       ret
     end
 
-    def self.new_eof
-      ret = self.new "Unexpected end of file"
+    def self.new_eof state
+      ret = self.new "Unexpected end of file - state #{state}"
       ret.end_type = :file
 
       ret
@@ -178,6 +178,7 @@ class Joos::ScannerDFA < Joos::DFA
     end
     state :block_comment_almost do
       transition :block_comment, '/'
+      transition :block_comment_almost, '*'
       transition :block_comment_part, always
     end
     accept :block_comment
@@ -202,7 +203,7 @@ class Joos::ScannerDFA < Joos::DFA
   # @param state [AutomatonState]
   def raise_if_illegal_line_end! state
     return nil if state.nil? || state.state == :block_comment_part
-    e = UnexpectedEnd.new_eol
+    e = UnexpectedEnd.new_eol state
     raise e
   end
 
@@ -211,7 +212,7 @@ class Joos::ScannerDFA < Joos::DFA
   # the end of a file (everything)
   def raise_if_illegal_eof! state
     return if state.nil?
-    e = UnexpectedEnd.new_eof
+    e = UnexpectedEnd.new_eof state
     raise e
   end
 

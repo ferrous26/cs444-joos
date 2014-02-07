@@ -91,4 +91,20 @@ describe Joos::Scanner do
 		tokens = Joos::Scanner::scan_lines ["'\7'\n"]
 		expect(tokens[0].to_binary[0]).to be == 7
 	end
+
+  it "passes a1/J1_Publicmethods" do
+    s = <<-TEST
+      // PARSER_WEEDER
+      public class J1_publicmethods {
+          public J1_publicmethods() {}
+          public int m() {
+        return 123;
+          }
+          public static int test() {
+        return new J1_publicmethods().m();
+          }
+      }
+    TEST
+    tokens = Joos::Scanner::scan_lines s.split /\n/
+  end
 end
