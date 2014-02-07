@@ -54,8 +54,8 @@ class Joos::Compiler
 
     threads.map(&:value).each do |cst|
       if cst.kind_of? Exception
-        $stderr.puts cst.backtrace if $DEBUG # used internally
         $stderr.puts cst.message
+        $stderr.puts cst.backtrace if $DEBUG # used internally
       end
     end
   end
