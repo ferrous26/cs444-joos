@@ -11,7 +11,7 @@ class Joos::Parser
   attr_reader :cst_stack
 
   def initialize token_stream
-    @token_stream = Array(token_stream).reverse
+    @token_stream = [:EndProgram] + Array(token_stream).reverse
     @state_stack  = [0]
     @cst_stack    = []
     @transitions  = PARSER_RULES[:transitions]
@@ -56,6 +56,8 @@ class Joos::Parser
       puts token if $DEBUG
       oracle(token).process(self, token)
     end
+    @cst_stack.pop
+    @cst_stack.pop
   end
 
 
