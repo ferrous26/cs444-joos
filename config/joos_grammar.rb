@@ -48,7 +48,7 @@ GRAMMAR = {
     ],
     SubExpression: [
       [:Term, :MoreTerms],
-      [:Term, :instanceof, :Type]
+      [:Term, :Instanceof, :Type]
     ],
     MoreTerms: [
       [:Infixop, :Term, :MoreTerms],
@@ -120,7 +120,8 @@ GRAMMAR = {
     ],
     Creator: [
       [:ArrayCreator],
-      [:QualifiedIdentifier]
+      [:QualifiedIdentifier],
+      [:QualifiedIdentifier, :OpenParen, :Expression, :CloseParen]
     ],
     ArrayCreator: [
       [:QualifiedIdentifier, :OpenStaple, :Expression, :CloseStaple],
@@ -149,8 +150,8 @@ GRAMMAR = {
       [:While, :OpenParen, :Expression, :CloseParen, :Statement],
       [:Return, :Semicolon],
       [:Return, :Expression, :Semicolon],
+      [:Expression, :Semicolon],
       [:Semicolon],
-      [:Assignment]
     ],
     ForInit: [
       [:Expressions],
@@ -234,7 +235,7 @@ GRAMMAR = {
       [:Type, :Identifier, :MethodOrFieldRest]
     ],
     MethodOrFieldRest: [
-      [:Equals, :Expression],
+      [:Equals, :Expression, :Semicolon],
       [:MethodDeclaratorRest]
     ],
     InterfaceBodyDeclaration: [
@@ -285,7 +286,7 @@ GRAMMAR = {
   },
 
   terminals: [:Package, :Semicolon, :Identifier, :Dot, :IntegerLiteral, :FloatingPointLiteral, :CharacterLiteral, :StringLiteral,
-              :BooleanLiteral, :NullLiteral, :Equals, :instanceof, :LazyOr, :LazyAnd, :EagerOr, :EagerAnd, :Equality, :NotEqual,
+              :BooleanLiteral, :NullLiteral, :Equals, :Instanceof, :LazyOr, :LazyAnd, :EagerOr, :EagerAnd, :Equality, :NotEqual,
               :LessThan, :GreaterThan, :LessOrEqual, :GreaterOrEqual, :Plus, :Minus, :Multiply, :Divide, :Modulo, :OpenParen,
               :CloseParen, :OpenBrace, :CloseBrace, :OpenStaple, :CloseStaple, :Byte, :Char, :Int, :Boolean, :Not, :This, :Void,
               :Class, :New, :Super, :Comma, :If, :Else, :For, :While, :Return, :Public, :Protected, :Static, :Abstract, :Final,
