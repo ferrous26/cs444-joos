@@ -235,6 +235,7 @@ class Joos::ScannerDFA < Joos::DFA
   # @param line_number [Fixnum]
   # @return [Joos::Token]
   def make_token dfa_token, file, line_number
+		raise "line_number should be a number!" unless line_number.is_a? Integer
     return unless meaningful? dfa_token
     
     klass = TOKEN_CLASSES[dfa_token.state]
