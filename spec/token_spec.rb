@@ -86,8 +86,15 @@ describe Joos::Token do
   end
 
   it 'responds to #inspect with something human readable for exceptions' do
-    token = Joos::Token.new('hello', 'there.c', 3, 21)
-    expect(token.inspect).to be == 'hello from there.c line:3, column:21'
+    token = Joos::Token::Identifier.new('hello', 'there.c', 3, 21)
+    str   = '#<Identifier from there.c:3:21 with value "hello">'
+    expect(token.inspect).to be == str
+  end
+
+  it 'has exceptions which inherit from RuntimeError, not raw Exception' do
+    expect(Joos::Token::IllegalToken::Exception).to be < RuntimeError
+    expect(Joos::Token::Character::InvalidEscapeSequence).to be < RuntimeError
+    expect(Joos::Token::Identifier::IllegalName).to be < RuntimeError
   end
 
   describe Joos::Token::IllegalToken do

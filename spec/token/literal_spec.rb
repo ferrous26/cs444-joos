@@ -74,6 +74,10 @@ describe Joos::Token::Literal do
       expect {
         StringMock.new('\\400', 'a').validate!
       }.to raise_error Joos::Token::StringHelpers::InvalidOctalEscapeSequence
+
+      expect {
+        StringMock.new('\\80', 'a').validate!
+      }.to raise_error Joos::Token::StringHelpers::InvalidOctalEscapeSequence
     end
 
     it 'catches use of the disallowed character' do
@@ -99,6 +103,9 @@ describe Joos::Token::Literal do
 
       bytes = StringMock.new('\\127', '"').validate!
       expect(bytes).to be == [87]
+
+      bytes = StringMock.new('\\1674', '"').validate!
+      expect(bytes).to be == [0167, 52]
     end
 
     describe Joos::Token::StringHelpers::InvalidEscapeSequence do

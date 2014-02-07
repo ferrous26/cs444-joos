@@ -1,9 +1,12 @@
 require 'joos/version'
+require 'joos/freedom_patches'
 
 ##
-# @todo Documentation
+# @abstract
+#
+# Concrete syntax tree for Joos.
 class Joos::CST
-  eval File.read('config/joos_grammar.rb')
+  require 'joos_grammar'
 
   # @return [Array<Joos::CST, Joos::Token>]
   attr_reader :nodes
@@ -32,10 +35,20 @@ class Joos::CST
     @nodes.find { |node| node.type == type }
   end
 
+  # @return [String]
   def inspect
-    "#{type}:#{object_id} [#{nodes.map(&:inspect)}]"
+    "#{type} [#{nodes.map(&:inspect)}]"
   end
 
+  # @yield Each node in the tree will be yield in depth first order
+  # @yieldparam node [Joos::CST, Joos::Token, Joos::Entity]
+  def visit &block
+    nodes.each do |node|
+      block.call node
+      node.visit(&block) if node.respond_to? :visit
+    end
+    self
+  end
 
   # generate all the concrete concrete syntax tree node classes
   GRAMMAR[:non_terminals].each do |name|
@@ -45,9 +58,7 @@ class Joos::CST
     end
 
     klass = ::Class.new(self) do
-
       define_method(:type) { name }
-
       GRAMMAR[:rules][name].each do |rule|
         rule.each do |variant|
           define_method(variant) { search variant }
@@ -56,6 +67,51 @@ class Joos::CST
     end
 
     const_set(name, klass)
+  end
+
+  ##
+  # Extensions to the basic node to support collapsing chains of modifiers.
+  class Modifiers
+    def initialize nodes
+      unless nodes.blank?
+        other_modifiers = nodes.find { |node| node.type == :Modifiers }.nodes
+        nodes = [nodes.first] + other_modifiers
+      end
+      super nodes
+    end
+  end
+
+  ##
+  # Extensions to the basic node to support term rewriting.
+  class << Term
+    ##
+    # Override the allocator
+    def new nodes
+      if negative_integer? nodes
+        nodes.second # return only the negative integer
+      else
+        o = allocate
+        o.send(:initialize, nodes)
+        o
+      end
+    end
+
+
+    private
+
+    # Forgive me, I will fix this up later. Blame Michael.
+    def negative_integer? nodes
+      if nodes.first.type == :TermModifier &&
+          nodes.first.nodes.first.type == :Minus &&
+          nodes.second.type == :Term &&
+          nodes.second.nodes.first.type == :UnmodifiedTerm &&
+          nodes.second.nodes.first.nodes.first.type == :Primary &&
+          nodes.second.nodes.first.nodes.first.nodes.first.type == :Literal &&
+          nodes.second.nodes.first.nodes.first.nodes.first.nodes.first.type == :IntegerLiteral
+        int = nodes.second.nodes.first.nodes.first.nodes.first.nodes.first
+        int.flip_sign
+      end
+    end
   end
 
 end

@@ -93,7 +93,7 @@ class Joos::Token
   #
   # @return [String]
   def inspect
-    "#{value} from #{file} line:#{line}, column:#{column}"
+    "#<#{type} from #{file}:#{line}:#{column} with value #{value.inspect}>"
   end
 
   ##
@@ -110,7 +110,7 @@ class Joos::Token
     # Exception that is used for instantiated tokens which have been marked
     # as illegal.
     #
-    class Exception < ::Exception
+    class Exception < ::RuntimeError
       # @param token [Joos::Token]
       def initialize token
         super <<-EOM
