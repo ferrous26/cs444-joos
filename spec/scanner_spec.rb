@@ -56,4 +56,39 @@ describe Joos::Scanner do
     check_tokens "int main () { return 123; }",
       "int Identifier ( ) { return Integer ; }" 
   end
+
+	it 'parses escape sequences properly' do
+		# J1_char_escape
+		lines = "\\b \\t \\n \\f \\r \\\" \\'".split(/\s/).map{ |t| "'#{t}'\n"}
+		tokens = Joos::Scanner.scan_lines lines
+		tokens.each do |token|
+			expect(token).to be_a Joos::Token::Character
+		end
+
+		# J1_char_escape2
+		lines = "\\\\b \\\\t \\\\n \\\\f \\\\r '\\\\\\\" '\\\\\\'".split(/\s/)
+		lines.map!{ |t| "\"#{t}\"\n"}
+		tokens = Joos::Scanner.scan_lines lines
+		tokens[0..-3].each do |token|
+			expect(token.length).to be == 2
+		end
+		tokens[5..-1].each do |token|
+			expect(token.length).to be == 3
+		end
+
+		# J1_char_escape3
+		lines = "\\\\123 \\\\12 \\\\1 \\134123 \\13412 \\1341".split(/\s/)
+		lines.map!{ |t| "\"#{t}\"\n"}
+		tokens = Joos::Scanner.scan_lines lines
+		expect(tokens[0].length).to be == 4
+		expect(tokens[1].length).to be == 3
+		expect(tokens[2].length).to be == 2
+
+		expect(tokens[3].length).to be == 4
+		expect(tokens[4].length).to be == 3
+		expect(tokens[5].length).to be == 2
+
+		tokens = Joos::Scanner::scan_lines ["'\7'\n"]
+		expect(tokens[0].to_binary[0]).to be == 7
+	end
 end
