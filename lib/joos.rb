@@ -1,5 +1,5 @@
 require 'joos/version'
-require 'joos/utilities'
+require 'joos/freedom_patches'
 require 'joos/scanner'
 require 'joos/parser'
 
@@ -52,10 +52,13 @@ class Joos::Compiler
       Thread.new do scan_and_parse(file) end
     end
 
-    threads.map(&:value).each do |cst|
-      if cst.kind_of? Exception
-        $stderr.puts cst.message
-        $stderr.puts cst.backtrace if $DEBUG # used internally
+    threads.map(&:value).each do |ast|
+      break if @result == ERROR
+
+      if ast.kind_of? Exception
+        print_exception ast
+      else
+        build_entities ast
       end
     end
   end
@@ -63,20 +66,39 @@ class Joos::Compiler
 
   private
 
+  def print_exception exception
+    @result = ERROR
+    $stderr.puts exception.message
+    $stderr.puts exception.backtrace if $DEBUG # used internally
+  end
+
   ##
   # Returns an exception if scanning or parsing failed, otherwise returns
   # the generated AST.
   #
   # @param job [String] path to the file to work on
-  # @return [Joos::AST, Joos::CompilerException]
+  # @return [Joos::CST, Joos::CompilerException, Exception]
   def scan_and_parse job
-    cst = Joos::Parser.new(Joos::Scanner.scan_file job).parse
-    cst.visit do |node|
+    ast = Joos::Parser.new(Joos::Scanner.scan_file job).parse
+    ast.visit do |parent, node|
       node.validate if node.type == :IntegerLiteral
     end
   rescue Exception => exception
-    @result = ERROR
     exception
+  end
+
+  ##
+  # Kick off the entity building process, which is recursive
+  def build_entities ast
+    ast.visit do |parent, node|
+      if node.type == :TypeDeclaration
+        entity = node.nodes.second.build_entity(node)
+        entity.validate
+        parent.transform(:TypeDeclaration, entity)
+      end
+    end
+  rescue Exception => exception
+    print_exception exception
   end
 
 end
