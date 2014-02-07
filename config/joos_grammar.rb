@@ -183,12 +183,9 @@ GRAMMAR = {
       [:Import, :QualifiedIdentifier, :Dot, :Multiply, :Semicolon]
     ],
     TypeDeclaration: [
-      [:Modifiers, :ClassOrInterfaceDeclaration],
-      [:Semicolon]
-    ],
-    ClassOrInterfaceDeclaration: [
-      [:ClassDeclaration],
-      [:InterfaceDeclaration]
+      [:Modifiers, :ClassDeclaration],
+      [:Modifiers, :InterfaceDeclaration]
+      # [:Semicolon] # @note I think this case is stupid
     ],
     ClassDeclaration: [
       [:Class, :Identifier, :ClassBody],
@@ -223,7 +220,7 @@ GRAMMAR = {
     ],
     ClassBodyDeclaration: [
       [:Semicolon],
-      [:Modifier, :Modifiers, :MemberDecl]
+      [:Modifiers, :MemberDecl]
     ],
     MemberDecl: [
       [:MethodOrFieldDecl],
@@ -242,27 +239,14 @@ GRAMMAR = {
       [:Modifiers, :InterfaceMemberDecl]
     ],
     InterfaceMemberDecl: [
-      [:InterfaceMethodOrFieldDecl],
-      [:Void, :Identifier, :VoidInterfaceMethodDeclaratorRest]
+      [:Type, :InterfaceMemberDeclRest],
+      [:Void, :InterfaceMemberDeclRest]
     ],
-    InterfaceMethodOrFieldDecl: [
-      [:Type, :Identifier, :InterfaceMethodOrFieldRest]
-    ],
-    InterfaceMethodOrFieldRest: [
-      [:InterfaceMethodDeclaratorRest]
+    InterfaceMemberDeclRest: [
+      [:Identifier, :FormalParameters, :Semicolon]
     ],
     MethodDeclaratorRest: [
       [:FormalParameters, :MethodBody],
-      [:FormalParameters, :Semicolon]
-    ],
-    VoidMethodDeclaratorRest: [
-      [:FormalParameters, :MethodBody],
-      [:FormalParameters, :Semicolon]
-    ],
-    InterfaceMethodDeclaratorRest: [
-      [:FormalParameters, :Semicolon]
-    ],
-    VoidInterfaceMethodDeclaratorRest: [
       [:FormalParameters, :Semicolon]
     ],
     ConstructorDeclaratorRest: [
@@ -298,11 +282,11 @@ GRAMMAR = {
                   :Block, :BlockStatement, :BlockStatements, :LocalVariableDeclarationStatement, :Statement,
                   :ForInit, :ForUpdate, :Modifiers, :Modifier, :VariableDeclarator,
                   :ImportDeclarations, :ImportDeclaration,
-                  :TypeDeclaration, :ClassOrInterfaceDeclaration, :ClassDeclaration, :InterfaceDeclaration, :TypeList, :CommaType, :ClassBody,
+                  :TypeDeclaration, :ClassDeclaration, :InterfaceDeclaration, :TypeList, :CommaType, :ClassBody,
                   :ClassBodyDeclarations, :ClassBodyDeclaration, :InterfaceBody, :InterfaceBodyDeclarations, :InterfaceBodyDeclaration,
-                  :MemberDecl, :MethodOrFieldDecl, :MethodOrFieldRest, :InterfaceMemberDecl, :InterfaceMethodOrFieldDecl,
-                  :InterfaceMethodOrFieldRest, :MethodDeclaratorRest, :VoidMethodDeclaratorRest, :InterfaceMethodDeclaratorRest,
-                  :VoidInterfaceMethodDeclaratorRest, :ConstructorDeclaratorRest, :FormalParameters, :FormalParameter,
+                  :MemberDecl, :MethodOrFieldDecl, :MethodOrFieldRest, :InterfaceMemberDecl,
+                  :MethodDeclaratorRest, :InterfaceMemberDeclRest,
+                  :ConstructorDeclaratorRest, :FormalParameters, :FormalParameter,
                   :MoreFormalParameters, :MethodBody, :ArrayType, :AugmentedCompilationUnit],
 
   start_symbol: :AugmentedCompilationUnit
