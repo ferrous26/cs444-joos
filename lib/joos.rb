@@ -70,7 +70,10 @@ class Joos::Compiler
   # @param job [String] path to the file to work on
   # @return [Joos::AST, Joos::CompilerException]
   def scan_and_parse job
-    Joos::Parser.new(Joos::Scanner.scan_file job).parse
+    cst = Joos::Parser.new(Joos::Scanner.scan_file job).parse
+    cst.visit do |node|
+      node.validate if node.type == :IntegerLiteral
+    end
   rescue Exception => exception
     @result = ERROR
     exception
