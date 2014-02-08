@@ -78,7 +78,7 @@ GRAMMAR = {
     ],
     UnmodifiedTerm: [
       [:OpenParen, :Expression, :OpenStaple, :CloseStaple, :CloseParen, :Term],
-      [:OpenParen, :Expression, :CloseParen, :Term],      
+      [:OpenParen, :Expression, :CloseParen, :Term],
       [:OpenParen, :BasicType, :OpenStaple, :CloseStaple, :CloseParen, :Term],
       [:OpenParen, :BasicType, :CloseParen, :Term],
       [:Primary, :Selectors]
@@ -102,13 +102,11 @@ GRAMMAR = {
     Selector: [
       [:Dot, :Identifier],
       [:Dot, :Identifier, :Arguments],
-      [:Dot, :This], # COME BACK (qualified this?)
       [:OpenStaple, :Expression, :CloseStaple]
     ],
     IdentifierSuffix: [
       [:OpenStaple, :Expression, :CloseStaple], # COME BACK
-      [:Arguments], # @todo What is this case? -- function call?
-      [:Dot, :This], # COME BACK (qualified this?)
+      [:Arguments]
     ],
     Arguments: [
       [:OpenParen, :Expressions, :CloseParen]
