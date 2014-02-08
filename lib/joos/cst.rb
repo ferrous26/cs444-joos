@@ -38,7 +38,7 @@ class Joos::CST
 
   # @return [String]
   def inspect
-    "#{type} [#{nodes.map(&:inspect)}]"
+    "#{type} #{nodes.map(&:inspect).inspect}"
   end
 
   # @yield Each node in the tree will be yield in depth first order
