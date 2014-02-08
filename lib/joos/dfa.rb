@@ -34,7 +34,7 @@ class Joos::DFA
 
   # @param transition_table [Hash{ Symbol => Hash{ #to_s => Symbol } }]
   # @param accepting_states [Array<Symbol>]
-  def initialize transition_table={}, accepting_states=[]
+  def initialize transition_table = {}, accepting_states = []
     @transitions   = transition_table
     @accept_states = accepting_states
   end
@@ -51,7 +51,7 @@ class Joos::DFA
       @dfa.accept @state
     end
 
-    def transition to_state, pred=nil, &pred_block
+    def transition to_state, pred = nil, &pred_block
       @dfa.add_transition @state, to_state, pred, &pred_block
     end
 
@@ -87,15 +87,15 @@ class Joos::DFA
   #
   # @yield [char] Return true iff the DFA should transition on the given input
   # @yieldreturn [Bool]
-  def add_transition from_state, to_state, pred=nil, &pred_block
+  def add_transition from_state, to_state, pred = nil, &pred_block
     if pred_block
       b = pred_block
     else
       case pred
       when Regexp
-        b = Proc.new {|char| pred =~ char}
+        b = proc {|char| pred =~ char}
       when String, Array
-        b = Proc.new {|char| pred.include? char}
+        b = proc {|char| pred.include? char}
       else
         b = pred
       end
@@ -112,7 +112,7 @@ class Joos::DFA
   def state s, &block
     @transitions[s] ||= []
     builder = StateBuilder.new self, s
-    builder.instance_eval &block if block_given?
+    builder.instance_evalr(&block) if block_given?
   end
 
 
