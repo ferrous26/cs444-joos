@@ -4,7 +4,7 @@ GRAMMAR = {
       [:CompilationUnit, :EndProgram]
     ],
     CompilationUnit: [
-      [:ImportDeclarations],
+      [:ImportDeclarations], # @todo This case may not be valid in Joos (ASK)
       [:ImportDeclarations, :TypeDeclaration],
       [:Package, :QualifiedIdentifier, :Semicolon, :ImportDeclarations],
       [:Package, :QualifiedIdentifier, :Semicolon, :ImportDeclarations, :TypeDeclaration]
@@ -184,8 +184,12 @@ GRAMMAR = {
       []
     ],
     ImportDeclaration: [
-      [:Import, :QualifiedIdentifier, :Semicolon],
-      [:Import, :QualifiedIdentifier, :Dot, :Multiply, :Semicolon]
+      [:Import, :Identifier, :MoreImportIdentifiers, :Semicolon]
+    ],
+    MoreImportIdentifiers: [
+      [:Dot, :Identifier, :MoreImportIdentifiers],
+      [:Dot, :Multiply],
+      []
     ],
     TypeDeclaration: [
       [:Modifiers, :ClassDeclaration],
@@ -291,7 +295,7 @@ GRAMMAR = {
                   :TypeDeclaration, :ClassDeclaration, :InterfaceDeclaration, :TypeList, :CommaType, :ClassBody,
                   :ClassBodyDeclarations, :ClassBodyDeclaration, :InterfaceBody, :InterfaceBodyDeclarations, :InterfaceBodyDeclaration,
                   :MemberDecl, :MethodOrFieldDecl, :MethodOrFieldRest, :InterfaceMemberDecl,
-                  :MethodDeclaratorRest, :InterfaceMemberDeclRest,
+                  :MethodDeclaratorRest, :InterfaceMemberDeclRest, :MoreImportIdentifiers,
                   :ConstructorDeclaratorRest, :FormalParameters, :FormalParameter,
                   :MoreFormalParameters, :MethodBody, :ArrayType, :AugmentedCompilationUnit],
 
