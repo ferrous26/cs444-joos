@@ -71,7 +71,7 @@ error message and then exit.
 
 \subsection{Lexer}
 
-The lexical analysis portion of our compiler consists of 3 classes: 
+The lexical analysis portion of our compiler consists of 3 classes:
 \ttt{Scanner}, which simply feeds lines into the \ttt{tokenize}
 function; \ttt{DFA}, a general deterministic finite automaton class;
 and \ttt{ScannerDFA}, a subclass of \ttt{DFA} which contains the
@@ -99,14 +99,14 @@ algorithm doesn't implement backtracking, since it is unnecessary.
 are simple structures that later get mapped to full \ttt{Joos::Token}s,
 and an \ttt{AutomatonState}, which represents the final state of the
 algorithm. \ttt{AutomatonState} is a nested class that holds the internal
-state of a run through the DFA -- the current state symbol and input seen so
+state of a run through the DFA --- the current state symbol and input seen so
 far. Tokenization is performed line-by-line (except in tests). The
 returned \ttt{AutomatonState} `continuation' is passed to the next
 call to \ttt{tokenize} to handle the case of block comments, which may
 span multiple lines.
 
 The use of a continuation state, however, requires us to implement two
-addition \ttt{ScannerDFA} methods: \ttt{raise\_if\_illegal\_line\_end!} and 
+addition \ttt{ScannerDFA} methods: \ttt{raise\_if\_illegal\_line\_end!} and
 \ttt{raise\_if\_illegal\_eof!}. These methods check that we haven't
 ended on any incomplete tokens.
 
