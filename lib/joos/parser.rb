@@ -4,7 +4,7 @@ require 'joos/cst'
 ##
 # @todo Documentation
 class Joos::Parser
-  eval File.read('config/parser_rules.rb')
+  require 'parser_rules'
 
   attr_reader :token_stream
   attr_reader :state_stack
