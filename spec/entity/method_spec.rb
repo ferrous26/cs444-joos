@@ -77,9 +77,7 @@ describe Joos::Entity::Method do
     klass = Joos::Entity::Method.new(name,
                                      modifiers: make_mods(:Final, :Public),
                                      body: nil)
-    expect {
-      klass.validate
-    }.to raise_error Joos::Entity::Method::ExpectedBody
+    expect { klass.validate }.to raise_error Joos::Entity::Method::ExpectedBody
   end
 
 end
