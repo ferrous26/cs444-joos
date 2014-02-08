@@ -61,9 +61,14 @@ class Joos::CST
     search symbol
   end
 
+  # @param tab [Fixnum]
   # @return [String]
-  def inspect
-    "#{type} #{nodes.map(&:inspect).inspect}"
+  def inspect tab = 0
+    base = "#{'  ' * tab}#{type}\n"
+    @nodes.each do |node|
+      base << node.inspect(tab + 1) << "\n"
+    end
+    base.chomp
   end
 
   # @yield Each node in the tree will be yield in depth first order

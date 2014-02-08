@@ -80,6 +80,7 @@ class Joos::Compiler
   # @return [Joos::CST, Joos::CompilerException, Exception]
   def scan_and_parse job
     ast = Joos::Parser.new(Joos::Scanner.scan_file job).parse
+    $stderr.puts ast.inspect if $DEBUG
     ast.visit do |parent, node| # weeder checks
       case node.type
       when :IntegerLiteral then node.validate

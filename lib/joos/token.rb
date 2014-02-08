@@ -92,8 +92,8 @@ class Joos::Token
   # Formatted output for error messages
   #
   # @return [String]
-  def inspect
-    "#<#{type} from #{file}:#{line}:#{column} with value #{value.inspect}>"
+  def inspect tab = 0
+    "#{'  ' * tab}#{type} from #{file}:#{line}:#{column}"
   end
 
   ##
