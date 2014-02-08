@@ -82,7 +82,9 @@ class Joos::Parser
             ", but got #{token.inspect} from state #{current_state}")
     end
 
-    next_state.fetch token_sym
+    next_state.fetch token_sym do |_|
+      raise("no transition on #{next_state.inspect} with #{token_sym}")
+    end
   end
 
 end
