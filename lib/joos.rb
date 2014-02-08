@@ -80,9 +80,12 @@ class Joos::Compiler
   # @return [Joos::CST, Joos::CompilerException, Exception]
   def scan_and_parse job
     ast = Joos::Parser.new(Joos::Scanner.scan_file job).parse
-    ast.visit do |parent, node|
-      node.validate if node.type == :IntegerLiteral
-      node.validate(parent) if node.type == :Instanceof
+    ast.visit do |parent, node| # weeder checks
+      case node.type
+      when :IntegerLiteral then node.validate
+      when :Instanceof then node.validate parent
+      when :CloseStaple then node.validate parent
+      end
     end
   rescue Exception => exception
     exception

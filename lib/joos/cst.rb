@@ -51,9 +51,15 @@ class Joos::CST
     def search type
       nil
     end
+
+    def method_missing *args
+      nil
+    end
   end
 
-
+  def method_missing symbol, *args
+    search symbol
+  end
 
   # @return [String]
   def inspect
