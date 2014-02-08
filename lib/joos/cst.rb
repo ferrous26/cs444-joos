@@ -13,7 +13,7 @@ class Joos::CST
   attr_reader :nodes
 
   # @param nodes [Array<Joos::CST, Joos::Token>]
-  def initialize nodes
+  def initialize nodes = []
     @nodes = nodes
   end
 
@@ -33,7 +33,7 @@ class Joos::CST
   # @param type [Symbol]
   # @return [Joos::CST, Joos::Token, nil]
   def search type
-    @nodes.find { |node| node.type == type }
+    @nodes.find(Joos::CST.new) { |node| node.type == type }
   end
 
   # @return [String]
