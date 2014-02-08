@@ -82,7 +82,7 @@ class Joos::DFA
   # Add an entry to the DFA's transition table
   # @param from_state [Symbol]
   # @param to_state [Symbol]
-  # @param pred [String, Regexp, #call] 
+  # @param pred [String, Regexp, #call]
   #   Optional predicate to test characters if no block is passed
   #
   # @yield [char] Return true iff the DFA should transition on the given input
@@ -221,10 +221,10 @@ class Joos::DFA
   def debug_trace input
     s = start
     input.each_char do |char|
-      puts s
+      $stderr.puts s
       s.next! char
     end
-    puts s
+    $stderr.puts s
   end
 
   ##

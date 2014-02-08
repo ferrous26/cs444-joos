@@ -242,7 +242,7 @@ class Joos::ScannerDFA < Joos::DFA
     klass ||= Joos::Token::CLASSES[dfa_token.lexeme]
     klass ||= Joos::Token::Identifier if dfa_token.state == :identifier
 
-    puts dfa_token if klass.nil?
+    $stderr.puts "Could not find token class for #{dfa_token}" if klass.nil?
 
     klass.new dfa_token.lexeme, file, line_number, dfa_token.column
   end
