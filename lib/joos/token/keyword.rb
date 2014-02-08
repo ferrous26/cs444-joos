@@ -143,4 +143,27 @@ class Joos::Token
     CLASSES[name] = klass
   end
 
+  ##
+  # Token representing the `instanceof` keyword/operator
+  class Instanceof
+    ##
+    # Exception raised when the `instanceof` operator is given a non-reference
+    # type for the right hand operand.
+    class InvalidReferenceType < Exception
+      def initialize op
+        l = op.source
+        super "#{l} | instanceof expects a reference type as the right operand"
+      end
+    end
+
+    # @param parent [Joos::CST::Infixop]
+    def validate parent
+      term = parent.parent.Term.UnmodifiedTerm
+      return if term.Selectors.nodes.empty? &&
+        term.Primary.QualifiedIdentifier &&
+        term.Primary.nodes.size == 1
+      raise InvalidReferenceType.new(self)
+    end
+  end
+
 end

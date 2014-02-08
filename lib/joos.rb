@@ -82,6 +82,7 @@ class Joos::Compiler
     ast = Joos::Parser.new(Joos::Scanner.scan_file job).parse
     ast.visit do |parent, node|
       node.validate if node.type == :IntegerLiteral
+      node.validate(parent) if node.type == :Instanceof
     end
   rescue Exception => exception
     exception
