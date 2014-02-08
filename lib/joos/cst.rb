@@ -9,12 +9,18 @@ require 'joos/entity'
 class Joos::CST
   require 'joos_grammar'
 
+  # @param [Joos::CST]
+  attr_accessor :parent
+
   # @return [Array<Joos::CST, Joos::Token>]
   attr_reader :nodes
 
   # @param nodes [Array<Joos::CST, Joos::Token>]
   def initialize nodes = []
     @nodes = nodes
+    nodes.each do |node|
+      node.parent = self if node.kind_of? Joos::CST
+    end
   end
 
   ##
