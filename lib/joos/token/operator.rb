@@ -19,41 +19,33 @@ class Joos::Token
     end
   end
 
-  ##
-  # Attribute for operators that take a single operand
-  module UnaryOperator; end
-
-  ##
-  # Attribute for operators that take two operands
-  module BinaryOperator; end
-
 
   # @!group Operators
 
   [
-   ['=',    :Equals ,                  BinaryOperator],
-   ['>',    :GreaterThan,              BinaryOperator],
-   ['<',    :LessThan,                 BinaryOperator],
-   ['!',    :Not,                      UnaryOperator],
-   ['~',    :Twiddle,                  UnaryOperator, IllegalToken],
+   ['=',    :Equals],
+   ['>',    :GreaterThan],
+   ['<',    :LessThan],
+   ['!',    :Not],
+   ['~',    :Twiddle,                  IllegalToken],
    ['?',    :Option,                   IllegalToken],
    [':',    :OptionSeparator,          IllegalToken],
-   ['==',   :Equality,                 BinaryOperator],
-   ['<=',   :LessOrEqual,              BinaryOperator],
-   ['>=',   :GreaterOrEqual,           BinaryOperator],
-   ['!=',   :NotEqual,                 BinaryOperator],
-   ['&&',   :LazyAnd,                  BinaryOperator],
-   ['||',   :LazyOr,                   BinaryOperator],
+   ['==',   :Equality],
+   ['<=',   :LessOrEqual],
+   ['>=',   :GreaterOrEqual],
+   ['!=',   :NotEqual],
+   ['&&',   :LazyAnd],
+   ['||',   :LazyOr],
    ['++',   :Increment,                IllegalToken],
    ['--',   :Decrement,                IllegalToken],
-   ['+',    :Plus,                     BinaryOperator, UnaryOperator],
-   ['-',    :Minus,                    BinaryOperator, UnaryOperator],
-   ['*',    :Multiply,                 BinaryOperator],
-   ['/',    :Divide,                   BinaryOperator],
-   ['&',    :EagerAnd,                 BinaryOperator],
-   ['|',    :EagerOr,                  BinaryOperator],
+   ['+',    :Plus],
+   ['-',    :Minus],
+   ['*',    :Multiply],
+   ['/',    :Divide],
+   ['&',    :EagerAnd],
+   ['|',    :EagerOr],
    ['^',    :Carat,                    IllegalToken],
-   ['%',    :Modulo,                   BinaryOperator],
+   ['%',    :Modulo],
    ['<<',   :SignedShiftLeft,          IllegalToken],
    ['>>',   :SignedShiftRight,         IllegalToken],
    ['>>>',  :UnsignedSignedShiftRight, IllegalToken],

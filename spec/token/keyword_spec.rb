@@ -14,33 +14,6 @@ describe Joos::Token::Keyword do
     expect(ancestors).to include Joos::Token::ConstantToken
   end
 
-  it 'makes various attributes available under its namespace' do
-    [
-     :Modifier,
-     :FieldModifier,
-     :ClassModifier,
-     :MethodModifier,
-     :VisibilityModifier,
-     :ControlFlow,
-     :Declaration,
-     :Type,
-     :PrimitiveType,
-     :PrimitiveLiteral,
-     :ReferenceLiteral
-    ].each do |attribute|
-      expect(Joos::Token.const_get(attribute, false)).to be_a Module
-    end
-  end
-
-  it 'sets features correctly for each attribute' do
-    ns = Joos::Token
-    expect(ns.const_get :FieldModifier).to include ns.const_get(:Modifier)
-    expect(ns.const_get :ClassModifier).to include ns.const_get(:Modifier)
-    expect(ns.const_get :MethodModifier).to include ns.const_get(:Modifier)
-    expect(ns.const_get :VisibilityModifier).to include ns.const_get(:Modifier)
-    expect(ns.const_get :PrimitiveType).to include ns.const_get(:Type)
-  end
-
   keywords = [
               'abstract',
               'default',
