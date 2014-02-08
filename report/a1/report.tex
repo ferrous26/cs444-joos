@@ -5,60 +5,58 @@
 
 \titlemake{1}
 
-This document outlines the design of a scanner and parser for
+This document outlines the design of a scanner, parser, and weeder for
 the Joos 1W language as specified by the Java Language Specification
 2.0 (JLS) and the course website
 \url{https://www.student.cs.uwaterloo.ca/~cs444/joos.html}. It also
 discusses some challenges faced while implementing the scanner and
 parser, as well as our strategy for testing correctness.
 
-Code is written in Ruby, and our implementation of the scanner and
-lexer is located in \ttt{lib/}. A copy of the Marmoset tests is
+Code is written in Ruby, and our implementation code is located in
+\ttt{lib/} of the submitted code. A copy of the Marmoset tests is
 located in \ttt{test/}, while our own tests are located in
-\ttt{spec/}. Offline tasks, such as running our parser generator
-are located in \ttt{rakelib/}. All tasks that might have been in
-the \ttt{Makefile} are delegate to tasks defined in
-\ttt{rakelib/}.
+\ttt{spec/}. Miscellaneous tasks are handled by the Ruby \ttt{make}
+(\ttt{rake}) system, which is organzied in \ttt{rakelib/}.
 
 
 \section{Design}
 
-The design of the scanning and parsing phases of our compiler are
-broken up into five sections: a description of our token data
-structures which are produced by the parser and consumed by the
-scanner. The scanner, which consumes input source code and produces
-tokens. The abstract syntax tree (AST), which is produced by the
-parser and will be used in later assignments. And finally, the parser,
-which consumes tokens and produces the AST.
+The design of this phase of the compiler is broken up into five
+sections: a description of our token data structures which are
+produced by the scanner and consumed by the parser; the scanner, which
+produces tokens from input source code; the grammar specification,
+which are used to generate the parser rules and concrete syntax tree
+classes; the parser, which produces a concrete syntax tree (CST) from
+the tokenized input; and a weeding phase, which begins to transform
+the CST into an abstract syntax tree (AST) while performing some
+grammar checks that would have been difficult to do during parsing.
 
 
 \subsection{Tokens}
 
-The interface between the lexer and the parser is a stream
-(\ttt{Array}) of \ttt{Joos::Token} objects. \ttt{Joos::Token}
-is an abstract base class which encodes the original value of the
-token, the type of the token, and metadata related to where the token
-originated.
+The interface between the scanner and the parser is an \ttt{Array} of
+\ttt{Joos::Token} objects. \ttt{Joos::Token} is an abstract base class
+which encodes the original value of the token, the type of the token,
+and metadata related to where the token originated in the source file.
 
 Concrete subclasses are created for each keyword, operator, separator,
 and literal type, as defined in the JLS. A concrete class for
 identifiers is also created in the \ttt{Joos::Token}
-namespace. Classes may \ttt{include} modifiers which attach extra
-metadata to a token.
+namespace. Classes may \ttt{include} mixins which attach extra
+metadata to a token, though the name of the concrete class specifies
+the type of the token.
 
-The concrete token class itself specifies the type of the
-token. For instance, a token representing the keyword \ttt{while} will
+For instance, a token representing the keyword \ttt{while} will
 be contained by an instance of the \ttt{Joos::Token::While} class, and
 a token representing a litertal \ttt{true} will be contained by an
 instance of the \ttt{Joos::Token::True} class. Identifiers are wrapped
 by \ttt{Joos::Token::Identifier}, literal integers by
 \ttt{Joos::Token::Integer}, and so on.
 
-Each token will contain metadata that can be used for diagnostic
-purposes including, but not limited to, the relative path to the file
-where the token comes from, the line in the file where the token comes
-from, and the column in the line where the token begins. Additional
-metadata is attached to different groupings of token classes to create
+Each token contains metadata that can be used for diagnostic purposes
+including, but not limited to, the path to the source file where the
+token originated, as well as line and column numbers where the token
+begins. Additional metadata is attached to different groupings of token classes to create
 a sort of hierarchy. Additional metadata include things like the
 \ttt{IllegalToken} modifier which is used to mark the types of tokens
 that are legal Java tokens, but are not used in Joos.
