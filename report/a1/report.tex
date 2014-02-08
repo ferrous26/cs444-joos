@@ -22,15 +22,8 @@ located in \ttt{test/}, while our own tests are located in
 \section{Design}
 
 The design of this phase of the compiler is broken up into five
-sections: a description of our token data structures which are
-produced by the scanner and consumed by the parser; the scanner, which
-produces tokens from input source code; the grammar specification,
-which are used to generate the parser rules and concrete syntax tree
-classes; the parser, which produces a concrete syntax tree (CST) from
-the tokenized input; and a weeding phase, which begins to transform
-the CST into an abstract syntax tree (AST) while performing some
-grammar checks that would have been difficult to do during parsing.
-
+sections: token data structures, the scanner, the concrete syntax tree
+(CST) classes, the parser, and the weeder.
 
 \subsection{Tokens}
 
@@ -54,19 +47,18 @@ by \ttt{Joos::Token::Identifier}, literal integers by
 \ttt{Joos::Token::Integer}, and so on.
 
 Each token contains metadata that can be used for diagnostic purposes
-including, but not limited to, the path to the source file where the
-token originated, as well as line and column numbers where the token
-begins. Additional metadata is attached to different groupings of token classes to create
-a sort of hierarchy. Additional metadata include things like the
-\ttt{IllegalToken} modifier which is used to mark the types of tokens
-that are legal Java tokens, but are not used in Joos.
+including the path to the source file where the token originated, as
+well as line and column numbers where the token begins. Additional
+metadata is attached to some token classes, such as \ttt{IllegalToken}
+modifier which is used to mark the types of tokens that are legal Java
+tokens, but are not used in Joos.
 
-Finally, concrete token classes will validate token values if
+Tokens marked as illegal can be immediately weeded out and a helpful
+error message can be printed.
+
+Additional weeding functionality is added to specific token classes as
 needed. In the case of string and character literals, we check that
-all escape sequences in the string are legal escape sequences. Token
-classes which are marked as illegal will raise an exception in their
-constructor, which will cause the compiler to print an appropriate
-error message and then exit.
+all escape sequences in the string are legal escape sequences.
 
 
 \subsection{Lexer}
@@ -77,36 +69,39 @@ function; \ttt{DFA}, a general deterministic finite automaton class;
 and \ttt{ScannerDFA}, a subclass of \ttt{DFA} which contains the
 Joos-specific lexing rules.
 
-\ttt{DFA} contains the structure of a finite automaton: its
-transition table and accepting states, with an implicit start symbol
-named \ttt{:start}. The transition table maps a state symbol to an
+\ttt{DFA} contains the structure of a finite automaton: a
+transition table and set of accepting states, with an implicit start
+symbol named \ttt{:start}. The transition table maps a state symbol to an
 array of \ttt{(predicate, state)} pairs. The \ttt{transition} function
 looks up a transition from a state on a given input character by
-first calling \ttt{classify} to map the character to the DFA's alphabet.
-\ttt{classify} is overridden in \ttt{ScannerDFA} to raise an exception
-if the input is non-ASCII. \ttt{transition} looks up the state in the
-transition table and checks each predicate in order aginst the input
-to determine which state to follow. Invalid transitions return the
-state \ttt{:error}. Not all valid states need be in the table --
-we have accepting states like \ttt{:line\_comment} that contain
-no transitions, as well as error states like \ttt{:float} for
-catching certain illegal tokens.
+classifying the character to map the character to the DFA's
+alphabet.
+
+Invalid transitions return the state \ttt{:error}. Though, not all
+valid states need be in the table --- we have accepting states like
+\ttt{:line\_comment} that contain no transitions, as well as error
+states like \ttt{:float} for catching certain illegal
+tokens. Non-ASCII characters have no transition and will be caught
+during scanning.
 
 To perform tokenization, \ttt{DFA} has a function \ttt{tokenize}
 which runs the maximal munch algorithm against an input string. The
-algorithm doesn't implement backtracking, since it is unnecessary.
+algorithm doesn't implement backtracking, since the only potential
+backtracking case, octal escape sequences, is handled during literal
+string validation.
+
 \ttt{tokenize} returns 2 values: an array of \ttt{DFA::Token}s, which
-are simple structures that later get mapped to full \ttt{Joos::Token}s,
-and an \ttt{AutomatonState}, which represents the final state of the
+are simple structures that later get mapped to full \ttt{Joos::Token}
+objects, and an \ttt{AutomatonState}, which represents the final state of the
 algorithm. \ttt{AutomatonState} is a nested class that holds the internal
 state of a run through the DFA --- the current state symbol and input seen so
-far. Tokenization is performed line-by-line (except in tests). The
-returned \ttt{AutomatonState} `continuation' is passed to the next
-call to \ttt{tokenize} to handle the case of block comments, which may
-span multiple lines.
+far. Tokenization is performed line-by-line. The returned
+\ttt{AutomatonState} `continuation' is passed to the next call to
+\ttt{tokenize} to handle the case of block comments, which may span
+multiple lines.
 
 The use of a continuation state, however, requires us to implement two
-addition \ttt{ScannerDFA} methods: \ttt{raise\_if\_illegal\_line\_end!} and
+additional \ttt{ScannerDFA} methods: \ttt{raise\_if\_illegal\_line\_end!} and
 \ttt{raise\_if\_illegal\_eof!}. These methods check that we haven't
 ended on any incomplete tokens.
 
@@ -115,26 +110,93 @@ transition table. The principal method is \ttt{state} which provides a
 Ruby DSL (implemented in the \ttt{StateBuilder} nested class) for
 concisely specifying a state and its transitions.
 
-One simplifying design choice we made is to scan keywords and identifiers
-using the same rule and only differentiate between them when later
-constructing \ttt{Token}s.
+One simplifying design choice we made is to scan keywords and
+identifiers using the same rule and only differentiate between them
+when later constructing \ttt{Token}s.
 
-\subsection{Abstract Syntax Tree}
+\subsection{Concrete Syntax Tree}
 
-Our goal with the abstract syntax tree is to provide a data structure
-that will make future stages of the compiler easier to implement.
+The CST is defined by the grammar. The grammar is specified in Ruby
+code using literal array and symbol syntax. By walking through the
+structure, we can generate classes for each non-terminal as well as
+convenience methods for looking up terminals and non-terminals that
+will be children in the syntax tree. Generated classes all inherit
+from the \ttt{Joos::CST} base class, which provides general
+functionality for the CST.
+
+We do not generate classes for terminal symbols because we keep the
+existing \ttt{Joos::Token} objects in the CST and take advantage of
+Ruby duck typing to traverse and manipulate the tree.
+
+The CST provides two methods for applying transformations and validation
+so that weeding can be performed during or after parsing and so that
+the CST can be transformed into an abstract syntax tree (AST) in
+place. The first method is the visitor pattern for traversing the tree and
+performing weeding checks or transformations after parsing has
+completed. The second method is overriding the default constructor of
+the base class to perform any weeding checks or transformations that
+we can during parsing.
+
+We prefer to perform transformations during parsing, but certain
+operations (those that depend on being able to traverse up the CST),
+such as checking literal integer values, cannot be done until after
+parsing because it is impossible to know the signedness of the literal
+integer until parsing is complete.
 
 
 \subsection{Parser}
 
-It takes a stream of tokens from the lexer and does some other stuff.
+We implemented an LR(1) parser generator which reads from our grammar
+specification and generates a lookup table which is used as a modified
+DFA transition function which handles follow sets, and a table of
+reduction rules.
+
+The parser takes an array of tokens as input and treats the array as a
+mutable stack while it performs parsing and builds the CST. Our
+grammar is augmented to include a special \ttt{:ENDPROGRAM} which is
+used to signify a successful parse.
+
+If parsing is successful than a \ttt{Joos::CST::CompilationUnit}
+object will be on the stack and can be returned to the next stage of
+the compiler. If parsing fails at some point, such as due to an
+unexpected token, then an error message is printed and parsing is
+aborted.
+
+
+\subsection{Weeder}
+
+Weeding operations are performed during both scanning and parsing. Our
+goal is to weed out issues as early as possible in order to make later
+stages easier to implement, and so much of the weeding is done during
+scanning.
+
+All keywords and operators not supported by Joos are caught during
+scanning and will never be passed to the parser. Literal floating
+point values and unsupported formats of literal integers are also
+caught during the scanning phase.
+
+Some grammar requirements of the Joos language are very complicated
+and would have made the grammar more fragile, take longer to generate,
+and produce a much larger state machine. To make things easier, we
+have created skeleton entity classes to mock Joos classes, interfaces,
+methods, and the like and perform CST transformations to replace some
+nodes with their appropriate entity. Entity classes are capable of
+performing weeding checks such as ensuring that \ttt{native} methods
+are also \ttt{static}, and any other modifier constraint.
+
+Several other edge cases caused by our grammar are also checked by
+visiting each node in the CST and checking for node patterns which are
+not allowed in the Joos specification.
+
+Additionally, literal integers can now be bounds checked to make sure
+they are within the bounds of a signed 32-bit integer because we know
+what the final signedness.
 
 
 \section{Challenges}
 
-
-This is where the interesting shit goes. Talk about anything that did
-not follow simply from class. This is a required section of the report.
+This phase of the compiler implementation presented many
+challenges, some of which led to interesting solutions.
 
 \subsection{Lexer}
 
@@ -150,50 +212,61 @@ the rules for strings and comments by having a few transitions for
 exceptional cases then a final transition for everything else.
 
 
-\subsection{Weeder}
-
-Weeding is performed during both scanning and parsing. Our goal is to
-weed out issues as early as possible in order to make later stages
-easier to implement, and so most weeding is done during scanning.
-
-All keywords and operators not supported by Joos are caught during
-scanning and will never be passed to the parser. Literal floating
-point values and unsupported formats of literal integers are also
-caught during the scanning phase.
-
-However, validating that literal integers are within the signed 32-bit
-range cannot be done during scanning because the range of values
-differs depending on if the integer has a negative or positive value,
-and we cannot determine that information until the tokens have been
-parsed.
-
-
 \subsection{Duplicate String Literals}
 
 Literal string duplication is avoided by overriding how
-\ttt{Joos::Token::String} objects are allocated. We override the
-default allocation method for the class and check if another string
-with the same binary value already exists. If it the string already
-exists we return the existing token instead of a new token. The trade
-off here is that we lose any metadata attached to the duplicate
-literal string, such as the file and line where the string came from;
-so any compilation errors related to the string may point to the
-incorrect string, depending on the type of error. We compare against
-the binary form of the string so that differences in escape sequences
-do not affect the detection of duplicate strings.
-
-I should probably modify this strategy a bit so that we actually keep
-duplicate literal strings during the analysis phase of compilation,
-and just link their in memory address when it comes to code
-generation.
+\ttt{Joos::Token::String} objects are allocated. The \ttt{String}
+object performs translation to binary during initialization in order
+to check escape sequences and also to have a non-ambiguous format for
+comparison with other strings. We maintain a global table of strings
+which is keyed by the binary representation. We then override the
+allocation method for the class and, before returning the newly
+allocated object, check if another string has the same binary
+representation by looking in the global table. If another string
+already exists then we return the string in the table and throw away
+the string we are currently allocating. If the string does not exist
+yet then we add it to the table and return the string object to the
+caller.
 
 
 \section{Testing}
 
-We wrote tests. And we also have an offline version of marmoset tests
-which we run in the student environment at roflscale.
+Testing is done at two scales. The first scale is unit testing, and
+the second is system testing. Time permitting, code reviews are also
+performed.
 
-This section is required, so we have to fill it out at some point\ldots
+
+\subsection{Unit Testing}
+
+Unit tests are implemented as we write new classes and
+methods. When a new file is created, the corresponding test file is
+also created with a failing test to remind us to actually write tests.
+
+Tests are organized by class and then by nested class and/or
+method. Our goal is to write tests that cover all code paths and which
+test class and method specifications given in docstrings in the source
+code. We use \ttt{yard} and \ttt{simplecov} in order to test
+documentation and test coverage respectively.
+
+
+\subsection{System Testing}
+
+Using a copy of the publicly available tests from Marmoset, we are
+able to run all the public tests from Marmoset on local machines. To
+run the tests we parse the test file name to determine if the compiler
+should successfully parse the soruce code or not. We then run the
+compiler by forking a new process and waiting for the result and
+capturing output on standard output and standard error. If a test
+fails then formatted output is printed.
+
+Due to the large number of tests that Marmoset runs, we run these
+tests in parallel. First, we determine the number of CPUs available on
+the system, and then we configure the testing library to create a
+worker thread for each available core. In the student environment this
+allows us to run up to 48 tests concurrently, completing the entire
+test suite in approximately 10 seconds.
+
+We can also run individual system tests manually if needed.
 
 
 \end{document}
