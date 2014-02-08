@@ -11,12 +11,15 @@ class Minitest::Test
 
   JOOSC = File.join(File.expand_path(File.dirname(__FILE__)), '../joosc')
 
-  def lexical_analysis *files
-    Open3.capture3("#{JOOSC} #{files.join(' ')}")
+  def compile code, files
+    stdout, stderr, status = Open3.capture3("#{JOOSC} #{files.join(' ')}")
+    assert_equal(code, status.exitstatus,
+                 error_lambda(files, stdout, stderr, status))
   end
 
   def error_lambda files, stdout, stderr, status
-    lambda { <<-EOM
+    lambda {
+      message = <<-EOM
 STATUS: #{status.exitstatus}
 
 STDOUT
@@ -26,23 +29,26 @@ STDOUT
 STDERR
 ======
 #{stderr}
+      EOM
 
+      if files.size == 1
+        message << <<-EOM
 INPUT
 =====
 #{files.map { |f| f + ":\n" + File.read(f) }.join("\n\n") }
-     EOM
+       EOM
+      end
+
+      message
     }
   end
 
-  def assert_analysis *files
-    stdout, stderr, status = lexical_analysis(*files)
-    assert(status.success?, error_lambda(files, stdout, stderr, status))
+  def assert_compile *files
+    compile 0, files
   end
 
-  def refute_analysis *files
-    stdout, stderr, status = lexical_analysis(*files)
-    assert_equal(42, status.exitstatus,
-                 error_lambda(files, stdout, stderr, status))
+  def refute_compile *files
+    compile 42, files
   end
 
 end

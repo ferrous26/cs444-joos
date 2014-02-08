@@ -9,7 +9,7 @@ class StandardLibraryTests < Minitest::Test
     test_case = File.basename(file, '.java')
 
     define_method "test_#{test_case}" do
-      assert_analysis file
+      assert_compile file
     end
   end
 

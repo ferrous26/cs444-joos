@@ -15,9 +15,9 @@ class Assignment1Tests < Minitest::Test
 
     define_method "test_#{test_case}" do
       if test_case =~ /\AJe/
-        refute_analysis file
+        refute_compile file
       else
-        assert_analysis file
+        assert_compile file
       end
     end
 
