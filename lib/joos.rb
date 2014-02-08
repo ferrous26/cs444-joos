@@ -83,8 +83,9 @@ class Joos::Compiler
     ast.visit do |parent, node| # weeder checks
       case node.type
       when :IntegerLiteral then node.validate
-      when :Instanceof then node.validate parent
-      when :CloseStaple then node.validate parent
+      when :UnmodifiedTerm then node.validate
+      when :Instanceof     then node.validate parent
+      when :CloseStaple    then node.validate parent # hack
       end
     end
   rescue Exception => exception

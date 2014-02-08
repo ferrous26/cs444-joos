@@ -87,6 +87,13 @@ class Joos::CST
     @nodes[idx] = new_node
   end
 
+  ##
+  # Whether or not the node has any children
+  #
+  def empty?
+    @nodes.empty?
+  end
+
   # generate all the concrete concrete syntax tree node classes
   GRAMMAR[:non_terminals].each do |name|
     unless GRAMMAR[:rules][name]
@@ -246,6 +253,90 @@ class Joos::CST
       end
 
       int
+    end
+  end
+
+  ##
+  # Extensions to the basic node to support validation.
+  class ForInit
+    ##
+    # Exception raised when a for loop update contains a
+    # non assignment expression.
+    class InvalidForInit < Exception
+      # @todo Report file and line information
+      def initialize node
+        super "#{node}"
+      end
+    end
+
+    def initialize nodes
+      super
+      chain = self.Expression.SubExpression.Term.UnmodifiedTerm
+      if chain.Primary && !(chain.Selectors.Selector.Dot ||
+                            chain.Primary.IdentifierSuffix)
+        raise InvalidForInit.new(self)
+      end
+    end
+  end
+
+  ##
+  # Extensions to the basic node to support validation.
+  class ForUpdate
+    ##
+    # Exception raised when a for loop update contains a
+    # non assignment expression.
+    class InvalidForUpdate < Exception
+      # @todo Report file and line information
+      def initialize
+        super 'For loop updates must be full expressions'
+      end
+    end
+
+    def initialize nodes
+      super
+      chain = self.Expression.SubExpression.Term.UnmodifiedTerm
+      if chain.Primary && !(chain.Selectors.Selector.Dot   ||
+                            chain.Primary.IdentifierSuffix ||
+                            chain.Primary.New)
+        raise InvalidForUpdate.new
+      end
+    end
+  end
+
+  ##
+  # Extensions to the basic node to support type cast validation.
+  class UnmodifiedTerm
+    ##
+    # Exception raised when an illegal cast is detected.
+    class BadCast < Exception
+      # @todo Report file and line information
+      def initialize
+        super 'Type casts must be basic or reference types only'
+      end
+    end
+
+    ##
+    # Validate Joos type casting
+    def validate
+      # pretty sure we only cast if these are present
+      return unless self.OpenParen && self.Term
+      # if the term has a BasicType then we're done because
+      #   this is an ok cast (as far as parsing is concerned)
+      return if self.BasicType
+      exception = BadCast.new
+      # otherwise, look at the expression and see if it is just
+      # a qualified identifier with no suffix, no more terms, and
+      # no selectors
+      expr = self.Expression.SubExpression
+      raise exception unless expr
+      raise exception unless expr.MoreTerms.empty?
+      raise exception unless expr.Term.UnmodifiedTerm
+      expr = expr.Term.UnmodifiedTerm
+      raise exception unless expr.Selectors.empty?
+      expr = expr.Primary
+      raise exception unless expr # cast must be a Primary
+      raise exception unless expr.QualifiedIdentifier
+      raise exception if     expr.IdentifierSuffix
     end
   end
 
