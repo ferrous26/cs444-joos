@@ -16,7 +16,7 @@ class Joos::CST
   attr_reader :nodes
 
   # @param nodes [Array<Joos::CST, Joos::Token>]
-  def initialize nodes = []
+  def initialize nodes
     @nodes = nodes
     nodes.each do |node|
       node.parent = self if node.kind_of? Joos::CST
@@ -39,8 +39,21 @@ class Joos::CST
   # @param type [Symbol]
   # @return [Joos::CST, Joos::Token, nil]
   def search type
-    @nodes.find(Joos::CST.new) { |node| node.type == type }
+    @nodes.find { |node| node.type == type }
   end
+
+  ##
+  # @todo Move this code somewhere else
+  class ::NilClass
+    # The `none` half of the Maybe monad for CST searching
+    # @param type [Symbol]
+    # @return [nil]
+    def search type
+      nil
+    end
+  end
+
+
 
   # @return [String]
   def inspect
