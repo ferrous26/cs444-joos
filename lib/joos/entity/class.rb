@@ -55,7 +55,7 @@ class Joos::Entity::Class < Joos::Entity
   # @param name       [Joos::AST::QualifiedIdentifier]
   # @param extends    [Class, nil]
   # @param implements [Array<Interface>]
-  def initialize name, modifiers: [], extends: nil, implements: []
+  def initialize name, modifiers: default_mods, extends: nil, implements: []
     super name, modifiers
     @extends      = extends  # || Joos::Core::Object
     @implements   = implements

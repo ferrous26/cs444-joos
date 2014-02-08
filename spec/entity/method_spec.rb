@@ -5,11 +5,12 @@ describe Joos::Entity::Method do
 
   it 'takes modifiers, name, type, and body at init' do
     name  = Joos::Token::Identifier.new('a', 'b', 0, 1)
+    mods  = make_mods :Public
     klass = Joos::Entity::Method.new(name,
-                                     modifiers:  [:public],
+                                     modifiers:  mods,
                                      type: :Char,
                                      body: 4)
-    expect(klass.modifiers).to be == [:public]
+    expect(klass.modifiers).to be == [:Public]
     expect(klass.name).to be      == name
     expect(klass.type).to be      == :Char
     expect(klass.body).to be      == 4
@@ -26,7 +27,7 @@ describe Joos::Entity::Method do
   it 'sets the default body to be nil' do
     name  = Joos::Token::Identifier.new('a', 'b', 0, 1)
     klass = Joos::Entity::Method.new(name,
-                                     modifiers:  [:public],
+                                     modifiers: make_mods(:Public),
                                      type: :Char)
     expect(klass.body).to be_nil
   end
@@ -39,41 +40,32 @@ describe Joos::Entity::Method do
 
   it 'validates that abstract and static are not both used' do
     name  = Joos::Token::Identifier.new('a', 'b', 0, 1)
-    klass = Joos::Entity::Method.new(name,
-                                     modifiers: [:abstract, :static],
-                                     body: 4)
-    expect {
-      klass.validate
-    }.to raise_error(/abstract or static/)
+    mods  = make_mods(:Abstract, :Static, :Public)
+    klass = Joos::Entity::Method.new(name, modifiers: mods, body: 4)
+    expect { klass.validate }.to raise_error(/Abstract or Static/)
   end
 
   it 'validates that abstract and final are not both used' do
     name  = Joos::Token::Identifier.new('a', 'b', 0, 1)
-    klass = Joos::Entity::Method.new(name,
-                                     modifiers: [:final, :abstract],
-                                     body: 4)
-    expect {
-      klass.validate
-    }.to raise_error(/abstract or final/)
+    mods  = make_mods :Final, :Abstract, :Public
+    klass = Joos::Entity::Method.new(name, modifiers: mods, body: 4)
+    expect { klass.validate }.to raise_error(/Abstract or Static or Final/)
   end
 
   it 'validates that native methods are static' do
     name  = Joos::Token::Identifier.new('a', 'b', 0, 1)
-    klass = Joos::Entity::Method.new(name,
-                                     modifiers: [:native],
-                                     body: nil)
-    expect {
-      klass.validate
-    }.to raise_error(/must be declared static/)
+    mods  = make_mods :Native, :Public
+    klass = Joos::Entity::Method.new(name, modifiers: mods, body: nil)
+    expect { klass.validate }.to raise_error(/must be declared static/)
 
-    klass.modifiers << :static
+    klass.modifiers << :Static
     expect { klass.validate }.to_not raise_error
   end
 
   it 'validates that native and abstract methods do not have a body' do
     name  = Joos::Token::Identifier.new('a', 'b', 0, 1)
     klass = Joos::Entity::Method.new(name,
-                                     modifiers: [:abstract],
+                                     modifiers: make_mods(:Public, :Abstract),
                                      body: 4)
     expect {
       klass.validate
@@ -83,7 +75,7 @@ describe Joos::Entity::Method do
   it 'validates that non-native and non-abstract methods have a body' do
     name  = Joos::Token::Identifier.new('a', 'b', 0, 1)
     klass = Joos::Entity::Method.new(name,
-                                     modifiers: [:final],
+                                     modifiers: make_mods(:Final, :Public),
                                      body: nil)
     expect {
       klass.validate

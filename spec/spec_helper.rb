@@ -15,4 +15,13 @@ gem 'rspec'
 require 'rspec'
 require 'joos'
 
-# herp derp
+def make_modifiers *mods
+  modifiers = Joos::CST::Modifiers.new([])
+  mods.each do |mod|
+    modifier  = Joos::CST::Modifier.new([mod])
+    modifiers = Joos::CST::Modifiers.new([modifier, modifiers])
+  end
+  modifiers
+end
+
+alias :make_mods :make_modifiers

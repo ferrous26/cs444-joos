@@ -5,9 +5,10 @@ describe Joos::Entity::Field do
 
   it 'takes name, modifiers, and type at init' do
     name  = Joos::Token::Identifier.new('h', 'h', 4, 3)
-    field = Joos::Entity::Field.new(name, modifiers: [:static], type: :char)
+    mods  = make_mods :Public
+    field = Joos::Entity::Field.new(name, modifiers: mods, type: :char)
     expect(field.name).to be      == name
-    expect(field.modifiers).to be == [:static]
+    expect(field.modifiers).to be == [:Public]
     expect(field.type).to be      == :char
   end
 

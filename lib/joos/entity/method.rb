@@ -42,7 +42,7 @@ class Joos::Entity::Method < Joos::Entity
   # @param type      [Joos::Token::Type]
   # @param name      [Joos::AST::Identifier]
   # @param body      [Joos::AST::MethodBody]
-  def initialize name, modifiers: [], type: nil, body: nil
+  def initialize name, modifiers: default_mods, type: nil, body: nil
     super name, modifiers
     @type = type
     @body = body

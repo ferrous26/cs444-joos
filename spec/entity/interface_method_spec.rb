@@ -5,14 +5,15 @@ describe Joos::Entity::InterfaceMethod do
 
   it 'validates that protected, static, final, and native are not used' do
     [
-     :protected,
-     :static,
-     :final,
-     [:native, :static]
+     :Protected,
+     [:Static, :Public],
+     [:Final, :Public],
+     [:Native, :Static, :Public]
     ].each do |mod|
+      mods = make_mods(*mod)
       name = Joos::Token::Identifier.new('hi', 'hi', 4, 0)
       imethod = Joos::Entity::InterfaceMethod.new(name,
-                                                  modifiers: [mod].flatten,
+                                                  modifiers: mods,
                                                   body: nil)
       expect {
         imethod.validate

@@ -5,10 +5,11 @@ describe Joos::Entity::Interface do
 
   it 'takes name, modifiers, and superinterfaces at init' do
     name  = Joos::Token::Identifier.new('a', 'b', 0, 1)
+    mods  = make_mods :Public
     klass = Joos::Entity::Interface.new(name,
-                                        modifiers:  [:private],
-                                        extends:    [:interface])
-    expect(klass.modifiers).to be  == [:private]
+                                        modifiers: mods,
+                                        extends:   [:interface])
+    expect(klass.modifiers).to be  == [:Public]
     expect(klass.name).to be       == name
     expect(klass.extends).to be    == [:interface]
   end
@@ -16,7 +17,7 @@ describe Joos::Entity::Interface do
   it 'sets the default superinterfaces to be empty' do
     name  = Joos::Token::Identifier.new('a', 'b', 0, 1)
     klass = Joos::Entity::Interface.new(name,
-                                        modifiers: [:private])
+                                        modifiers: make_mods(:Public))
     expect(klass.superinterfaces).to be_empty
   end
 
@@ -43,12 +44,9 @@ describe Joos::Entity::Interface do
 
   it 'validates that protected, native, final, and static are not used' do
     name  = Joos::Token::Identifier.new('a', 'a.java', 0, 1)
-    [
-     Joos::Token::Protected.new('protected', 'protected.java', 1, 0),
-     Joos::Token::Native.new('native', 'protected.java', 1, 0),
-     Joos::Token::Static.new('static', 'protected.java', 1, 0)
-    ].each do |mod|
-      klass = Joos::Entity::Interface.new(name, modifiers: [mod])
+    [:Protected, :Native, :Static].each do |mod|
+      mods = mod == :Protected ? make_mods(mod) : make_mods(mod, :Public)
+      klass = Joos::Entity::Interface.new(name, modifiers: mods)
       expect {
         klass.validate
       }.to raise_error "A Interface cannot use the #{mod.to_sym} modifier"
@@ -67,7 +65,7 @@ describe Joos::Entity::Interface do
     mock_membe.define_singleton_method(:validate) { membe_call = true }
 
     name  = Joos::Token::Identifier.new('a', 'a.java', 0, 1)
-    klass = Joos::Entity::Interface.new(name)
+    klass = Joos::Entity::Interface.new(name, modifiers: make_mods(:Public))
     klass.add_member mock_membe
     klass.validate
     expect(membe_call).to be true

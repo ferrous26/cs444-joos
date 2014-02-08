@@ -34,7 +34,7 @@ class Joos::Entity::Interface < Joos::Entity
   # @param modifiers [Array<Joos::Token::Modifier>]
   # @param name      [Joos::AST::QualifiedIdentifier]
   # @param extends   [Array<Joos::Token::Modifier>]
-  def initialize name, modifiers: [], extends: []
+  def initialize name, modifiers: default_mods, extends: []
     super name, modifiers
     @extends = extends
     @members = []

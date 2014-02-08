@@ -4,12 +4,13 @@ require 'joos/entity/class'
 describe Joos::Entity::Class do
 
   it 'takes modifiers, name, superclass, and interfaces at init' do
-    name  = Joos::Token::Identifier.new('a', 'b', 0, 1)
-    klass = Joos::Entity::Class.new(name,
-                                    modifiers:  [:private],
-                                    extends:    :klass,
-                                    implements: [name])
-    expect(klass.modifiers).to be  == [:private]
+    name      = Joos::Token::Identifier.new('a', 'b', 0, 1)
+    modifiers = make_modifiers :Private
+    klass     = Joos::Entity::Class.new(name,
+                                        modifiers:  modifiers,
+                                        extends:    :klass,
+                                        implements: [name])
+    expect(klass.modifiers).to be  == [:Private]
     expect(klass.name).to be       == name
     expect(klass.extends).to be    == :klass
     expect(klass.interfaces).to be == [name]
@@ -18,16 +19,18 @@ describe Joos::Entity::Class do
   it 'sets the default superclass to be Object'
 
   it 'sets the default interfaces to be empty' do
-    name  = Joos::Token::Identifier.new('a', 'b', 0, 1)
+    name      = Joos::Token::Identifier.new('a', 'b', 0, 1)
+    modifiers = make_modifiers :Private
     klass = Joos::Entity::Class.new(name,
-                                    modifiers:  [:private],
-                                    extends:    :klass)
+                                    modifiers: modifiers,
+                                    extends:   :klass)
     expect(klass.interfaces).to be_empty
   end
 
   it 'sets the default modifiers to be empty' do
     name  = Joos::Token::Identifier.new('a', 'b', 0, 1)
     klass = Joos::Entity::Class.new(name,
+                                    modifiers:  Joos::CST::Modifiers.new([]),
                                     extends:    :klass,
                                     implements: [name])
     expect(klass.modifiers).to be_empty
@@ -58,23 +61,22 @@ describe Joos::Entity::Class do
 
   it 'validates to make sure at least constructor is present' do
     name  = Joos::Token::Identifier.new('a', 'a.java', 0, 1)
-    klass = Joos::Entity::Class.new(name)
+    klass = Joos::Entity::Class.new(name, modifiers: make_modifiers(:Public))
     str   = 'Class:a @ a.java:0 must include at least one explicit constructor'
     expect { klass.validate }.to raise_error str
 
-    const = Joos::Entity::Constructor.new(name)
+    const = Joos::Entity::Constructor.new(name,
+                                          modifiers: make_modifiers(:Public))
     klass.add_constructor const
     expect { klass.validate }.to_not raise_error
   end
 
   it 'validates that protected, native, and static modifiers are not used' do
-    name  = Joos::Token::Identifier.new('a', 'a.java', 0, 1)
-    [
-     Joos::Token::Protected.new('protected', 'protected.java', 1, 0),
-     Joos::Token::Native.new('native', 'protected.java', 1, 0),
-     Joos::Token::Static.new('static', 'protected.java', 1, 0)
-    ].each do |mod|
-      klass = Joos::Entity::Class.new(name, modifiers: [mod])
+    name      = Joos::Token::Identifier.new('a', 'a.java', 0, 1)
+    [:Protected, :Native, :Static].each do |mod|
+      modifiers = mod == :Protected ? make_modifiers(mod) :
+        make_modifiers(mod, :Public)
+      klass = Joos::Entity::Class.new(name, modifiers: modifiers)
       expect {
         klass.validate
       }.to raise_error "A Class cannot use the #{mod.to_sym} modifier"
@@ -82,13 +84,12 @@ describe Joos::Entity::Class do
   end
 
   it 'validates that the class is not both final and abstract' do
-    mod   = [Joos::Token::Final.new('final', 'protected.java', 1, 0),
-             Joos::Token::Abstract.new('abstract', 'protected.java', 1, 0)]
+    mod   = make_modifiers :Final, :Abstract, :Public
     name  = Joos::Token::Identifier.new('a', 'a.java', 0, 1)
     klass = Joos::Entity::Class.new(name, modifiers: mod)
     expect {
       klass.validate
-    }.to raise_error 'Class:a @ a.java:0 can only be one of final or abstract'
+    }.to raise_error 'Class:a @ a.java:0 can only be one of Final or Abstract'
   end
 
   it 'is a CompilationUnit' do
@@ -107,7 +108,7 @@ describe Joos::Entity::Class do
     mock_membe.define_singleton_method(:validate) { membe_call = true }
 
     name  = Joos::Token::Identifier.new('a', 'a.java', 0, 1)
-    klass = Joos::Entity::Class.new(name)
+    klass = Joos::Entity::Class.new(name, modifiers: make_modifiers(:Public))
     klass.add_constructor mock_const
     klass.add_member mock_membe
     klass.validate

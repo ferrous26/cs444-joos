@@ -15,7 +15,7 @@ class Joos::Entity::Constructor < Joos::Entity
   # @param modifiers [Array<Joos::Token::Modifier>]
   # @param name [Joos::Token::Identifier, Joos::AST::QualifiedIdentifier]
   # @param body [Joos::AST::MethodBody]
-  def initialize name, modifiers: [], body: nil
+  def initialize name, modifiers: default_mods, body: nil
     super name, modifiers
     @body = body
   end

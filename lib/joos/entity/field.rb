@@ -27,7 +27,7 @@ class Joos::Entity::Field < Joos::Entity
   # @param modifiers [Array<Joos::Token::Modifier>]
   # @param type      [Class, Interface, Joos::Token::Type]
   # @param name      [Joos::Token::Identifier]
-  def initialize name, modifiers: [], type: nil, init: nil
+  def initialize name, modifiers: default_mods, type: nil, init: nil
     super name, modifiers
     @type        = type
     @initializer = init
