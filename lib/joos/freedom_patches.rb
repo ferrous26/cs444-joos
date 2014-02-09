@@ -151,3 +151,15 @@ class Numeric #:nodoc:
     false
   end
 end
+
+##
+# Freedom patches on the IO class
+class IO
+  ##
+  # Write the out to the IO device in a completely thread safe way
+  #
+  # @param str [#to_s]
+  def safe_puts str
+    Thread.exclusive { puts str }
+  end
+end
