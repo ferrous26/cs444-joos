@@ -80,20 +80,15 @@ class Joos::Compiler
   # @return [Joos::CST, Joos::CompilerException, Exception]
   def scan_and_parse job
     ast = Joos::Parser.new(Joos::Scanner.scan_file job).parse
-    ast.visit do |parent, node| # weeder checks
-      case node.type
-      when :IntegerLiteral then node.validate
-      when :UnmodifiedTerm then node.validate
-      when :Instanceof     then node.validate parent
-      when :CloseStaple    then node.validate parent # hack
-      end
-    end
     $stderr.safe_puts ast.inspect if $DEBUG
+    ast.visit { |parent, node| node.validate(parent) } # weeder checks
   rescue Exception => exception
     exception
   end
 
   ##
+  # @todo Replace this method with something flat
+  #
   # Kick off the entity building process, which is recursive
   def build_entities ast
     ast.visit do |parent, node|

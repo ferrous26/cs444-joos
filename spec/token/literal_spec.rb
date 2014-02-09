@@ -200,7 +200,7 @@ describe Joos::Token::Literal do
        9_000_000_000
       ].each do |num|
         expect {
-          Joos::Token::Integer.new(num.to_s, '', nil, nil).validate
+          Joos::Token::Integer.new(num.to_s, '', nil, nil).validate(nil)
         }.to raise_error Joos::Token::Integer::OutOfRangeError
       end
     end
@@ -222,7 +222,7 @@ describe Joos::Token::Literal do
        Joos::Token::Integer::INT_MIN
       ].each do |num|
         expect {
-          Joos::Token::Integer.new(num.to_s, '', nil, nil).validate
+          Joos::Token::Integer.new(num.to_s, '', nil, nil).validate(nil)
         }.to_not raise_error
       end
     end

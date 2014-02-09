@@ -24,7 +24,7 @@ class Joos::Token::Identifier < Joos::Token
   #
   def initialize token, file, line, column
     super
-    validate
+    validate_value
   end
 
   def type
@@ -83,7 +83,7 @@ because it is a keyword/operator/separator or otherwise reserved token.
 
   private
 
-  def validate
+  def validate_value
     raise ReservedWord.new(self) if Joos::Token::CLASSES.key? token
     raise BadFirstCharacter.new(self) unless token.match START_PATTERN
     raise BadName.new(self) unless token.match PATTERN

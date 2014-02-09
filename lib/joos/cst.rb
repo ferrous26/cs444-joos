@@ -99,6 +99,21 @@ class Joos::CST
     @nodes.empty?
   end
 
+  ##
+  # Generic validation for the CST node.
+  #
+  # This is used by the weeder to ask the receiver to make sure that
+  # they are a valid node in the AST. It is up to the receiver to
+  # know what makes them valid. By default this method does nothing,
+  # and subclasses should override to add checks.
+  #
+  # An exception should be raised if the node is not valid.
+  #
+  # @param parent [Joos::CST]
+  def validate parent
+    # nop
+  end
+
   # generate all the concrete concrete syntax tree node classes
   GRAMMAR[:non_terminals].each do |name|
     unless GRAMMAR[:rules][name]
@@ -304,7 +319,8 @@ class Joos::CST
 
     ##
     # Validate Joos type casting
-    def validate
+    def validate parent
+      super
       # pretty sure we only cast if these are present
       return unless self.OpenParen && self.Term
       # if the term has a BasicType then we're done because

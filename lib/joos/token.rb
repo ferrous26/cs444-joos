@@ -97,6 +97,21 @@ class Joos::Token
   end
 
   ##
+  # Generic validation for the token object.
+  #
+  # This is used by the weeder to ask the receiver to make sure that
+  # they are a valid node in the AST. It is up to the receiver to
+  # know what makes them valid. By default this method does nothing,
+  # and subclasses should override to add checks.
+  #
+  # An exception should be raised if the node is not valid.
+  #
+  # @param parent [Joos::CST, Joos::Entity]
+  def validate parent
+    # nop
+  end
+
+  ##
   # Attribute for tokens that are not allowed in Joos 1W.
   #
   # These include keywords, operators, and the like that are part of the
