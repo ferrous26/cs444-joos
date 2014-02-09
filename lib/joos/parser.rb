@@ -69,7 +69,6 @@ class Joos::Parser
 
   def oracle token
     token_sym = token.type
-    puts token_sym
     return dangling_else if token_sym == :Else
     reduction = @reductions[current_state].find { |arr, _|
       arr.include? token_sym
