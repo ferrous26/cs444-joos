@@ -112,7 +112,7 @@ class Joos::DFA
   def state s, &block
     @transitions[s] ||= []
     builder = StateBuilder.new self, s
-    builder.instance_evalr(&block) if block_given?
+    builder.instance_eval(&block) if block_given?
   end
 
 
