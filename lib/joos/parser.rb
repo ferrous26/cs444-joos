@@ -69,6 +69,8 @@ class Joos::Parser
 
   def oracle token
     token_sym = token.type
+    puts token_sym
+    return dangling_else if token_sym == :Else
     reduction = @reductions[current_state].find { |arr, _|
       arr.include? token_sym
     }
@@ -84,6 +86,23 @@ class Joos::Parser
 
     next_state.fetch token_sym do |_|
       raise("no transition on #{next_state.inspect} with #{token_sym}")
+    end
+  end
+
+  def dangling_else
+    current_transitions = @transitions[current_state]
+    next_state = current_transitions && current_transitions[:Else]
+    unless next_state
+      reduction = @reductions[current_state].find { |arr, _|
+        arr.include? :Else
+      }
+      next_state = reduction.to_a.last
+    end
+
+    if next_state
+      return next_state
+    else
+      Raise "Parse error. Too lazy to figure out what to actually output."
     end
   end
 
