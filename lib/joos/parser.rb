@@ -53,7 +53,7 @@ class Joos::Parser
   def parse
     until @token_stream.empty?
       token = @token_stream.last
-      puts token if $DEBUG
+      $stderr.puts "Parsing #{token} from state #{current_state}" if $DEBUG
       oracle(token).process(self, token)
     end
     @cst_stack.pop

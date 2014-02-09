@@ -61,9 +61,14 @@ class Joos::CST
     search symbol
   end
 
+  # @param tab [Fixnum]
   # @return [String]
-  def inspect
-    "#{type} #{nodes.map(&:inspect).inspect}"
+  def inspect tab = 0
+    base = "#{'  ' * tab}#{type}\n"
+    @nodes.each do |node|
+      base << node.inspect(tab + 1) << "\n"
+    end
+    base.chomp
   end
 
   # @yield Each node in the tree will be yield in depth first order
@@ -143,24 +148,6 @@ class Joos::CST
 
     private
 
-    # Forgive me, I will fix this up later. Blame Michael.
-    # What we want is pattern matching for the AST/CST, which I think we can
-    # do by doing some fanciness with hashes, arrays, and symbols:
-    #
-    # ast.match(Term: [
-    #                  TermModifier: [:Minus],
-    #                  Term: [
-    #                         UnmodifiedTerm: [
-    #                                          Primary: [
-    #                                                    Literal: {
-    #                                                              IntegerLiteral: :int
-    #                                                             }]]]]) do |captures|
-    #   # some transformations
-    # end
-    #
-    # So you would be describing the shape of the AST and also which nodes
-    # you wish to work with.
-    #
     def negative_integer? nodes
       if nodes.first.type == :TermModifier &&
           nodes.first.nodes.first.type == :Minus &&

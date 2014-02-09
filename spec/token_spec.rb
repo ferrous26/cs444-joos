@@ -87,8 +87,14 @@ describe Joos::Token do
 
   it 'responds to #inspect with something human readable for exceptions' do
     token = Joos::Token::Identifier.new('hello', 'there.c', 3, 21)
-    str   = '#<Identifier from there.c:3:21 with value "hello">'
+    str   = 'Identifier:hello from there.c:3:21'
     expect(token.inspect).to be == str
+  end
+
+  it 'has a secret parameter for #inspect that adds leading spaces' do
+    token = Joos::Token::Identifier.new('hello', 'there.c', 3, 21)
+    str   = '  Identifier:hello from there.c:3:21'
+    expect(token.inspect(1)).to be == str
   end
 
   it 'has exceptions which inherit from RuntimeError, not raw Exception' do

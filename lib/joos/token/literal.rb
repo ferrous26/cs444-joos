@@ -10,7 +10,12 @@ class Joos::Token
   # This attribute has the meaning that the associated token is a
   # value which has been written 'literally' into the code.
   #
-  module Literal; end
+  module Literal
+    # @param tab [Fixnum] number of leading spaces (*2)
+    def inspect tab = 0
+      "#{'  ' * tab}#{type}:#{value} from #{file}:#{line}:#{column}"
+    end
+  end
 
   ##
   # Common code for both types of boolean values.

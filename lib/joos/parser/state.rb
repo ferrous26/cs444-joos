@@ -2,7 +2,7 @@ require 'joos/parser/item'
 
 # state struct to be used by the parser generator
 Joos::Parser::State = Struct.new :items do
-  def initialize items=[]
+  def initialize items = []
     items = Array(items)
     items.each do |item|
       unless item.is_a? Joos::Parser::Item
@@ -18,7 +18,7 @@ Joos::Parser::State = Struct.new :items do
   end
 
   def add_item item
-    if !item.is_a?(Joos::Parser::Item)
+    unless item.is_a?(Joos::Parser::Item)
       raise "Attempted to add #{item}, which is not an item, to state
               #{state_number}"
     end
@@ -64,3 +64,4 @@ Joos::Parser::State = Struct.new :items do
     reduction_hash
   end
 end
+

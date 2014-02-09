@@ -74,7 +74,7 @@ class Joos::ScannerDFA < Joos::DFA
   def initialize
     super
 
-    always = Proc.new {|char| true}
+    always = proc { |_| true }
     dfa = self
 
     state :start do
@@ -190,10 +190,7 @@ class Joos::ScannerDFA < Joos::DFA
   # We do this at character level instead of at line level so we can
   # get column info.
   def classify character
-    if !character.ascii_only?
-      raise NonASCIIError.new(character)
-    end
-
+    raise NonASCIIError.new(character) unless character.ascii_only?
     character
   end
 
@@ -208,8 +205,8 @@ class Joos::ScannerDFA < Joos::DFA
   end
 
   ##
-  # Raise UnexpectedCharacter if a continuation state is not allowed to occur at
-  # the end of a file (everything)
+  # Raise UnexpectedCharacter if a continuation state is not allowed to occur
+  # at the end of a file (everything)
   def raise_if_illegal_eof! state
     return if state.nil?
     e = UnexpectedEnd.new_eof state
@@ -223,10 +220,10 @@ class Joos::ScannerDFA < Joos::DFA
   end
 
   TOKEN_CLASSES = {
-    zero: Joos::Token::Integer,
+    zero:    Joos::Token::Integer,
     integer: Joos::Token::Integer,
-    string: Joos::Token::String,
-    char: Joos::Token::Character,
+    string:  Joos::Token::String,
+    char:    Joos::Token::Character
   }
 
   ##
@@ -235,14 +232,14 @@ class Joos::ScannerDFA < Joos::DFA
   # @param line_number [Fixnum]
   # @return [Joos::Token]
   def make_token dfa_token, file, line_number
-		raise "line_number should be a number!" unless line_number.is_a? Integer
+    raise 'line_number should be a number!' unless line_number.kind_of? Fixnum
     return unless meaningful? dfa_token
-    
+
     klass = TOKEN_CLASSES[dfa_token.state]
     klass ||= Joos::Token::CLASSES[dfa_token.lexeme]
     klass ||= Joos::Token::Identifier if dfa_token.state == :identifier
 
-    puts dfa_token if klass.nil?
+    $stderr.puts "Could not find token class for #{dfa_token}" if klass.nil?
 
     klass.new dfa_token.lexeme, file, line_number, dfa_token.column
   end

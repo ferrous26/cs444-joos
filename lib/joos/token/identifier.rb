@@ -31,6 +31,10 @@ class Joos::Token::Identifier < Joos::Token
     :Identifier
   end
 
+  def inspect tab = 0
+    "#{'  ' * tab}#{type}:#{value} from #{file}:#{line}:#{column}"
+  end
+
   ##
   # Generic exception raised when there is a problem with an id name
   class IllegalName < RuntimeError; end
