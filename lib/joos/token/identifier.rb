@@ -32,7 +32,7 @@ class Joos::Token::Identifier < Joos::Token
   end
 
   def inspect tab = 0
-    "#{'  ' * tab}#{type}:#{value} from #{file}:#{line}:#{column}"
+    "#{'  ' * tab}#{type}:#{value} from #{source}"
   end
 
   ##

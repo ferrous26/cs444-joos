@@ -69,7 +69,7 @@ describe Joos::Token do
 
   it 'responds to #source with a formatted string about source file info' do
     token = Joos::Token.new('hello', 'there.c', 3, 21)
-    expect(token.source).to be == 'there.c line:3, column:21'
+    expect(token.source).to be == 'there.c:3:21'
   end
 
   it 'exposes a mixin for marking illegal token types' do

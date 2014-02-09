@@ -77,7 +77,7 @@ class Joos::Token
   #
   # @return [String]
   def source
-    "#{file} line:#{line}, column:#{column}"
+    "#{file}:#{line}:#{column}"
   end
 
   ##
@@ -93,7 +93,7 @@ class Joos::Token
   #
   # @return [String]
   def inspect tab = 0
-    "#{'  ' * tab}#{type} from #{file}:#{line}:#{column}"
+    "#{'  ' * tab}#{type} from #{source}"
   end
 
   ##

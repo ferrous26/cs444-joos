@@ -13,7 +13,7 @@ class Joos::Token
   module Literal
     # @param tab [Fixnum] number of leading spaces (*2)
     def inspect tab = 0
-      "#{'  ' * tab}#{type}:#{value} from #{file}:#{line}:#{column}"
+      "#{'  ' * tab}#{type}:#{value} from #{source}"
     end
   end
 
