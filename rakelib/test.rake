@@ -31,6 +31,28 @@ namespace :test do
   end
 end
 
+desc 'Run a test with the given name'
+task :one, :name do |_, args|
+  name  = args[:name]
+  split = name.split('/')
+  glob  = ''
+
+  if split.size > 1
+    glob = name
+    name = split.last
+  else
+    glob = "a*/#{name}"
+  end
+
+  names = Dir.glob("test/#{glob}.java")
+  return puts "Could not find test named `#{name}'" if names.empty?
+  return puts "Ambiguous test name:\n#{names}"      if names.size > 1
+
+  set = File.dirname(names.first).split('/').last
+
+  sh "ruby -Itest test/#{set}_marmoset_test.rb --name test_#{name}"
+end
+
 require 'rspec/core/rake_task'
 RSpec::Core::RakeTask.new(:spec) do |spec|
   spec.pattern = FileList['spec/**/*_spec.rb']
