@@ -116,7 +116,7 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     #
     # @return [Array<Fixnum>]
     def validate!
-      validate 0, []
+      validate_rec 0, []
     end
 
 
@@ -125,7 +125,7 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     # @param index [Fixnum]
     # @param accum [Array<Fixnum>]
     # @return [Array<Fixnum>]
-    def validate index, accum
+    def validate_rec index, accum
       char = token[index]
       return accum unless char
 
@@ -137,7 +137,7 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
         accum << char.ord
       end
 
-      validate(index + 1, accum)
+      validate_rec(index + 1, accum)
     end
 
     # @param index [Fixnum]
