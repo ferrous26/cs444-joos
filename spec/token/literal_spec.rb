@@ -424,6 +424,18 @@ describe Joos::Token::Literal do
       token = Joos::Token::String.new('"e"', 'be', 3, 4)
       expect(token.type).to be == :StringLiteral
     end
+
+    it 'should de-dupe in a thread-safe way' do
+      strs = Array.new(100)
+      thrd = Array.new
+      100.times do |idx|
+        thrd << Thread.new do
+          strs[idx] = Joos::Token::String.new('kill noobs', 'noobs.c', 9, 3)
+        end
+      end
+      thrd.each(&:join)
+      expect(strs.uniq).should be == [strs.first]
+    end
   end
 
 end

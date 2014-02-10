@@ -425,6 +425,7 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     #
     # @return [Hash{ Array<Fixnum> => Joos::Token::String }]
     STRINGS = {}
+    @strings_lock = Mutex.new
 
     ##
     # Override the default instantiation method in order to perform literal
@@ -441,8 +442,10 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     def self.new token, file, line, column
       string = allocate
       string.send :initialize, token[1..-2], file, line, column
-      STRINGS.fetch string.to_binary do |_|
-        STRINGS[string.to_binary] = string
+      @strings_lock.synchronize do
+        STRINGS.fetch string.to_binary do |_|
+          STRINGS[string.to_binary] = string
+        end
       end
     end
 
