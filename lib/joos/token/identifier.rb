@@ -27,12 +27,12 @@ class Joos::Token::Identifier < Joos::Token
     validate_value
   end
 
-  def type
+  def to_sym
     :Identifier
   end
 
   def inspect tab = 0
-    "#{'  ' * tab}#{type}:#{value} from #{source}"
+    "#{'  ' * tab}Identifier:#{cyan value} from #{red source}"
   end
 
   ##

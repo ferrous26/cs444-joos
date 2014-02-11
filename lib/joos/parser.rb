@@ -39,12 +39,6 @@ class Joos::Parser
     end
   end
 
-  ##
-  # Extensions to the symbol class that are used for debugging
-  class ::Symbol
-    alias_method :type, :to_sym # :)
-  end
-
   # unleash the magic (of getting the dispatcher to do our branching)
   # sadly, we are putting 2 types of objects through this method, so I'm
   # not sure how effective the call site cache will work :(
@@ -68,7 +62,7 @@ class Joos::Parser
   end
 
   def oracle token
-    token_sym = token.type
+    token_sym = token.to_sym
     return dangling_else if token_sym == :Else
     reduction = @reductions[current_state].find { |arr, _|
       arr.include? token_sym

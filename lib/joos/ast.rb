@@ -1,5 +1,4 @@
 require 'joos/freedom_patches'
-require 'joos/entity'
 
 ##
 # @abstract
@@ -23,14 +22,6 @@ class Joos::AST
   end
 
   ##
-  # Return a globally unique symbol identifying the type of node
-  #
-  # @return [Symbol]
-  def type
-    raise NotImplementedError
-  end
-
-  ##
   # Search for a node of the given type at the current AST level
   #
   # This will not search recursively.
@@ -38,36 +29,7 @@ class Joos::AST
   # @param type [Symbol]
   # @return [Joos::AST, Joos::Token, Joos::Entity, nil]
   def search type
-    @nodes.find { |node| node.type == type }
-  end
-
-  ##
-  # @todo Move this code somewhere else
-  class ::NilClass
-    # The `none` half of the Maybe monad for AST searching
-    # @param type [Symbol]
-    # @return [nil]
-    def search type
-      nil
-    end
-
-    def method_missing *args
-      nil
-    end
-  end
-
-  def method_missing symbol, *args
-    search symbol
-  end
-
-  # @param tab [Fixnum]
-  # @return [String]
-  def inspect tab = 0
-    base = "#{'  ' * tab}#{type}\n"
-    @nodes.each do |node|
-      base << node.inspect(tab + 1) << "\n"
-    end
-    base.chomp
+    @nodes.find { |node| node.to_sym == type }
   end
 
   # @yield Each node in the tree will be yield in depth first order
@@ -97,6 +59,8 @@ class Joos::AST
   def empty?
     @nodes.empty?
   end
+  alias_method :blank?, :empty?
+
 
   ##
   # Generic validation for the AST node.
@@ -113,6 +77,20 @@ class Joos::AST
     # nop
   end
 
+  # @param tab [Fixnum]
+  # @return [String]
+  def inspect tab = 0
+    base = "#{'  ' * tab}#{to_sym}\n"
+    @nodes.each do |node|
+      puts node.class
+      base << node.inspect(tab + 1) << "\n"
+    end
+    base.chomp
+  end
+
+
+  # @!group HERE BE DRAGONS
+
   # generate all the concrete concrete syntax tree node classes
   GRAMMAR[:non_terminals].each do |name|
     unless GRAMMAR[:rules][name]
@@ -121,7 +99,7 @@ class Joos::AST
     end
 
     klass = ::Class.new(self) do
-      define_method(:type) { name }
+      define_method(:to_sym) { name }
       GRAMMAR[:rules][name].each do |rule|
         rule.each do |variant|
           define_method(variant) { search variant }
@@ -131,5 +109,18 @@ class Joos::AST
 
     const_set(name, klass)
   end
+
+  # now we can load any classes that we want to re-open and futz with
+  [
+   'for_init',
+   'for_update',
+   'modifiers',
+   'term',
+   'unmodified_term'
+  ].each do |klass|
+    require "joos/ast/#{klass}"
+  end
+
+  # @!endgroup
 
 end

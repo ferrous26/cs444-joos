@@ -20,9 +20,8 @@ class Joos::Entity::Constructor < Joos::Entity
     @body = body
   end
 
-  # @return [self]
-  def to_constructor
-    self
+  def to_sym
+    :Constructor
   end
 
   def validate

@@ -1,4 +1,3 @@
-require 'joos/version'
 require 'joos/token'
 
 # Extensions to the Token class
@@ -13,7 +12,7 @@ class Joos::Token
   module Literal
     # @param tab [Fixnum] number of leading spaces (*2)
     def inspect tab = 0
-      "#{'  ' * tab}#{type}:#{value} from #{source}"
+      "#{'  ' * tab}#{to_sym}:#{magenta value} from #{red source}"
     end
   end
 
@@ -24,7 +23,7 @@ class Joos::Token
     include Joos::Token::Literal
     include Joos::Token::ConstantToken
 
-    def type
+    def to_sym
       :BooleanLiteral
     end
   end
@@ -222,7 +221,7 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
 
     CLASSES['null'] = self
 
-    def type
+    def to_sym
       :NullLiteral
     end
   end
@@ -311,7 +310,7 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
       @token = (- to_i).to_s
     end
 
-    def type
+    def to_sym
       :IntegerLiteral
     end
 
@@ -408,7 +407,7 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
       "'"
     end
 
-    def type
+    def to_sym
       :CharacterLiteral
     end
   end
@@ -478,7 +477,7 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
       @to_binary.length
     end
 
-    def type
+    def to_sym
       :StringLiteral
     end
   end

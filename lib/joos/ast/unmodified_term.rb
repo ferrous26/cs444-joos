@@ -2,7 +2,7 @@ require 'joos/ast'
 
 ##
 # Extensions to the basic node to support type cast validation.
-class UnmodifiedTerm
+class Joos::AST::UnmodifiedTerm
 
   ##
   # Exception raised when an illegal cast is detected.
@@ -28,10 +28,10 @@ class UnmodifiedTerm
     # no selectors
     expr = self.Expression.SubExpression
     raise exception unless expr
-    raise exception unless expr.MoreTerms.empty?
+    raise exception unless expr.MoreTerms.blank?
     raise exception unless expr.Term.UnmodifiedTerm
     expr = expr.Term.UnmodifiedTerm
-    raise exception unless expr.Selectors.empty?
+    raise exception unless expr.Selectors.blank?
     expr = expr.Primary
     raise exception unless expr # cast must be a Primary
     raise exception unless expr.QualifiedIdentifier

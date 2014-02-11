@@ -15,6 +15,10 @@ class Joos::Entity::FormalParameter < Joos::Entity
     @type = type # @todo resolve type?
   end
 
+  def to_sym
+    :FormalParameter
+  end
+
   def validate
     super
     # @todo what else do we need to do here?

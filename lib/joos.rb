@@ -2,6 +2,7 @@ require 'joos/version'
 require 'joos/freedom_patches'
 require 'joos/scanner'
 require 'joos/parser'
+require 'joos/entity'
 
 
 ##
@@ -52,15 +53,11 @@ class Joos::Compiler
       Thread.new do scan_and_parse(file) end
     end
 
-    threads.map(&:value).each do |ast|
-      break if @result == ERROR
-
-      if ast.kind_of? Exception
-        print_exception ast
-      else
-        build_entities ast
-      end
+    asts = threads.map(&:value).each do |ast|
+      return if @result == ERROR # bust outta here
     end
+
+    asts.map { |ast| build_entities ast }
   end
 
 
@@ -83,10 +80,19 @@ class Joos::Compiler
     $stderr.safe_puts ast.inspect if $DEBUG
     ast.visit { |parent, node| node.validate(parent) } # weeder checks
   rescue Exception => exception
-    exception
-
-  rescue Exception => exception
     print_exception exception
+  end
+
+  def build_entities ast
+    type = ast.TypeDeclaration
+    if type.ClassDeclaration
+      Joos::Entity::Class.new ast
+    elsif type.InterfaceDeclaration
+      Joos::Entity::Interface.new ast
+    else
+      # @todo maybe we shoud raise an exception?
+      $stderr.puts 'ZOMG, you tried to compile a file that declares nothing!'
+    end
   end
 
 end

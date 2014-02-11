@@ -33,9 +33,8 @@ class Joos::Entity::Field < Joos::Entity
     @initializer = init
   end
 
-  # @return [self]
-  def to_member
-    self
+  def to_sym
+    :Field
   end
 
   def validate

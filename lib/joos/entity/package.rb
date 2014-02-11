@@ -32,8 +32,8 @@ class Joos::Entity::Package < Joos::Entity
   end
 
   # @return [self]
-  def to_compilation_unit
-    self
+  def to_sym
+    :Package
   end
 
   def validate

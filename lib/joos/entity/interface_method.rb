@@ -13,6 +13,10 @@ class Joos::Entity::InterfaceMethod < Joos::Entity::Method
     ensure_modifiers_not_present(:Protected, :Static, :Final, :Native)
   end
 
+  def to_sym
+    :InterfaceMethod
+  end
+
 
   private
 

@@ -80,6 +80,11 @@ class Joos::Entity::Class < Joos::Entity
     ensure_at_least_one_constructor
     constructors.each(&:validate)
     members.each(&:validate)
+
+  def to_sym
+    :Class
+  end
+
   end
 
 

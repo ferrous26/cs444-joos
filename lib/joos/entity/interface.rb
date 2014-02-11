@@ -50,4 +50,8 @@ class Joos::Entity::Interface < Joos::Entity
     ensure_modifiers_not_present(:Protected, :Final, :Native, :Static)
     members.each(&:validate)
   end
+
+  def to_sym
+    :Interface
+  end
 end

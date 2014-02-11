@@ -15,6 +15,10 @@ class Joos::Entity::LocalVariable < Joos::Entity
     @type = type
   end
 
+  def to_sym
+    :LocalVariable
+  end
+
   def validate
     super
     # @todo what else?

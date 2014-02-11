@@ -74,7 +74,7 @@ module Joos::Entity::Modifiable
   private
 
   def extract_modifiers mods
-    mods.nodes.map { |node| node.nodes.first }.map(&:type)
+    mods.nodes.map { |node| node.nodes.first }.map(&:to_sym)
   end
 
   def ensure_no_duplicate_modifiers

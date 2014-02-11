@@ -6,7 +6,7 @@ require 'joos/colour'
 #
 # Abstract base of all declared entities in the Joos language.
 class Joos::Entity
-  include Colour
+  include Joos::Colour
 
   # @todo A way to separate by simple and qualified names
   # @todo A way to resolve names
@@ -36,15 +36,14 @@ class Joos::Entity
   ##
   # A simple string identifier for the entity's type and source location.
   def to_s
-    klass = self.class.to_s.split('::').last
-    "#{klass}:#{name.value} @ #{name.file}:#{name.line}"
+    "#{to_sym}:#{name.inspect} @ #{name.file}:#{name.line}"
   end
 
   # @todo what does it mean to inspect an entity? (in tree format)
   # @param tab [Fixnum]
   # @return [String]
   def inspect tab = 0
-    magenta(super().split("\n").map! { |x| ("\t" * tab) + str })
+    ('  ' * tab) + to_s
   end
 
   require 'joos/entity/package'

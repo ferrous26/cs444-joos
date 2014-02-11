@@ -70,7 +70,7 @@ class Joos::Token
       end
 
       define_singleton_method(:token) { symbol }
-      define_method(:type) { name }
+      define_method(:to_sym) { name }
     end
 
     const_set(name, klass)

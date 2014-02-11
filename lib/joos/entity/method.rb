@@ -48,9 +48,8 @@ class Joos::Entity::Method < Joos::Entity
     @body = body
   end
 
-  # @return [self]
-  def to_member
-    self
+  def to_sym
+    :Method
   end
 
   def validate

@@ -1,4 +1,4 @@
-require 'joos/version'
+require 'joos/colour'
 
 ##
 # @abstract
@@ -7,6 +7,7 @@ require 'joos/version'
 # language.
 #
 class Joos::Token
+  include Joos::Colour
 
   ##
   # A mapping of strings to their corresponding class
@@ -77,23 +78,15 @@ class Joos::Token
   #
   # @return [String]
   def source
-    "#{file}:#{line}:#{column}"
+    red "#{file}:#{line}:#{column}"
   end
 
   ##
   # Find out what type of token the receiver is.
   #
   # @return [Symbol]
-  def type
+  def to_sym
     raise NotImplementedError
-  end
-
-  ##
-  # Formatted output for error messages
-  #
-  # @return [String]
-  def inspect tab = 0
-    "#{'  ' * tab}#{type} from #{source}"
   end
 
   ##
@@ -172,18 +165,11 @@ Bad input token found at #{token.source}
     end
 
     ##
-    # This override allows any constant token to be compared with a symbol
-    # that has the equivalent token `#value`. Furthermore, equivalence no
-    # longer requires that the source of the token be equal.
+    # Formatted output for error messages
     #
-    # @example
-    #
-    #   Joos::Token::Public.new(...) == :public  # => true
-    #   Joos::Token::Public.new(...) == :private # => false
-    #
-    # @param other [#to_sym, Joos::ConstantToken]
-    def == other
-      @to_sym == other.to_sym
+    # @return [String]
+    def inspect tab = 0
+      ('  ' * tab) + @token
     end
   end
 
