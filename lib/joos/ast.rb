@@ -1,4 +1,3 @@
-require 'joos/version'
 require 'joos/freedom_patches'
 require 'joos/entity'
 
@@ -6,20 +5,20 @@ require 'joos/entity'
 # @abstract
 #
 # Concrete syntax tree for Joos.
-class Joos::CST
+class Joos::AST
   require 'joos_grammar'
 
-  # @param [Joos::CST]
+  # @param [Joos::AST]
   attr_accessor :parent
 
-  # @return [Array<Joos::CST, Joos::Token>]
+  # @return [Array<Joos::AST, Joos::Token, Joos::Entity>]
   attr_reader :nodes
 
-  # @param nodes [Array<Joos::CST, Joos::Token>]
+  # @param nodes [Array<Joos::AST, Joos::Token, Joos::Entity>]
   def initialize nodes
     @nodes = nodes
     nodes.each do |node|
-      node.parent = self if node.kind_of? Joos::CST
+      node.parent = self if node.kind_of? Joos::AST
     end
   end
 
@@ -32,12 +31,12 @@ class Joos::CST
   end
 
   ##
-  # Search for a node of the given type at the current CST level
+  # Search for a node of the given type at the current AST level
   #
   # This will not search recursively.
   #
   # @param type [Symbol]
-  # @return [Joos::CST, Joos::Token, nil]
+  # @return [Joos::AST, Joos::Token, Joos::Entity, nil]
   def search type
     @nodes.find { |node| node.type == type }
   end
@@ -45,7 +44,7 @@ class Joos::CST
   ##
   # @todo Move this code somewhere else
   class ::NilClass
-    # The `none` half of the Maybe monad for CST searching
+    # The `none` half of the Maybe monad for AST searching
     # @param type [Symbol]
     # @return [nil]
     def search type
@@ -72,8 +71,8 @@ class Joos::CST
   end
 
   # @yield Each node in the tree will be yield in depth first order
-  # @yieldparam parent [Joos::CST, Joos::Token, Joos::Entity]
-  # @yieldparam node [Joos::CST, Joos::Token, Joos::Entity]
+  # @yieldparam parent [Joos::AST, Joos::Token, Joos::Entity]
+  # @yieldparam node [Joos::AST, Joos::Token, Joos::Entity]
   def visit &block
     nodes.each do |node|
       block.call self, node
@@ -86,7 +85,7 @@ class Joos::CST
   # Swap the node with the given type with the given new node
   #
   # @param old_node_type [Symbol]
-  # @param new_node [Joos::CST, Joos::Entity, Joos::Token]
+  # @param new_node [Joos::AST, Joos::Entity, Joos::Token]
   def transform old_node_type, new_node
     idx = @nodes.find_index { |old_node| old_node.type == old_node_type }
     @nodes[idx] = new_node
@@ -100,7 +99,7 @@ class Joos::CST
   end
 
   ##
-  # Generic validation for the CST node.
+  # Generic validation for the AST node.
   #
   # This is used by the weeder to ask the receiver to make sure that
   # they are a valid node in the AST. It is up to the receiver to
@@ -109,7 +108,7 @@ class Joos::CST
   #
   # An exception should be raised if the node is not valid.
   #
-  # @param parent [Joos::CST]
+  # @param parent [Joos::AST]
   def validate parent
     # nop
   end
@@ -133,28 +132,4 @@ class Joos::CST
     const_set(name, klass)
   end
 
-  ##
-  # Extensions to the basic node to support term rewriting.
-  class InterfaceDeclaration
-    def build_entity type_decl
-      int = Joos::Entity::Interface.new(self.Identifier,
-                                        modifiers: type_decl.Modifiers)
-      # also get the implements values
-
-      self.InterfaceBody.InterfaceBodyDeclarations.visit do |parent, node|
-        if node.type == :InterfaceMemberDecl
-          modifiers = parent.Modifiers
-          type      = node.Type || :Void
-
-          # @todo also grab the formal params
-          method = Joos::Entity::Method.new(node.Identifier,
-                                            type: type,
-                                            modifiers: modifiers)
-          int.add_member method
-        end
-      end
-
-      int
-    end
-  end
 end
