@@ -254,11 +254,11 @@ GRAMMAR = {
     ],
     FormalParameters: [
       [:OpenParen, :CloseParen],
-      [:OpenParen, :FormalParameter, :MoreFormalParameters, :CloseParen]
+      [:OpenParen, :FormalParameterList, :CloseParen]
     ],
-    MoreFormalParameters: [
-      [:Comma, :FormalParameter, :MoreFormalParameters],
-      []
+    FormalParameterList: [
+      [:FormalParameter],
+      [:FormalParameter, :Comma, :FormalParameterList],
     ],
     FormalParameter: [
       [:Type, :Identifier]
@@ -287,7 +287,7 @@ GRAMMAR = {
                   :InterfaceMemberDecl,
                   :MethodDeclaratorRest, :InterfaceMemberDeclRest, :MoreImportIdentifiers,
                   :ConstructorDeclaratorRest, :FormalParameters, :FormalParameter,
-                  :MoreFormalParameters, :MethodBody, :ArrayType, :AugmentedCompilationUnit],
+                  :FormalParameterList, :MethodBody, :ArrayType, :AugmentedCompilationUnit],
 
   start_symbol: :AugmentedCompilationUnit
 }

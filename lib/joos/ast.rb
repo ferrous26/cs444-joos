@@ -82,7 +82,6 @@ class Joos::AST
   def inspect tab = 0
     base = "#{'  ' * tab}#{to_sym}\n"
     @nodes.each do |node|
-      puts node.class
       base << node.inspect(tab + 1) << "\n"
     end
     base.chomp
@@ -136,7 +135,8 @@ class Joos::AST
    'unmodified_term',
    'class_body_declarations',
    'type_list',
-   'qualified_identifier'
+   'qualified_identifier',
+   'formal_parameter_list'
   ].each do |klass|
     require "joos/ast/#{klass}"
   end
