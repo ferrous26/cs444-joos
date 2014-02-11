@@ -18,7 +18,7 @@ class Joos::Entity
   # @return [Joos::Token::Identifier, Joos::AST::QualifiedIdentifier]
   attr_reader :name
 
-  # @param name [Joos::Token::Identifier]
+  # @param name [Joos::Token::Identifier, Joos::AST::QualifiedIdentifier]
   def initialize name
     @name = name
   end
