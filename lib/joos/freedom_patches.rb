@@ -56,6 +56,9 @@ class NilClass
   def blank?
     true
   end
+  def inspect tab = 0
+    raise 'YOU SHOULD NOT HAVE A nil IN THE FUCKING AST'
+  end
 end
 
 ##
