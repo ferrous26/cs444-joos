@@ -206,11 +206,8 @@ GRAMMAR = {
       [:Interface, :Identifier, :Extends, :TypeList, :InterfaceBody]
     ],
     TypeList: [
-      [:QualifiedIdentifier, :CommaType]
-    ],
-    CommaType: [
-      [:Comma, :Type, :CommaType],
-      []
+      [:QualifiedIdentifier],
+      [:QualifiedIdentifier, :Comma, :TypeList]
     ],
     ClassBody: [
       [:OpenBrace, :ClassBodyDeclarations, :CloseBrace]
@@ -228,20 +225,14 @@ GRAMMAR = {
     ],
     ClassBodyDeclaration: [
       [:Semicolon],
-      [:Modifiers, :MemberDecl]
-    ],
-    MemberDecl: [
-      [:MethodOrFieldDecl],
-      [:Void, :Identifier, :MethodDeclaratorRest],
-      [:Identifier, :ConstructorDeclaratorRest]
-    ],
-    MethodOrFieldDecl: [
-      [:Type, :Identifier, :MethodOrFieldRest]
-    ],
-    MethodOrFieldRest: [
-      [:Semicolon],
-      [:Equals, :Expression, :Semicolon],
-      [:MethodDeclaratorRest]
+      # Field
+      [:Modifiers, :Type, :Identifier, :Semicolon],
+      [:Modifiers, :Type, :Identifier, :Equals, :Expression, :Semicolon],
+      # Methods
+      [:Modifiers, :Void, :Identifier, :MethodDeclaratorRest],
+      [:Modifiers, :Type, :Identifier, :MethodDeclaratorRest],
+      # Constructor
+      [:Modifiers, :Identifier, :ConstructorDeclaratorRest]
     ],
     InterfaceBodyDeclaration: [
       [:Semicolon],
@@ -291,9 +282,9 @@ GRAMMAR = {
                   :Block, :BlockStatement, :BlockStatements, :LocalVariableDeclarationStatement, :Statement,
                   :ForInit, :ForUpdate, :Modifiers, :Modifier, :VariableDeclarator,
                   :ImportDeclarations, :ImportDeclaration,
-                  :TypeDeclaration, :ClassDeclaration, :InterfaceDeclaration, :TypeList, :CommaType, :ClassBody,
+                  :TypeDeclaration, :ClassDeclaration, :InterfaceDeclaration, :TypeList, :ClassBody,
                   :ClassBodyDeclarations, :ClassBodyDeclaration, :InterfaceBody, :InterfaceBodyDeclarations, :InterfaceBodyDeclaration,
-                  :MemberDecl, :MethodOrFieldDecl, :MethodOrFieldRest, :InterfaceMemberDecl,
+                  :InterfaceMemberDecl,
                   :MethodDeclaratorRest, :InterfaceMemberDeclRest, :MoreImportIdentifiers,
                   :ConstructorDeclaratorRest, :FormalParameters, :FormalParameter,
                   :MoreFormalParameters, :MethodBody, :ArrayType, :AugmentedCompilationUnit],
