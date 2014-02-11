@@ -17,61 +17,6 @@ class Joos::Token
     end
   end
 
-  ##
-  # Attribute for tokens that are a kind of modifier
-  module Modifier; end
-
-  ##
-  # Attribute for tokens are a kind of field modifier
-  module FieldModifier
-    include Modifier
-  end
-
-  ##
-  # Attribute for tokens that are a kind of method modifier
-  module MethodModifier
-    include Modifier
-  end
-
-  ##
-  # Attribute for tokens that are a kind of class modifier
-  # which can modify classes or interfaces
-  module ClassModifier
-    include Modifier
-  end
-
-  ##
-  # Attribute for tokens that are a kind of visibility modifier
-  module VisibilityModifier
-    include Modifier
-  end
-
-  ##
-  # Attribute for tokens that belong to a control flow structure
-  module ControlFlow; end
-
-  ##
-  # Attribute for tokens that begin declarations
-  module Declaration; end
-
-  ##
-  # Attribute for tokens that are types
-  module Type; end
-
-  ##
-  # Attribute for tokens that indicate primitive types
-  module PrimitiveType
-    include Type
-  end
-
-  ##
-  # Attribute for tokens that are primitive literals
-  module PrimitiveLiteral; end
-
-  ##
-  # Attribute for tokens that are reference literals
-  module ReferenceLiteral; end
-
 
   # @!group Keywords
 
