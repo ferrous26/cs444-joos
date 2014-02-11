@@ -23,14 +23,14 @@ class Joos::Entity::Class < Joos::Entity
   ##
   # The superclass of the receiver.
   #
-  # @return [Joos::Entity::Class]
+  # @return [Token::QualifiedIdentifier]
   attr_reader :extends
-  alias_method :superclass, :extends
+  alias_method :superclass, :extend
 
   ##
   # Interfaces that the receiver conforms to.
   #
-  # @return [Array<Joos::Entity::Interface>]
+  # @return [TypeList]
   attr_reader :implements
   alias_method :interfaces, :implements
 
@@ -43,34 +43,33 @@ class Joos::Entity::Class < Joos::Entity
   attr_reader :constructors
 
   ##
-  # All fields and methods defined on the class.
+  # All fields defined on the class.
   #
-  # Not including fields and methods defined in ancestor classes or
-  # interfaces.
+  # Not including fields defined in ancestor classes.
   #
-  # @return [Array<Fields, Methods>]
-  attr_reader :members
+  # @return [Array<Field>]
+  attr_reader :fields
 
-  # @param modifiers  [Array<Modifier>]
-  # @param name       [Joos::AST::QualifiedIdentifier]
-  # @param extends    [Class, nil]
-  # @param implements [Array<Interface>]
-  def initialize name, modifiers: default_mods, extends: nil, implements: []
-    super name, modifiers
-    @extends      = extends  # || Joos::Core::Object
-    @implements   = implements
-    @constructors = []
-    @members      = []
-  end
+  ##
+  # All methods defined on the class.
+  #
+  # Not including fields and methods defined in ancestor classes. If
+  # an interface method is defined in this class then you can find the
+  # definition here.
+  #
+  # @return [Array<Method>]
+  attr_reader :methods
 
-  # @param constructor [Constructor]
-  def add_constructor constructor
-    @constructors << constructor.to_constructor
-  end
-
-  # @param member [Field, Method]
-  def add_member member
-    @members << member.to_member
+  # @param compilation_unit [Joos::AST::CompilationUnit]
+  def initialize compilation_unit
+    decl  = compilation_unit.TypeDeclaration
+    @node = decl.ClassDeclaration
+    super @node.Identifier, decl.Modifiers
+    set_superclass
+    set_interfaces
+    set_constructors
+    set_fields
+    set_methods
   end
 
   def validate
@@ -79,12 +78,16 @@ class Joos::Entity::Class < Joos::Entity
     ensure_mutually_exclusive_modifiers(:Final, :Abstract)
     ensure_at_least_one_constructor
     constructors.each(&:validate)
-    members.each(&:validate)
+    fields.each(&:validate)
+    methods.each(&:validate)
+  end
 
   def to_sym
     :Class
   end
 
+  def visit &block
+    # what does it mean to visit a class?
   end
 
 
@@ -93,4 +96,50 @@ class Joos::Entity::Class < Joos::Entity
   def ensure_at_least_one_constructor
     raise NoConstructorError.new(self) if constructors.empty?
   end
+
+  ##
+  # The default base class for any class that does not specify
+  #
+  # @return [Joos::Token::Identifier]
+  BASE_CLASS = Joos::AST::QualifiedIdentifier.new(
+   ['java', 'lang', 'Object'].map do |id|
+     Joos::Token::Identifier.new(id, 'internal', 0, 0)
+   end)
+
+  def set_superclass
+    @extends = @node.QualifiedIdentifier || BASE_CLASS
+  end
+
+  def set_interfaces
+    @implements = @node.TypeList
+  end
+
+  def set_members ivar, member_type
+    @node.ClassBody.ClassBodyDeclarations.visit do |parent, node|
+      if node.to_sym == member_type
+        ivar << node
+        node.set_modifiers parent.Modifiers
+      end
+    end
+  end
+
+  def set_constructors
+    @constructors = []
+    set_members @constructor, :Constructor
+  end
+
+  def set_fields
+    @fields = []
+    set_members @fields, :Field
+  end
+
+  def set_methods
+    @methods = []
+    set_members @methods, :Method
+  end
+
+  def ensure_at_least_one_constructor
+    raise NoConstructorError.new(self) if @constructors.empty?
+  end
+
 end

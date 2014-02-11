@@ -28,21 +28,16 @@ class Joos::Entity::Interface < Joos::Entity
   # Not including fields and methods defined in ancestor classes or
   # interfaces.
   #
-  # @return [Array<Fields, Methods>]
-  attr_reader :members
+  # @return [Array<Method>]
+  attr_reader :methods
 
-  # @param modifiers [Array<Joos::Token::Modifier>]
-  # @param name      [Joos::AST::QualifiedIdentifier]
-  # @param extends   [Array<Joos::Token::Modifier>]
-  def initialize name, modifiers: default_mods, extends: []
-    super name, modifiers
-    @extends = extends
-    @members = []
-  end
-
-  # @param member [Method]
-  def add_member member
-    @members << member.to_member
+  # @param compilation_unit [Joos::AST::CompilationUnit]
+  def initialize compilation_unit
+    decl  = compilation_unit.TypeDeclaration
+    @node = decl.InterfaceDeclaration
+    super @node.Identifier, decl.Modifiers
+    set_superinterfaces
+    set_methods
   end
 
   def validate
@@ -54,4 +49,24 @@ class Joos::Entity::Interface < Joos::Entity
   def to_sym
     :Interface
   end
+
+  def visit &block
+    # what does it mean to visit an interface?
+    # yield various attributes, in order
+  end
+
+
+  private
+
+  def set_superinterfaces
+    @implements = @node.TypeList
+  end
+
+  def set_methods
+    @methods = []
+    @node.ClassBody.ClassBodyDeclarations.visit do |_, node|
+      @methods << node if node.type == :InterfaceMethod
+    end
+  end
+
 end
