@@ -1,7 +1,7 @@
 require 'spec_helper'
-require 'joos/cst'
+require 'joos/ast'
 
-describe Joos::CST do
+describe Joos::AST do
 
   it 'should generate a class for each non-terminal'
   it 'takes an arbitrary number of nodes at init'
