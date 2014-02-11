@@ -117,7 +117,7 @@ class Joos::AST
   GRAMMAR[:non_terminals].each do |name|
     unless GRAMMAR[:rules][name]
       $stderr.puts "#{name} does not have a rule"
-      next
+      exit 1
     end
 
     klass = ::Class.new(self) do
