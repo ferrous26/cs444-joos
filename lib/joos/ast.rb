@@ -88,6 +88,18 @@ class Joos::AST
     base.chomp
   end
 
+  ##
+  # Mixin used for AST nodes which represent a list of nodes but have
+  # been modeled as a tree due to the way the parser works.
+  module ListCollapse
+    # @return [nil]
+    def collapse
+      return if @nodes.empty?
+      list = @nodes.find { |node| node.to_sym == to_sym } || []
+      @nodes = list.nodes.unshift @nodes.first
+    end
+  end
+
 
   # @!group HERE BE DRAGONS
 
@@ -116,7 +128,8 @@ class Joos::AST
    'for_update',
    'modifiers',
    'term',
-   'unmodified_term'
+   'unmodified_term',
+   'class_body_declarations'
   ].each do |klass|
     require "joos/ast/#{klass}"
   end
