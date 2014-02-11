@@ -324,7 +324,7 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     # @raise [OutOfRangeError] if the value is not in the range of a
     #   32-bit signed integer
     #
-    # @param parent [Joos::CST]
+    # @param parent [Joos::AST]
     # @return [Void]
     def validate parent
       super

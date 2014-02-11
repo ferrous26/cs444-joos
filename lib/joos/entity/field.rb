@@ -21,7 +21,7 @@ class Joos::Entity::Field < Joos::Entity
   # @return [Class, Interface, Joos::Token::Type]
   attr_reader :type
 
-  # @return [Joos::CST::Expression]
+  # @return [Joos::AST::Expression]
   attr_reader :initializer
 
   # @param modifiers [Array<Joos::Token::Modifier>]

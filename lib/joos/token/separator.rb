@@ -48,7 +48,7 @@ class Joos::Token
       end
     end
 
-    # @param parent [Joos::CST]
+    # @param parent [Joos::AST]
     def validate parent
       if parent.parent.parent.parent.Selectors.Selector.OpenStaple
         raise MultiDimensionalArray.new(self)

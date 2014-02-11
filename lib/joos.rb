@@ -84,20 +84,7 @@ class Joos::Compiler
     ast.visit { |parent, node| node.validate(parent) } # weeder checks
   rescue Exception => exception
     exception
-  end
 
-  ##
-  # @todo Replace this method with something flat
-  #
-  # Kick off the entity building process, which is recursive
-  def build_entities ast
-    ast.visit do |parent, node|
-      if node.type == :TypeDeclaration
-        entity = node.nodes.second.build_entity(node)
-        entity.validate
-        parent.transform(:TypeDeclaration, entity)
-      end
-    end
   rescue Exception => exception
     print_exception exception
   end

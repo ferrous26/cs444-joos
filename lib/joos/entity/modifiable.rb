@@ -103,6 +103,6 @@ module Joos::Entity::Modifiable
   end
 
   def default_mods
-    Joos::CST::Modifiers.new([])
+    Joos::AST::Modifiers.new([])
   end
 end

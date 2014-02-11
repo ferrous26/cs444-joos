@@ -156,7 +156,7 @@ class Joos::Token
       end
     end
 
-    # @param parent [Joos::CST::Infixop]
+    # @param parent [Joos::AST::Infixop]
     def validate parent
       term = parent.parent.Term.UnmodifiedTerm
       return if term.Selectors.nodes.empty? &&

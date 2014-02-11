@@ -1,5 +1,5 @@
 require 'joos/token'
-require 'joos/cst'
+require 'joos/ast'
 
 ##
 # @todo Documentation
@@ -8,12 +8,12 @@ class Joos::Parser
 
   attr_reader :token_stream
   attr_reader :state_stack
-  attr_reader :cst_stack
+  attr_reader :ast_stack
 
   def initialize token_stream
     @token_stream = [:EndProgram] + Array(token_stream).reverse
     @state_stack  = [0]
-    @cst_stack    = []
+    @ast_stack    = []
     @transitions  = PARSER_RULES[:transitions]
     @reductions   = PARSER_RULES[:reductions]
   end
@@ -25,8 +25,8 @@ class Joos::Parser
     refine Array do
       def process parser, token
         parser.state_stack.pop last
-        klass = Joos::CST.const_get(first, false)
-        parser.token_stream.push klass.new(parser.cst_stack.pop last)
+        klass = Joos::AST.const_get(first, false)
+        parser.token_stream.push klass.new(parser.ast_stack.pop last)
       end
     end
 
@@ -34,7 +34,7 @@ class Joos::Parser
       def process parser, token
         parser.token_stream.pop
         parser.state_stack.push self
-        parser.cst_stack.push token
+        parser.ast_stack.push token
       end
     end
   end
@@ -56,8 +56,8 @@ class Joos::Parser
       $stderr.safe_puts "Parsing #{token} from state #{current_state}" if $DEBUG
       oracle(token).process(self, token)
     end
-    @cst_stack.pop
-    @cst_stack.pop
+    @ast_stack.pop
+    @ast_stack.pop
   end
 
 
