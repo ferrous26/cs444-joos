@@ -213,7 +213,7 @@ class Joos::DFA
   ##
   # Determine whether an input character is valid, and potentially transform it.
   #
-  # @ param character [String]
+  # @param character [String]
   def classify character
     character
   end
