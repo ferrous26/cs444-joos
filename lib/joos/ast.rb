@@ -5,6 +5,7 @@ require 'joos/freedom_patches'
 #
 # Concrete syntax tree for Joos.
 class Joos::AST
+  include Enumerable
   require 'joos_grammar'
 
   # @param [Joos::AST]
@@ -19,6 +20,14 @@ class Joos::AST
     nodes.each do |node|
       node.parent = self if node.kind_of? Joos::AST
     end
+  end
+
+  ##
+  # This implementation of `#each` does not support returning
+  # an enumerator.
+  #
+  def each
+    @nodes.each { |node| yield node }
   end
 
   ##
