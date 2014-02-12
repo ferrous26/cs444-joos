@@ -93,14 +93,14 @@ class Joos::AST
   module ListCollapse
     def initialize nodes
       super
-      collapse
+      list_collapse
     end
 
     # @return [nil]
-    def collapse
-      return if @nodes.empty?
-      list = @nodes.find { |node| node.to_sym == to_sym }.nodes || []
-      @nodes = list.unshift @nodes.first
+    def list_collapse
+      if @nodes.last.to_sym == to_sym
+        @nodes = @nodes.last.nodes.unshift @nodes.first
+      end
     end
   end
 
