@@ -184,12 +184,12 @@ GRAMMAR = {
       []
     ],
     ImportDeclaration: [
-      [:Import, :Identifier, :MoreImportIdentifiers, :Semicolon]
+      [:Import, :QualifiedImportIdentifier, :Semicolon]
     ],
-    MoreImportIdentifiers: [
-      [:Dot, :Identifier, :MoreImportIdentifiers],
-      [:Dot, :Multiply],
-      []
+    QualifiedImportIdentifier: [
+      [:Identifier],
+      [:Identifier, :Dot, :QualifiedImportIdentifier],
+      [:Identifier, :Dot, :Multiply]
     ],
     TypeDeclaration: [
       [:Modifiers, :ClassDeclaration],
@@ -286,7 +286,7 @@ GRAMMAR = {
                   :TypeDeclaration, :ClassDeclaration, :InterfaceDeclaration, :TypeList, :ClassBody,
                   :ClassBodyDeclarations, :ClassBodyDeclaration, :InterfaceBody, :InterfaceBodyDeclarations, :InterfaceBodyDeclaration,
                   :InterfaceMemberDecl,
-                  :MethodDeclaratorRest, :InterfaceMemberDeclRest, :MoreImportIdentifiers,
+                  :MethodDeclaratorRest, :InterfaceMemberDeclRest, :QualifiedImportIdentifier,
                   :ConstructorDeclaratorRest, :FormalParameters, :FormalParameter,
                   :FormalParameterList, :MethodBody, :ArrayType, :AugmentedCompilationUnit],
 
