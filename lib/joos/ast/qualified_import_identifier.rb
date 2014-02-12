@@ -1,10 +1,8 @@
 require 'joos/ast'
 
 ##
-# A sequence of {Joos::Token::Identifier} objects
-#
-# The meaning will depend on semantic analysis.
-class Joos::AST::QualifiedIdentifier
+# @todo Documentation
+class Joos::AST::QualifiedImportIdentifier
   include ListCollapse
 
   def inspect tab = 0
