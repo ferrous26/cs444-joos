@@ -67,9 +67,7 @@ class Joos::Entity::Class < Joos::Entity
     super @node.Identifier, decl.Modifiers
     set_superclass
     set_interfaces
-    set_constructors
-    set_fields
-    set_methods
+    set_members
   end
 
   def validate
@@ -114,28 +112,27 @@ class Joos::Entity::Class < Joos::Entity
     @implements = @node.TypeList
   end
 
-  def set_members ivar, member_type
-    @node.ClassBody.ClassBodyDeclarations.visit do |parent, node|
-      if node.to_sym == member_type
-        ivar << node
-        node.set_modifiers parent.Modifiers
+  def set_members
+    @constructors = []
+    @fields       = []
+    @methods      = []
+
+    return # @todo remove this when I fix up the other entity initializers
+
+    @node.ClassBody.ClassBodyDeclarations.nodes.each do |node|
+      next if node.nodes.size == 1 # just a Semicolon, nothing declared
+
+      if node.ConstructorDeclaratorRest
+        @constructors << Constructor.new(node)
+
+      elsif node.MethodDeclaratorRest
+        @methods << Method.new(node)
+
+      else # must be a field declaration
+        @fields << Field.new(node)
+
       end
     end
-  end
-
-  def set_constructors
-    @constructors = []
-    set_members @constructor, :Constructor
-  end
-
-  def set_fields
-    @fields = []
-    set_members @fields, :Field
-  end
-
-  def set_methods
-    @methods = []
-    set_members @methods, :Method
   end
 
   def ensure_at_least_one_constructor
