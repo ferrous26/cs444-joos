@@ -1,4 +1,4 @@
-require 'joos/entity'
+require 'joos/entity/method'
 require 'joos/entity/modifiable'
 
 ##
@@ -6,18 +6,13 @@ require 'joos/entity/modifiable'
 #
 # In Joos, interfaces cannot have constructors.
 #
-class Joos::Entity::Constructor < Joos::Entity
+class Joos::Entity::Constructor < Joos::Entity::Method
   include Modifiable
 
-  # @return [Joos::AST::MethodBody]
-  attr_reader :body
-
-  # @param modifiers [Array<Joos::Token::Modifier>]
-  # @param name [Joos::Token::Identifier, Joos::AST::QualifiedIdentifier]
-  # @param body [Joos::AST::MethodBody]
-  def initialize name, modifiers: default_mods, body: nil
-    super name, modifiers
-    @body = body
+  # @param node [Joos::AST::ClassBodyDeclaration]
+  def initialize node, parent
+    super
+    @type = @parent
   end
 
   def to_sym
@@ -25,7 +20,13 @@ class Joos::Entity::Constructor < Joos::Entity
   end
 
   def validate
-    super
     ensure_modifiers_not_present(:Static, :Abstract, :Final, :Native)
+    super # super called here to null out some superclass checks
   end
+
+  def inspect tab = 0
+    # @todo do something nice here...
+    super
+  end
+
 end

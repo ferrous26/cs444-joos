@@ -36,7 +36,7 @@ class Joos::Entity
   ##
   # A simple string identifier for the entity's type and source location.
   def to_s
-    "#{to_sym}:#{name.inspect} @ #{name.file}:#{name.line}"
+    "#{to_sym}:#{name.inspect}"
   end
 
   # @todo what does it mean to inspect an entity? (in tree format)

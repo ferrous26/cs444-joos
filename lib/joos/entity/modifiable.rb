@@ -52,9 +52,9 @@ module Joos::Entity::Modifiable
 
 
   ##
-  # Modifiers of the receiver.
+  # Modifiers of the receiver, stripped down to just the name.
   #
-  # @return [Array<Joos::Token::Modifier>]
+  # @return [Array<Symbol>]
   attr_reader :modifiers
 
   # @param name [Joos::AST::QualifiedIdentifier]
@@ -74,7 +74,7 @@ module Joos::Entity::Modifiable
   private
 
   def extract_modifiers mods
-    mods.nodes.map { |node| node.nodes.first }.map(&:to_sym)
+    mods.map { |node| node.first }.map(&:to_sym)
   end
 
   def ensure_no_duplicate_modifiers
@@ -102,7 +102,12 @@ module Joos::Entity::Modifiable
     end
   end
 
-  def default_mods
-    Joos::AST::Modifiers.new([])
+  # @!group Inspect
+
+  def inspect_modifiers
+    '(' + @modifiers.join(', ') + ')'
   end
+
+  # @!endgroup
+
 end

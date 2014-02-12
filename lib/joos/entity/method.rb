@@ -32,20 +32,35 @@ class Joos::Entity::Method < Joos::Entity
     end
   end
 
-  # @return [Class, Interface, Joos::Token::Type]
-  attr_reader :type
+  ##
+  # The class or interface to which the method definition belongs
+  #
+  # @return [Class, Interface]
+  attr_reader :parent
+  alias_method :owner, :parent
 
-  # @return [Joos::AST::MethodBody, nil]
+  # @return [Class, Interface, Joos::AST::BasicType]
+  attr_reader :type
+  alias_method :return_type, :type
+
+  # @todo figure out the type for this sucker
+  attr_reader :parameters
+
+  # @return [Joos::AST::Block, nil]
   attr_reader :body
 
-  # @param modifiers [Array<Joos::Token::Modifier>]
-  # @param type      [Joos::Token::Type]
-  # @param name      [Joos::AST::Identifier]
-  # @param body      [Joos::AST::MethodBody]
-  def initialize name, modifiers: default_mods, type: nil, body: nil
-    super name, modifiers
-    @type = type
-    @body = body
+  # @param node [Joos::AST::ClassBodyDeclaration]
+  def initialize node, parent
+    @node       = node
+    super node.Identifier, node.Modifiers
+    @parent     = parent
+    @type       = node.Void || node.Type
+    @body       = node.MethodDeclaratorRest.MethodBody.Block
+    @parameters = node.MethodDeclaratorRest.FormalParameters.map do |param|
+      # Parameter.new(param)
+      # @todo fix up the parameter class
+      param
+    end
   end
 
   def to_sym

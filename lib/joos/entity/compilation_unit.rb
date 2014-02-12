@@ -18,9 +18,29 @@ module Joos::Entity::CompilationUnit
     end
   end
 
-  # @return [self]
-  def to_compilation_unit
-    self
+  ##
+  # The {Package} to which the compilation unit belongs
+  #
+  # @return [Package]
+  attr_reader :package
+
+  ##
+  # {Class}es and {Interface}s which have been directly imported.
+  #
+  # @return [Array<CompilationUnit>]
+  attr_reader :imported_types
+
+  ##
+  # {Package}s (namespaces) which have been imported into the receiver
+  #
+  # @return [Array<Package>]
+  attr_reader :imported_packages
+
+  def initialize name
+    super name
+    # @todo extract package info (use @node)
+    # @todo extract imported_types (@node)
+    # @todo extract imported_packages (@node)
   end
 
   def validate

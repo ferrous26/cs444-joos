@@ -70,6 +70,10 @@ class Joos::Entity::Class < Joos::Entity
     set_members
   end
 
+  def to_sym
+    :Class
+  end
+
   def validate
     super
     ensure_modifiers_not_present(:Protected, :Native, :Static)
@@ -80,12 +84,16 @@ class Joos::Entity::Class < Joos::Entity
     methods.each(&:validate)
   end
 
-  def to_sym
-    :Class
-  end
-
   def visit &block
     # what does it mean to visit a class?
+  end
+
+  def inspect tab = 0
+    inner_tab = tab + 1
+    taby(tab) + "Class:#{cyan @name.value}\n" +
+      inspect_fields(inner_tab) +
+      inspect_methods(inner_tab) +
+      inspect_constructors(inner_tab)
   end
 
 
@@ -110,6 +118,7 @@ class Joos::Entity::Class < Joos::Entity
 
   def set_interfaces
     @implements = @node.TypeList
+    # @todo extract type names from this list
   end
 
   def set_members
@@ -117,19 +126,17 @@ class Joos::Entity::Class < Joos::Entity
     @fields       = []
     @methods      = []
 
-    return # @todo remove this when I fix up the other entity initializers
-
     @node.ClassBody.ClassBodyDeclarations.nodes.each do |node|
       next if node.nodes.size == 1 # just a Semicolon, nothing declared
 
       if node.ConstructorDeclaratorRest
-        @constructors << Constructor.new(node)
+        @constructors << Constructor.new(node, self)
 
       elsif node.MethodDeclaratorRest
-        @methods << Method.new(node)
+        @methods << Method.new(node, self)
 
       else # must be a field declaration
-        @fields << Field.new(node)
+        @fields << Field.new(node, self)
 
       end
     end
@@ -138,5 +145,21 @@ class Joos::Entity::Class < Joos::Entity
   def ensure_at_least_one_constructor
     raise NoConstructorError.new(self) if @constructors.empty?
   end
+
+  # @!group Inspect
+
+  def inspect_fields tab
+    @fields.map { |field| field.inspect(tab) }.join("\n")
+  end
+
+  def inspect_methods tab
+    ''
+  end
+
+  def inspect_constructors tab
+    ''
+  end
+
+  # @!endgroup
 
 end
