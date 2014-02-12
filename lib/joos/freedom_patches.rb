@@ -1,6 +1,16 @@
 ##
 # Freedom patches on the Object class.
 class Object
+  ##
+  # Given a number of soft tabs required, this method returns
+  # the correct length string.
+  #
+  # @param tab [Fixnum]
+  # @return [String]
+  def taby tab
+    '  ' * tab
+  end
+
   # An object is blank if it's false, empty, or a whitespace string.
   # For example, '', '   ', +nil+, [], and {} are all blank.
   #
