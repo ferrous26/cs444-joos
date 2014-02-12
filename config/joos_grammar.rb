@@ -114,6 +114,7 @@ GRAMMAR = {
       [:Expression, :MoreExpressions],
       []
     ],
+    # @todo I think we can clean this up
     MoreExpressions: [
       [:Comma, :Expression, :MoreExpressions],
       []
@@ -192,8 +193,8 @@ GRAMMAR = {
     ],
     TypeDeclaration: [
       [:Modifiers, :ClassDeclaration],
-      [:Modifiers, :InterfaceDeclaration]
-      # [:Semicolon] # @note I think this case is stupid
+      [:Modifiers, :InterfaceDeclaration],
+      [:Semicolon] # @note I think this case is dumb, but we handle it
     ],
     ClassDeclaration: [
       [:Class, :Identifier, :ClassBody],
@@ -258,7 +259,7 @@ GRAMMAR = {
     ],
     FormalParameterList: [
       [:FormalParameter],
-      [:FormalParameter, :Comma, :FormalParameterList],
+      [:FormalParameter, :Comma, :FormalParameterList]
     ],
     FormalParameter: [
       [:Type, :Identifier]
