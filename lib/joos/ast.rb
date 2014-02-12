@@ -1,4 +1,5 @@
 require 'joos/freedom_patches'
+require 'joos/colour'
 
 ##
 # @abstract
@@ -6,7 +7,10 @@ require 'joos/freedom_patches'
 # Concrete syntax tree for Joos.
 class Joos::AST
   include Enumerable
+  include Joos::Colour
+
   require 'joos_grammar'
+
 
   # @param [Joos::AST]
   attr_accessor :parent
