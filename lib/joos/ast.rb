@@ -139,19 +139,10 @@ class Joos::AST
     const_set(name, klass)
   end
 
-  # now we can load any classes that we want to re-open and futz with
-  [
-   'for_init',
-   'for_update',
-   'modifiers',
-   'term',
-   'unmodified_term',
-   'class_body_declarations',
-   'type_list',
-   'qualified_identifier',
-   'formal_parameter_list'
-  ].each do |klass|
-    require "joos/ast/#{klass}"
+  # forgive me, zenspider, for I have committed the sin of Rails
+  path = File.dirname File.expand_path(__FILE__)
+  Dir.glob("#{path}/ast/*.rb").each do |klass|
+    require klass
   end
 
   # @!endgroup
