@@ -43,7 +43,7 @@ class Joos::Entity
   # @param tab [Fixnum]
   # @return [String]
   def inspect tab = 0
-    ('  ' * tab) + to_s
+    ('  ' * tab) << to_s
   end
 
   require 'joos/entity/package'
