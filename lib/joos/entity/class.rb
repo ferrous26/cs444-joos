@@ -1,4 +1,3 @@
-require 'erb'
 require 'joos/entity'
 require 'joos/entity/compilation_unit'
 require 'joos/entity/modifiable'

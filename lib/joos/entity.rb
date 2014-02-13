@@ -1,3 +1,4 @@
+require 'erb'
 require 'joos/token'
 require 'joos/colour'
 
