@@ -25,7 +25,7 @@ class Joos::Entity::Class < Joos::Entity
   #
   # @return [Token::QualifiedIdentifier]
   attr_reader :extends
-  alias_method :superclass, :extend
+  alias_method :superclass, :extends
 
   ##
   # Interfaces that the receiver conforms to.
