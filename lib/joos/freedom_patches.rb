@@ -72,7 +72,7 @@ class NilClass
   end
 
   def inspect tab = 0
-    raise 'YOU SHOULD NOT HAVE A nil IN THE FUCKING AST'
+    raise 'YOU SHOULD NOT HAVE A nil IN THE FUCKING AST' unless tab.zero?
   end
 end
 
