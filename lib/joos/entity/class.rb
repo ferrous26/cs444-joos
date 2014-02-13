@@ -1,3 +1,4 @@
+require 'erb'
 require 'joos/entity'
 require 'joos/entity/compilation_unit'
 require 'joos/entity/modifiable'
@@ -88,14 +89,9 @@ class Joos::Entity::Class < Joos::Entity
     # what does it mean to visit a class?
   end
 
-  def inspect tab = 0
-    inner_tab = tab + 1
-    "#{taby(tab)}class #{cyan @name.value} #{inspect_super} " <<
-      inspect_interfaces << inspect_modifiers << "\n"         <<
-      inspect_fields(inner_tab)                               <<
-      inspect_methods(inner_tab)                              <<
-      inspect_constructors(inner_tab)
-  end
+  # @todo should probably use an absolute path here
+  erb = ERB.new File.read('config/class_inspect.erb'), nil, '<>'
+  erb.def_method(self, :inspect)
 
 
   private
@@ -119,7 +115,6 @@ class Joos::Entity::Class < Joos::Entity
 
   def set_interfaces
     @implements = @node.TypeList
-    # @todo extract type names from this list
   end
 
   def set_members
@@ -128,13 +123,15 @@ class Joos::Entity::Class < Joos::Entity
     @methods      = []
 
     @node.ClassBody.ClassBodyDeclarations.nodes.each do |node|
-      next if node.nodes.size == 1 # just a Semicolon, nothing declared
 
       if node.ConstructorDeclaratorRest
         @constructors << Constructor.new(node, self)
 
       elsif node.MethodDeclaratorRest
         @methods << Method.new(node, self)
+
+      elsif node.first.to_sym == :Semicolon
+        # nop
 
       else # must be a field declaration
         @fields << Field.new(node, self)
@@ -146,36 +143,5 @@ class Joos::Entity::Class < Joos::Entity
   def ensure_at_least_one_constructor
     raise NoConstructorError.new(self) if @constructors.empty?
   end
-
-
-  # @!group Inspect
-
-  def inspect_super
-    "< #{superclass.inspect}"
-  end
-
-  def inspect_interfaces
-    "[#{interfaces.map { |i| i.inspect }.join(', ')}] "
-  end
-
-  def inspect_member group, tab
-    unless group.empty?
-      group.map { |member| member.inspect(tab) }.join("\n") << "\n\n"
-    end
-  end
-
-  def inspect_fields tab
-    inspect_member @fields, tab
-  end
-
-  def inspect_methods tab
-    inspect_member @methods, tab
-  end
-
-  def inspect_constructors tab
-    inspect_member @constructors, tab
-  end
-
-  # @!endgroup
 
 end

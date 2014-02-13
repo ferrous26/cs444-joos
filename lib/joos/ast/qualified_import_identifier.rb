@@ -20,7 +20,6 @@ class Joos::AST::QualifiedImportIdentifier
   alias_method :namespace_import?, :package_import?
 
   def inspect tab = 0
-    str = @nodes.map { |node| blue node.value }.join('.')
-    taby(tab) + str
+    taby(tab) << (@nodes.map { |x| cyan x.value }.join('.'))
   end
 end

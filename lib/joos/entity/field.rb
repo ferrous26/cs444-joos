@@ -48,7 +48,7 @@ class Joos::Entity::Field < Joos::Entity
 
   def inspect tab = 0
     "#{taby(tab)}#{cyan @name.value}: "    <<
-    "#{inspect_type} #{inspect_modifiers}" <<
+    "#{inspect_type} #{'' }" <<
     inspect_initializer(tab)
   end
 

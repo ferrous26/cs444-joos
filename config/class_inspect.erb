@@ -1,0 +1,5 @@
+<%= (modifiers << '' ).map { |mod| yellow(mod.to_s) }.join(' ') %>class <%= cyan name.value %> < <%= superclass.inspect %> (<%= interfaces.map(&:inspect).join(', ') %>)
+
+<%= fields.map { |f| f.inspect(1) }.join("\n\n") << "\n\n" %>
+<%= methods.map { |m| m.inspect(1) }.join("\n\n") << "\n\n" %>
+<%= constructors.map { |c| c.inspect(1) }.join("\n\n") << "\n\n" %>

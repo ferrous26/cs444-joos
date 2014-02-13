@@ -102,12 +102,4 @@ module Joos::Entity::Modifiable
     end
   end
 
-  # @!group Inspect
-
-  def inspect_modifiers
-    '(' + @modifiers.join(', ') + ')'
-  end
-
-  # @!endgroup
-
 end
