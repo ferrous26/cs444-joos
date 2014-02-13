@@ -12,6 +12,8 @@ class Joos::AST::QualifiedImportIdentifier
 
   ##
   # `true` if this import identifier refers to a package import
+  # otherwise false.
+  #
   def package_import?
     @nodes.last.to_sym == :Multiply
   end
