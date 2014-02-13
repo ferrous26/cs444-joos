@@ -55,10 +55,7 @@ class Joos::Entity::Field < Joos::Entity
   private
 
   def set_type
-    t = @node.Type
-    @type = t.ArrayType       ||
-            t.BasicType.first ||
-            t.QualifiedIdentifier
+    @type = @node.Type.first
   end
 
   def ensure_final_field_is_initialized
