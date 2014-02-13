@@ -75,11 +75,9 @@ class Joos::Entity::Method < Joos::Entity
     ensure_body_presence_if_required
   end
 
-  def inspect tab = 0
-    "#{taby(tab)}#{cyan @name.value}: "      <<
-      "#{inspect_type} #{''}" <<
-      inspect_body(tab)
-  end
+  # @todo should probably use an absolute path here
+  erb = ERB.new File.read('config/method_inspect.erb'), nil, '<>'
+  erb.def_method(self, :inspect)
 
 
   private
@@ -102,26 +100,21 @@ class Joos::Entity::Method < Joos::Entity
 
   # @!group Inspect
 
-  def inspect_type
-    params = parameters.map { |p| inspect_type_hack p }.join(', ')
-    blue('(') << params << blue(') -> ') << inspect_type_hack(@type)
+  def inspect_params
+    parameters.map { |p| inspect_type p }.join(', ')
   end
 
   # @todo Make this less of a hack
-  def inspect_type_hack node
-    blue(if node.is_a? Joos::AST::ArrayType
-           "#{node.inspect}[]"
-         elsif node.is_a? Joos::AST::QualifiedIdentifier
-           node.inspect
-         elsif node.kind_of? Joos::Entity
-           blue node.name.value
-         else
-           node.to_sym.to_s
-         end)
-  end
-
-  def inspect_body tab
-    (@body.inspect(tab + 1) if @body).to_s
+  def inspect_type node
+    if node.is_a? Joos::AST::ArrayType
+      "#{node.first.inspect}[]"
+    elsif node.is_a? Joos::AST::QualifiedIdentifier
+      node.inspect
+    elsif node.kind_of? Joos::Entity
+      blue node.name.value
+    else
+      ''
+    end
   end
 
   # @!endgroup

@@ -1,0 +1,4 @@
+    <%= cyan @name.value %>: <%= inspect_type %> (<%= inspect_modifiers %>) =
+<% if @initializer %>
+<%= @initializer.inspect(3) %>
+<% end %>

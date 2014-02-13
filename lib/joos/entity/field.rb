@@ -46,11 +46,9 @@ class Joos::Entity::Field < Joos::Entity
     ensure_final_field_is_initialized
   end
 
-  def inspect tab = 0
-    "#{taby(tab)}#{cyan @name.value}: "    <<
-    "#{inspect_type} #{'' }" <<
-    inspect_initializer(tab)
-  end
+  # @todo should probably use an absolute path here
+  erb = ERB.new File.read('config/field_inspect.erb'), nil, '<>'
+  erb.def_method(self, :inspect)
 
 
   private
@@ -70,19 +68,15 @@ class Joos::Entity::Field < Joos::Entity
 
   # @todo Make this less of a hack
   def inspect_type
-    blue(if @type.is_a? Joos::AST::ArrayType
-           "#{@type.inspect}[]"
-         elsif @type.is_a? Joos::AST::QualifiedIdentifier
-           @type.inspect
-         elsif node.kind_of? Joos::Entity
-           blue node.name.value
-         else
-           @type.to_sym.to_s
-         end)
-  end
-
-  def inspect_initializer tab
-    (" =\n" << @initializer.inspect(tab + 1) if @initializer).to_s
+    if @type.is_a? Joos::AST::ArrayType
+      "#{@type.first.inspect}[]"
+    elsif @type.is_a? Joos::AST::QualifiedIdentifier
+      @type.inspect
+    elsif node.kind_of? Joos::Entity
+      node.name.value
+    else
+      @type.to_sym.to_s
+    end
   end
 
   # @!endgroup
