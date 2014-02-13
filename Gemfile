@@ -11,5 +11,6 @@ group :development do
   gem 'rubocop'
   gem 'rspec'
   gem 'rspec-pride'
+  gem 'git_fame'
 end
 
