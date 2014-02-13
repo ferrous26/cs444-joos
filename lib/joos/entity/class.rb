@@ -90,9 +90,10 @@ class Joos::Entity::Class < Joos::Entity
 
   def inspect tab = 0
     inner_tab = tab + 1
-    taby(tab) + "Class:#{cyan @name.value}\n" +
-      inspect_fields(inner_tab) +
-      inspect_methods(inner_tab) +
+    "#{taby(tab)}class #{cyan @name.value} #{inspect_super} " <<
+      inspect_interfaces << inspect_modifiers << "\n"         <<
+      inspect_fields(inner_tab)                               <<
+      inspect_methods(inner_tab)                              <<
       inspect_constructors(inner_tab)
   end
 
@@ -146,18 +147,33 @@ class Joos::Entity::Class < Joos::Entity
     raise NoConstructorError.new(self) if @constructors.empty?
   end
 
+
   # @!group Inspect
 
+  def inspect_super
+    "< #{superclass.inspect}"
+  end
+
+  def inspect_interfaces
+    "[#{interfaces.map { |i| i.inspect }.join(', ')}] "
+  end
+
+  def inspect_member group, tab
+    unless group.empty?
+      group.map { |member| member.inspect(tab) }.join("\n") << "\n\n"
+    end
+  end
+
   def inspect_fields tab
-    @fields.map { |field| field.inspect(tab) }.join("\n")
+    inspect_member @fields, tab
   end
 
   def inspect_methods tab
-    ''
+    inspect_member @methods, tab
   end
 
   def inspect_constructors tab
-    ''
+    inspect_member @constructors, tab
   end
 
   # @!endgroup

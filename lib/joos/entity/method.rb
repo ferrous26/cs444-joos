@@ -56,11 +56,12 @@ class Joos::Entity::Method < Joos::Entity
     @parent     = parent
     @type       = node.Void || node.Type
     @body       = node.MethodDeclaratorRest.MethodBody.Block
-    @parameters = node.MethodDeclaratorRest.FormalParameters.map do |param|
-      # Parameter.new(param)
-      # @todo fix up the parameter class
-      param
-    end
+    @parameters =
+      node.nodes.last.FormalParameters.FormalParameterList.map do |param|
+        # @todo fix up the Parameter class
+        param.Type.first
+      end
+    @parameters ||= [] # in case there were no parameters
   end
 
   def to_sym
@@ -72,6 +73,12 @@ class Joos::Entity::Method < Joos::Entity
     ensure_mutually_exclusive_modifiers(:Abstract, :Static, :Final)
     ensure_native_method_is_static
     ensure_body_presence_if_required
+  end
+
+  def inspect tab = 0
+    "#{taby(tab)}#{cyan @name.value}: "      <<
+      "#{inspect_type} #{inspect_modifiers}" <<
+      inspect_body(tab)
   end
 
 
@@ -91,4 +98,32 @@ class Joos::Entity::Method < Joos::Entity
       raise NonStaticNativeMethod.new(self) unless modifiers.include? :Static
     end
   end
+
+
+  # @!group Inspect
+
+  def inspect_type
+    params = parameters.map { |p| inspect_type_hack p }.join(', ')
+    blue('(') << params << blue(') -> ') << inspect_type_hack(@type)
+  end
+
+  # @todo Make this less of a hack
+  def inspect_type_hack node
+    blue(if node.is_a? Joos::AST::ArrayType
+           "#{node.inspect}[]"
+         elsif node.is_a? Joos::AST::QualifiedIdentifier
+           node.inspect
+         elsif node.kind_of? Joos::Entity
+           blue node.name.value
+         else
+           node.to_sym.to_s
+         end)
+  end
+
+  def inspect_body tab
+    (@body.inspect(tab + 1) if @body).to_s
+  end
+
+  # @!endgroup
+
 end

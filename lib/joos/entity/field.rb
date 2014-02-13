@@ -47,8 +47,9 @@ class Joos::Entity::Field < Joos::Entity
   end
 
   def inspect tab = 0
-    "#{taby(tab)} #{cyan @name.value}: #{inspect_type} " <<
-      "#{inspect_modifiers}\n#{inspect_initializer(tab)}"
+    "#{taby(tab)}#{cyan @name.value}: "    <<
+    "#{inspect_type} #{inspect_modifiers}" <<
+    inspect_initializer(tab)
   end
 
 
@@ -73,17 +74,15 @@ class Joos::Entity::Field < Joos::Entity
            "#{@type.inspect}[]"
          elsif @type.is_a? Joos::AST::QualifiedIdentifier
            @type.inspect
+         elsif node.kind_of? Joos::Entity
+           blue node.name.value
          else
            @type.to_sym.to_s
          end)
   end
 
   def inspect_initializer tab
-    if @initializer
-      @initializer.inspect(tab + 1)
-    else
-      taby(tab + 1) + bold_red('UNINITIALIZED')
-    end
+    (" =\n" << @initializer.inspect(tab + 1) if @initializer).to_s
   end
 
   # @!endgroup

@@ -24,9 +24,4 @@ class Joos::Entity::Constructor < Joos::Entity::Method
     super # super called here to null out some superclass checks
   end
 
-  def inspect tab = 0
-    # @todo do something nice here...
-    super
-  end
-
 end
