@@ -5,6 +5,18 @@ require 'joos/ast'
 class Joos::AST::QualifiedImportIdentifier
   include ListCollapse
 
+  def initialize nodes
+    super
+    @nodes.delete_if { |node| node.to_sym == :Dot }
+  end
+
+  ##
+  # `true` if this import identifier refers to a package import
+  def package_import?
+    @nodes.last.to_sym == :Multiply
+  end
+  alias_method :namespace_import?, :package_import?
+
   def inspect tab = 0
     str = @nodes.map { |node| blue node.value }.join('.')
     taby(tab) + str
