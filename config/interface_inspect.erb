@@ -1,0 +1,5 @@
+<%= green '@' %><%= package.fully_qualified_name.map { |id| cyan id }.join('.') %>
+
+<%= inspect_modifiers_space %>interface <%= cyan name.value %> (<%= superinterfaces.map(&:inspect).join(', ') %>)
+
+<%= methods.map { |m| m.inspect }.join("\n\n") << "\n\n" %>

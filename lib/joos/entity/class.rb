@@ -106,7 +106,7 @@ class Joos::Entity::Class < Joos::Entity
   end
 
   def set_interfaces
-    @implements = @node.TypeDeclaration.ClassDeclaration.TypeList
+    @implements = @node.TypeDeclaration.ClassDeclaration.TypeList || []
   end
 
   def set_members

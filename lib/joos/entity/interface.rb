@@ -33,9 +33,9 @@ class Joos::Entity::Interface < Joos::Entity
 
   # @param compilation_unit [Joos::AST::CompilationUnit]
   def initialize compilation_unit
+    @node = compilation_unit
     decl  = compilation_unit.TypeDeclaration
-    @node = decl.InterfaceDeclaration
-    super @node.Identifier, decl.Modifiers
+    super decl.InterfaceDeclaration.Identifier, decl.Modifiers
     set_superinterfaces
     set_methods
   end
@@ -47,20 +47,24 @@ class Joos::Entity::Interface < Joos::Entity
   def validate
     super
     ensure_modifiers_not_present(:Protected, :Final, :Native, :Static)
-    members.each(&:validate)
+    methods.each(&:validate)
   end
 
 
   private
 
   def set_superinterfaces
-    @implements = @node.TypeList
+    @implements = @node.TypeDeclaration.InterfaceDeclaration.TypeList
   end
 
   def set_methods
     @methods = []
-    @node.ClassBody.ClassBodyDeclarations.visit do |_, node|
-      @methods << node if node.type == :InterfaceMethod
+    @node
+    .TypeDeclaration
+    .InterfaceDeclaration
+    .InterfaceBody
+    .InterfaceBodyDeclarations.map do |node|
+      @methods << InterfaceMethod.new(node, self) if node.InterfaceMethodDecl
     end
   end
 

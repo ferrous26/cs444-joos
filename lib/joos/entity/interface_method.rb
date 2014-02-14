@@ -8,13 +8,13 @@ require 'joos/entity/method'
 #
 class Joos::Entity::InterfaceMethod < Joos::Entity::Method
 
-  def validate
-    super
-    ensure_modifiers_not_present(:Protected, :Static, :Final, :Native)
-  end
-
   def to_sym
     :InterfaceMethod
+  end
+
+  def validate
+    ensure_modifiers_not_present(:Protected, :Static, :Final, :Native)
+    super
   end
 
 

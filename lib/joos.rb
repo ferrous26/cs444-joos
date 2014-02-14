@@ -57,7 +57,11 @@ class Joos::Compiler
       return if @result == ERROR # bust outta here
     end
 
-    asts.map { |ast| build_entities ast }
+    compilation_units = asts.map { |ast| build_entities ast }
+    compilation_units.each do |unit|
+      $stderr.puts unit.inspect if $DEBUG
+      unit.validate
+    end
   end
 
 

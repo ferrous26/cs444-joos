@@ -35,6 +35,7 @@ class Joos::Entity::Package
   # @param qualified_id [Joos::AST::QualifiedIdentifier]
   # @return [Package, CompilationUnit]
   def self.[] qualified_id
+    qualified_id = [nil] unless qualified_id
     qualified_id.reduce(ROOT) { |package, id| package[id] }
   rescue NoMethodError => e
     raise BadPackagePath.new(qualified_id, e.args.first) if e.name == :[]
@@ -154,5 +155,8 @@ class Joos::Entity::Package
 
   # @return [Package]
   ROOT = new('', nil)
+  ROOT.send(:members)[nil].define_singleton_method(:fully_qualified_name) {
+    []
+  }
 
 end
