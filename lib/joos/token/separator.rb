@@ -50,6 +50,7 @@ class Joos::Token
 
     # @param parent [Joos::AST]
     def validate parent
+      return # @todo fix this in the grammar or have less of a hack for it
       if parent.parent.parent.parent.Selectors.Selector.OpenStaple
         raise MultiDimensionalArray.new(self)
       end
