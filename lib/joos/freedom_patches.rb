@@ -67,8 +67,8 @@ class NilClass
     true
   end
 
-  def method_missing _
-    nil
+  def method_missing name, *args
+    args.blank? ? nil : super
   end
 
   def inspect tab = 0
