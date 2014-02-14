@@ -38,7 +38,8 @@ module Joos::Entity::CompilationUnit
 
   def initialize name
     super name
-    # @todo extract package info (use @node)
+    @package = Joos::Entity::Package[@node.QualifiedIdentifier]
+    @package.add self
     # @todo extract imported_types (@node)
     # @todo extract imported_packages (@node)
   end
@@ -59,4 +60,5 @@ module Joos::Entity::CompilationUnit
     file_name = File.basename(name.file, '.java')
     raise NameDoesNotMatchFileError.new(self) unless file_name == name.value
   end
+
 end

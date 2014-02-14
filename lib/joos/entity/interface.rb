@@ -40,19 +40,14 @@ class Joos::Entity::Interface < Joos::Entity
     set_methods
   end
 
-  def validate
-    super
-    ensure_modifiers_not_present(:Protected, :Final, :Native, :Static)
-    members.each(&:validate)
-  end
-
   def to_sym
     :Interface
   end
 
-  def visit &block
-    # what does it mean to visit an interface?
-    # yield various attributes, in order
+  def validate
+    super
+    ensure_modifiers_not_present(:Protected, :Final, :Native, :Static)
+    members.each(&:validate)
   end
 
 

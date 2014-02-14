@@ -1,3 +1,5 @@
+<%= green '@' %><%= package.fully_qualified_name.map { |id| cyan id }.join('.') %>
+
 <%= inspect_modifiers_space %>class <%= cyan name.value %> < <%= superclass.inspect %> (<%= interfaces.map(&:inspect).join(', ') %>)
 
 <%= fields.map { |f| f.inspect }.join("\n\n") << "\n\n" %>

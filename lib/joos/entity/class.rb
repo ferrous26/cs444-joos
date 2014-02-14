@@ -62,9 +62,9 @@ class Joos::Entity::Class < Joos::Entity
 
   # @param compilation_unit [Joos::AST::CompilationUnit]
   def initialize compilation_unit
+    @node = compilation_unit
     decl  = compilation_unit.TypeDeclaration
-    @node = decl.ClassDeclaration
-    super @node.Identifier, decl.Modifiers
+    super decl.ClassDeclaration.Identifier, decl.Modifiers
     set_superclass
     set_interfaces
     set_members
@@ -101,11 +101,12 @@ class Joos::Entity::Class < Joos::Entity
    end)
 
   def set_superclass
-    @extends = @node.QualifiedIdentifier || BASE_CLASS
+    @extends = @node.TypeDeclaration.ClassDeclaration.QualifiedIdentifier ||
+      BASE_CLASS
   end
 
   def set_interfaces
-    @implements = @node.TypeList
+    @implements = @node.TypeDeclaration.ClassDeclaration.TypeList
   end
 
   def set_members
@@ -113,7 +114,11 @@ class Joos::Entity::Class < Joos::Entity
     @fields       = []
     @methods      = []
 
-    @node.ClassBody.ClassBodyDeclarations.nodes.each do |node|
+    @node
+    .TypeDeclaration
+    .ClassDeclaration
+    .ClassBody
+    .ClassBodyDeclarations.each do |node|
 
       if node.ConstructorDeclaratorRest
         @constructors << Constructor.new(node, self)
