@@ -28,7 +28,7 @@ class Joos::Entity::Field < Joos::Entity
   attr_reader :initializer
 
   # @param node [Joos::AST::ClassBodyDeclaration]
-  # @param parent [Class, Interface]
+  # @param parent [CompilationUnit]
   def initialize node, parent
     @node        = node
     super node.Identifier, node.Modifiers
@@ -63,17 +63,22 @@ class Joos::Entity::Field < Joos::Entity
   # @!group Inspect
 
   # @todo Make this less of a hack
-  def inspect_type
-    if @type.is_a? Joos::AST::ArrayType
-      "#{@type.first.inspect}[]"
-    elsif @type.is_a? Joos::AST::QualifiedIdentifier
-      @type.inspect
+  def inspect_type node
+    if node.is_a? Joos::AST::ArrayType
+      "[#{inspect_type node.first}]"
+    elsif node.is_a? Joos::AST::QualifiedIdentifier
+      node.inspect
     elsif node.kind_of? Joos::Entity
-      node.name.value
+      blue node.name.value
+    elsif node.to_sym == :Void
+      blue '()'
+    elsif node.kind_of? Joos::AST::Type
+      inspect_type node.first
     else
-      @type.to_sym.to_s
+      blue node.first.to_sym.to_s
     end
   end
+
 
   # @!endgroup
 

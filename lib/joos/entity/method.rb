@@ -97,19 +97,26 @@ class Joos::Entity::Method < Joos::Entity
   # @!group Inspect
 
   def inspect_params
-    parameters.map { |p| inspect_type p }.join(', ')
+    return blue('()') if parameters.blank?
+    parameters.map { |p| inspect_type p }.join(blue ' -> ')
   end
 
   # @todo Make this less of a hack
   def inspect_type node
     if node.is_a? Joos::AST::ArrayType
-      "#{node.first.inspect}[]"
+      "[#{inspect_type node.first}]"
     elsif node.is_a? Joos::AST::QualifiedIdentifier
       node.inspect
+    elsif node.is_a? Joos::Token::Identifier
+      blue node.value
     elsif node.kind_of? Joos::Entity
       blue node.name.value
+    elsif node.to_sym == :Void
+      blue '()'
+    elsif node.kind_of? Joos::AST::Type
+      inspect_type node.first
     else
-      ''
+      blue node.first.to_sym.to_s
     end
   end
 

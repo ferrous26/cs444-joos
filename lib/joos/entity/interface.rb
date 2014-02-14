@@ -54,7 +54,7 @@ class Joos::Entity::Interface < Joos::Entity
   private
 
   def set_superinterfaces
-    @implements = @node.TypeDeclaration.InterfaceDeclaration.TypeList
+    @extends = @node.TypeDeclaration.InterfaceDeclaration.TypeList || []
   end
 
   def set_methods
