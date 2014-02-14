@@ -84,14 +84,6 @@ class Joos::Entity::Class < Joos::Entity
     methods.each(&:validate)
   end
 
-  def visit &block
-    # what does it mean to visit a class?
-  end
-
-  # @todo should probably use an absolute path here
-  erb = ERB.new File.read('config/class_inspect.erb'), nil, '<>'
-  erb.def_method(self, :inspect)
-
 
   private
 

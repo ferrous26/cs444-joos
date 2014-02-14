@@ -46,10 +46,6 @@ class Joos::Entity::Field < Joos::Entity
     ensure_final_field_is_initialized
   end
 
-  # @todo should probably use an absolute path here
-  erb = ERB.new File.read('config/field_inspect.erb'), nil, '<>'
-  erb.def_method(self, :inspect)
-
 
   private
 

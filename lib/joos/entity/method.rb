@@ -75,10 +75,6 @@ class Joos::Entity::Method < Joos::Entity
     ensure_body_presence_if_required
   end
 
-  # @todo should probably use an absolute path here
-  erb = ERB.new File.read('config/method_inspect.erb'), nil, '<>'
-  erb.def_method(self, :inspect)
-
 
   private
 

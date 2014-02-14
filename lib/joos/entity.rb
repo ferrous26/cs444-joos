@@ -47,6 +47,12 @@ class Joos::Entity
     ('  ' * tab) << to_s
   end
 
+  def self.inherited sub
+    path = "config/#{sub.to_s.split('::').last.downcase}_inspect.erb"
+    return unless File.exist? path
+    ERB.new(File.read(path), nil, '<>').def_method(sub, :inspect)
+  end
+
   require 'joos/entity/package'
   require 'joos/entity/class'
   require 'joos/entity/interface'
