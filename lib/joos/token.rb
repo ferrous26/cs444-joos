@@ -78,7 +78,7 @@ class Joos::Token
   #
   # @return [String]
   def source
-    red "#{file}:#{line}:#{column}"
+    "#{file}:#{line}:#{column}"
   end
 
   ##

@@ -48,12 +48,12 @@ describe Joos::Token::Separator do
     end
   end
 
-  it 'responds with the correct name from #type for each separator' do
+  it 'responds with the correct name from #to_sym for each separator' do
     separators.each do |_, name|
       klass = Joos::Token.const_get(name, false)
       next if klass.ancestors.include? Joos::Token::IllegalToken
       token = klass.new('', '', 3, 4)
-      expect(token.type).to be == name
+      expect(token.to_sym).to be == name
     end
   end
 

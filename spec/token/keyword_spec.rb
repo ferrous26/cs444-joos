@@ -98,12 +98,12 @@ describe Joos::Token::Keyword do
     end
   end
 
-  it 'returns the correct #type for each keyword' do
+  it 'returns the correct #to_sym for each keyword' do
     keywords.map(&:capitalize).each do |keyword|
       klass = Joos::Token.const_get(keyword, false)
       next if klass.ancestors.include? Joos::Token::IllegalToken
       token = klass.new('ih', 'eyb', 1, 0)
-      expect(token.type).to be == keyword.to_sym
+      expect(token.to_sym).to be == keyword.to_sym
     end
   end
 

@@ -40,6 +40,10 @@ class Joos::Entity
     "#{to_sym}:#{name.inspect}"
   end
 
+  def to_sym
+    :Entity
+  end
+
   # @todo what does it mean to inspect an entity? (in tree format)
   # @param tab [Fixnum]
   # @return [String]

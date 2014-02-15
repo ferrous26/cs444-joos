@@ -41,9 +41,9 @@ describe Joos::Token::Identifier do
     end
   end
 
-  it 'has a type of :Identifier' do
+  it 'has a #to_sym of :Identifier' do
     id = Joos::Token::Identifier.new('hi', 'bye', 1, 0)
-    expect(id.type).to be == :Identifier
+    expect(id.to_sym).to be == :Identifier
   end
 
 end

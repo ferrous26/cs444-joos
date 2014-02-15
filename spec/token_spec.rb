@@ -80,21 +80,21 @@ describe Joos::Token do
     expect(Joos::Token::ConstantToken).to be_kind_of Module
   end
 
-  it 'raises a NotImplementedError for #type' do
+  it 'raises a NotImplementedError for #to_sym' do
     token = Joos::Token.new('hello', 'there.c', 3, 21)
-    expect { token.type }.to raise_error NotImplementedError
+    expect { token.to_sym }.to raise_error NotImplementedError
   end
 
   it 'responds to #inspect with something human readable for exceptions' do
     token = Joos::Token::Identifier.new('hello', 'there.c', 3, 21)
-    str   = 'Identifier:hello from there.c:3:21'
+    str   = "Identifier:#{Joos::Colour.cyan 'hello'} from " <<
+      "#{Joos::Colour.red 'there.c:3:21'}"
     expect(token.inspect).to be == str
   end
 
   it 'has a secret parameter for #inspect that adds leading spaces' do
     token = Joos::Token::Identifier.new('hello', 'there.c', 3, 21)
-    str   = '  Identifier:hello from there.c:3:21'
-    expect(token.inspect(1)).to be == str
+    expect(token.inspect(1)[0..1]).to be == '  '
   end
 
   it 'has exceptions which inherit from RuntimeError, not raw Exception' do
@@ -128,13 +128,6 @@ describe Joos::Token do
 
       token = klass.new('pie', 'pie.java', 23, 32)
       expect(token.value).to be == marker
-    end
-
-    it 'allows comparison using symbols' do
-      token = Joos::Token::Public.new('public', 'file', 1, 0)
-      expect(token).to be == :public
-      expect(token).to be == token
-      expect(token).to_not be == :pubic
     end
   end
 

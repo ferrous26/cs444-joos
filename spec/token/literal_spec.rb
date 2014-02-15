@@ -142,9 +142,9 @@ describe Joos::Token::Literal do
       expect(Joos::Token::CLASSES['true']).to be Joos::Token::True
     end
 
-    it 'returns :BooleanLiteral from #type' do
+    it 'returns :BooleanLiteral from #to_sym' do
       token = Joos::Token::True.new('', '', 3, 4)
-      expect(token.type).to be == :BooleanLiteral
+      expect(token.to_sym).to be == :BooleanLiteral
     end
 
     it 'returns the binary representation from #to_binary'
@@ -163,9 +163,9 @@ describe Joos::Token::Literal do
       expect(Joos::Token::CLASSES['false']).to be Joos::Token::False
     end
 
-    it 'returns :BooleanLiteral from #type' do
+    it 'returns :BooleanLiteral from #to_sym' do
       token = Joos::Token::False.new('', '', 3, 4)
-      expect(token.type).to be == :BooleanLiteral
+      expect(token.to_sym).to be == :BooleanLiteral
     end
 
     it 'returns the binary representation from #to_binary'
@@ -184,9 +184,9 @@ describe Joos::Token::Literal do
       expect(Joos::Token::CLASSES['null']).to be Joos::Token::Null
     end
 
-    it 'returns :NullLiteral from #type' do
+    it 'returns :NullLiteral from #to_sym' do
       token = Joos::Token::Null.new('', '', 3, 4)
-      expect(token.type).to be == :NullLiteral
+      expect(token.to_sym).to be == :NullLiteral
     end
 
     it 'returns the binary representation from #to_binary'
@@ -246,9 +246,9 @@ describe Joos::Token::Literal do
       expect(int.to_i).to be == num
     end
 
-    it 'returns :IntegerLiteral from #type' do
+    it 'returns :IntegerLiteral from #to_sym' do
       token = Joos::Token::Integer.new('0', '', 3, 4)
-      expect(token.type).to be == :IntegerLiteral
+      expect(token.to_sym).to be == :IntegerLiteral
     end
 
     it 'returns a 32-bit binary representation from #to_binary'
@@ -347,9 +347,9 @@ describe Joos::Token::Literal do
       end
     end
 
-    it 'returns :CharacterLiteral from #type' do
+    it 'returns :CharacterLiteral from #to_sym' do
       token = Joos::Token::Character.new("'e'", 'be', 3, 4)
-      expect(token.type).to be == :CharacterLiteral
+      expect(token.to_sym).to be == :CharacterLiteral
     end
   end
 
@@ -420,9 +420,9 @@ describe Joos::Token::Literal do
       expect(Joos::Token::String.new('""', '', 4, 4).to_binary).to be_empty
     end
 
-    it 'returns :StringLiteral from #type' do
+    it 'returns :StringLiteral from #to_sym' do
       token = Joos::Token::String.new('"e"', 'be', 3, 4)
-      expect(token.type).to be == :StringLiteral
+      expect(token.to_sym).to be == :StringLiteral
     end
 
     it 'should de-dupe in a thread-safe way' do
