@@ -238,14 +238,11 @@ GRAMMAR = {
     ],
     InterfaceBodyDeclaration: [
       [:Semicolon],
-      [:Modifiers, :InterfaceMemberDecl]
-    ],
-    InterfaceMemberDecl: [
-      [:Type, :InterfaceMemberDeclRest],
-      [:Void, :InterfaceMemberDeclRest]
+      [:Modifiers, :Type, :Identifier, :InterfaceMemberDeclRest],
+      [:Modifiers, :Void, :Identifier, :InterfaceMemberDeclRest]
     ],
     InterfaceMemberDeclRest: [
-      [:Identifier, :FormalParameters, :Semicolon]
+      [:FormalParameters, :Semicolon]
     ],
     MethodDeclaratorRest: [
       [:FormalParameters, :MethodBody],
@@ -286,7 +283,7 @@ GRAMMAR = {
                   :ImportDeclarations, :ImportDeclaration,
                   :TypeDeclaration, :ClassDeclaration, :InterfaceDeclaration, :TypeList, :ClassBody,
                   :ClassBodyDeclarations, :ClassBodyDeclaration, :InterfaceBody, :InterfaceBodyDeclarations, :InterfaceBodyDeclaration,
-                  :InterfaceMemberDecl,
+
                   :MethodDeclaratorRest, :InterfaceMemberDeclRest, :QualifiedImportIdentifier,
                   :ConstructorDeclaratorRest, :FormalParameters, :FormalParameter,
                   :FormalParameterList, :MethodBody, :ArrayType, :AugmentedCompilationUnit],
