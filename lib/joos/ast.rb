@@ -9,10 +9,7 @@ class Joos::AST
   include Enumerable
   include Joos::Colour
 
-  require 'joos_grammar'
-
-
-  # @param [Joos::AST]
+  # @return [Joos::AST]
   attr_accessor :parent
 
   # @return [Array<Joos::AST, Joos::Token, Joos::Entity>]
@@ -119,6 +116,9 @@ class Joos::AST
 
 
   # @!group HERE BE DRAGONS
+
+  # load the grammar so that we can determine what clasess to allocate
+  require 'joos_grammar'
 
   # generate all the concrete concrete syntax tree node classes
   GRAMMAR[:non_terminals].each do |name|

@@ -214,7 +214,7 @@ class Joos::ScannerDFA < Joos::DFA
   end
 
   ##
-  # @param [DFA::Token]
+  # @param dfa_token [DFA::Token]
   def meaningful? dfa_token
     ![:line_comment, :block_comment, :whitespace].include? dfa_token.state
   end

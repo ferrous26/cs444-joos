@@ -1,7 +1,11 @@
 require 'joos/parser/item'
 
-# state struct to be used by the parser generator
-Joos::Parser::State = Struct.new :items do
+##
+# State struct to be used by the parser generator
+class Joos::Parser::State
+  
+  attr_accessor :items
+
   def initialize items = []
     items = Array(items)
     items.each do |item|

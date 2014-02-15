@@ -9,7 +9,7 @@ class Joos::Package
 
   ##
   # Error raised when a package path component does not name a package
-  # but instead names a {CompilationUnit} (i.e. a class).
+  # but instead names a {Joos::Entity::CompilationUnit} (i.e. a class).
   #
   class BadPath < Exception
     # @param qualified_id [Joos::AST::QualifiedIdentifier]
@@ -36,19 +36,19 @@ class Joos::Package
 
   ##
   # Perform a path lookup through the package hierarchy using a fully
-  # qualified path.
+  # qualified path, if part of the package path is missing it will be
+  # created on demand.
   #
-  # Whether you want another {Package} or a {CompilationUnit} at the
-  # end is up to you to handle, though if some non-last component of
+  # Whether you want another {Package} or a {Joos::Entity::CompilationUnit}
+  # at the end is up to you to handle, though if some non-last component of
   # the path is not a {Package} then an exception will be raised.
   #
-  # Passing `nil` as the argument here indicates that the package declaration
-  # was missing from the compilation unit and that you are looking up the
-  # anonymous "unnamed" package.
+  # Passing `nil` as the argument here indicates that you want the
+  # "unnamed" package.
   #
   # @raise [BadPath]
   # @param qualified_id [Joos::AST::QualifiedIdentifier, nil]
-  # @return [Package, CompilationUnit]
+  # @return [Package, Joos::Entity::CompilationUnit]
   def self.declare qualified_id
     (qualified_id || [nil]).reduce(ROOT) do |package, id|
       member = package.declare id
@@ -92,7 +92,7 @@ class Joos::Package
 
   ##
   # This is different from {#lookup} in that this method guarantees to
-  # return a {Package} or {Entity::CompilationUnit}.
+  # return a {Package} or {Joos::Entity::CompilationUnit}.
   #
   # If the key does not exist in the package, then a new subpackage will
   # be created on demand.

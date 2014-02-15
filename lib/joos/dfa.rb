@@ -71,7 +71,7 @@ class Joos::DFA
 
   ##
   # Add a state to the DFA's list of accept states.
-  # @param state [Symbol]
+  # @param states [Symbol]
   def accept *states
     states.each do |state|
       @accept_states.push state
@@ -107,8 +107,8 @@ class Joos::DFA
 
   ##
   # Add a state and transitions to the DFA's transition table
-  # @param state [Symbol]
-  # @yield []
+  # @param s [Symbol]
+  # @yield 
   def state s, &block
     @transitions[s] ||= []
     builder = StateBuilder.new self, s
