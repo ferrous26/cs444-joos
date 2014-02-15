@@ -15,9 +15,23 @@ class Joos::Package
     # @param qualified_id [Joos::AST::QualifiedIdentifier]
     # @param bad_id       [Joos::Token::Identifier]
     def initialize qualified_id, bad_id
-      id  = Joos::Colour.cyan bad_id.value
-      qid = qualified_id.map { |i| Joos::Colour.cyan i.value }.join('.')
+      id  = Joos::Colour.cyan bad_id.to_s
+      qid = qualified_id.inspect
       super "#{id} in #{qid} names a class/interface, but MUST name a package"
+    end
+  end
+
+  ##
+  # Error raised when a package path component does not name a package
+  # and also does not name a {Joos::Entity::CompilationUnit}.
+  #
+  class DoesNotExist < Exception
+    # @param p  [Joos::Package]
+    # @param id [String]
+    def initialize p, id
+      id  = Joos::Colour.cyan id
+      p   = p.fully_qualified_name.map { |x| Joos::Colour.cyan x }.join('.')
+      super "#{id} is not a member of #{p}"
     end
   end
 
@@ -61,6 +75,35 @@ class Joos::Package
   end
 
   ##
+  # Perform a path lookup through the package hierarchy using a fully
+  # qualified path.
+  #
+  # Whether you want another {Package} or a {Joos::Entity::CompilationUnit}
+  # at the end is up to you to handle, though if some non-last component of
+  # the path is not a {Package} then an exception will be raised. If a part
+  # of the path does not exist then an exception will be raised.
+  #
+  # Passing `nil` as the argument here indicates that you want the
+  # anonymous "unnamed" package.
+  #
+  # @raise [BadPath]
+  # @param qualified_id [Joos::AST::QualifiedImportIdentifier, nil]
+  # @return [Package, Joos::Entity::CompilationUnit, nil]
+  def self.lookup qualified_id
+    qid = qualified_id.to_a || [nil]
+    # lookup _and_ check the all but the last id
+    qid[0..-2].reduce(ROOT) do |package, id|
+      member = package.lookup id
+      if member.is_a? Joos::Package
+        member
+      else
+        raise BadPath.new(qualified_id, id)
+      end
+    # only lookup the last id, let caller deal with result
+    end.lookup qid.last
+  end
+
+  ##
   # The name of the entity
   #
   # @return [String]
@@ -100,7 +143,7 @@ class Joos::Package
   # @param id [Joos::Token::Identifier] this __must__ be a single identifier
   # @return [Joos::Package, Joos::Entity::CompilationUnit]
   def declare id
-    @members.fetch id.value do |k|
+    @members.fetch id.to_s do |k|
       @members[k] = Joos::Package.new k.to_s, self
     end
   end
@@ -113,7 +156,9 @@ class Joos::Package
   # @param id [Joos::Token::Identifier] this __must__ be a single identifier
   # @return [Joos::Package, Joos::Entity::CompilationUnit, nil]
   def lookup id
-    @members[id.value]
+    @members.fetch id.to_s do |_|
+      raise DoesNotExist.new(self, id.to_s)
+    end
   end
 
   ##

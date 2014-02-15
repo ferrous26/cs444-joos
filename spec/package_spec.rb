@@ -44,10 +44,9 @@ describe Joos::Package do
     expect(r.packages).to be_empty
   end
 
-  it 'returns nil from #lookup if nothing exists' do
-    p  = Joos::Package.new 'p', self
-    id = Joos::Token::Identifier.new('hi', '', 0, 0)
-    expect(p.lookup id).to be_nil
+  it 'raises DoesNotExist from #lookup if nothing exists' do
+    p = Joos::Package.new 'p', Joos::Package::ROOT
+    expect { p.lookup 'hi' }.to raise_error Joos::Package::DoesNotExist
   end
 
   it 'returns a member from #lookup if it exists' do
@@ -95,6 +94,31 @@ describe Joos::Package do
   it 'generates #inspect output without problems' do
     p = Joos::Package.new 'p', self
     expect(p.inspect).to be_kind_of String
+  end
+
+  it 'allows lookup .lookup' do
+    qid = ['d', 'o', 'g', 'e'].map { |char|
+      Joos::Token::Identifier.new char, '', 0, 0
+    }
+    p = Joos::Package.declare qid
+    expect(Joos::Package.lookup(['d', 'o', 'g', 'e'])).to be == p
+  end
+
+  it 'raises an exception in .lookup if a part of the path does not exist' do
+    expect {
+      Joos::Package.lookup(['d'])
+    }.to raise_error Joos::Package::DoesNotExist
+  end
+
+  it 'raises an exception if a non-package is part of the key path' do
+    qid = ['d', 'o'].map { |char|
+      Joos::Token::Identifier.new char, '', 0, 0
+    }
+    p = Joos::Package.declare qid
+    Joos::Package::ROOT.instance_variable_get(:@members)['d'] = 4
+    expect {
+      Joos::Package.lookup ['d', 'o']
+    }.to raise_error Joos::Package::BadPath
   end
 
 end
