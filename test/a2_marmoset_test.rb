@@ -25,7 +25,7 @@ class Assignment2Tests < Minitest::Test
   def self.make_directory_test dir
     define_method "test_#{dir}" do
       files = Dir.glob("#{dir}/**/*.java")
-      if dir =~ /\AJe/
+      if dir.split('/').last =~ /\AJe/
         refute_compile files
       else
         assert_compile files
