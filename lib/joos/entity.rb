@@ -1,13 +1,12 @@
 require 'erb'
 require 'joos/token'
-require 'joos/colour'
+require 'joos/freedom_patches'
 
 ##
 # @abstract
 #
 # Abstract base of all declared entities in the Joos language.
 class Joos::Entity
-  include Joos::Colour
 
   # @todo A way to separate by simple and qualified names
   # @todo A way to resolve names

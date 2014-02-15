@@ -1,7 +1,7 @@
 require 'joos/version'
 
 ##
-# Generic string colourization methods for strings
+# Generic string colourization mixin for strings and string like objects
 #
 # Each colour defined in this namespace will have a corresponding method for
 # colourizing a string for output with that colour.
@@ -11,10 +11,9 @@ require 'joos/version'
 #
 # @example
 #
-#   Joos::Colour.red("hi") # => "\e[31mhi\033[m"
+#   "hi".red # => "\e[31mhi\033[m"
 #
 module Joos::Colour
-  extend self
 
   # Embed in a String to clear all previous ANSI sequences.
   CLEAR   = "\e[0m"
@@ -56,9 +55,13 @@ module Joos::Colour
    :BG_RED, :BG_GREEN, :BG_YELLOW, :BG_BLUE, :BG_MAGENTA, :BG_CYAN
   ].each do |constant|
     value = const_get constant, false
-    define_method constant.to_s.downcase do |str|
-      value + str + CLEAR
-    end
+    define_method(constant.to_s.downcase) { (value + to_s) << CLEAR }
   end
 
+end
+
+##
+# Force colour support upon the String class.
+class String
+  include Joos::Colour
 end

@@ -1,11 +1,10 @@
-require 'joos/colour'
 require 'joos/entity'
+require 'joos/freedom_patches'
 
 ##
 # Entity representing the definition of a package.
 #
 class Joos::Package
-  include Joos::Colour
 
   ##
   # Error raised when a package path component does not name a package
@@ -15,7 +14,7 @@ class Joos::Package
     # @param qualified_id [Joos::AST::QualifiedIdentifier]
     # @param bad_id       [Joos::Token::Identifier]
     def initialize qualified_id, bad_id
-      id  = Joos::Colour.cyan bad_id.to_s
+      id  = bad_id.to_s.cyan
       qid = qualified_id.inspect
       super "#{id} in #{qid} names a class/interface, but MUST name a package"
     end
@@ -29,8 +28,8 @@ class Joos::Package
     # @param p  [Joos::Package]
     # @param id [String]
     def initialize p, id
-      id  = Joos::Colour.cyan id
-      p   = p.fully_qualified_name.map { |x| Joos::Colour.cyan x }.join('.')
+      id  = id.cyan
+      p   = p.fully_qualified_name.map { |x| x.cyan }.join('.')
       super "#{id} is not a member of #{p}"
     end
   end
@@ -182,11 +181,11 @@ class Joos::Package
   end
 
   def inspect tab = 0
-    "#{taby tab}package #{cyan name}\n" <<
+    "#{taby tab}package #{name.cyan}\n" <<
       (members.map { |_, m|
          inner = tab + 1
          if m.kind_of? Joos::Entity::CompilationUnit
-           "#{taby inner}#{m.unit_type} #{cyan m.name.value}"
+           "#{taby inner}#{m.unit_type} #{m.name.value.cyan}"
          else
            m.inspect inner
          end

@@ -7,7 +7,6 @@ require 'joos/colour'
 # language.
 #
 class Joos::Token
-  include Joos::Colour
 
   ##
   # A mapping of strings to their corresponding class

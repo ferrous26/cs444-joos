@@ -12,7 +12,7 @@ class Joos::AST::QualifiedImportIdentifier
 
   def inspect tab = 0
     taby(tab) << (@nodes.map { |x|
-                    x.to_sym == :Multiply ? bold_green('*') : cyan(x.value)
+                    x.to_sym == :Multiply ? '*'.bold_green : x.to_s.cyan
                   }.join('.'))
   end
 end

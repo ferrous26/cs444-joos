@@ -1,3 +1,5 @@
+require 'joos/colour'
+
 ##
 # Freedom patches on the Object class.
 class Object

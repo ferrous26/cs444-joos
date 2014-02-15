@@ -103,7 +103,7 @@ module Joos::Entity::Modifiable
   end
 
   def inspect_modifiers
-    modifiers.map { |mod| yellow(mod.to_s) }.join(' ')
+    modifiers.map { |mod| mod.to_s.yellow }.join(' ')
   end
 
   def inspect_modifiers_space

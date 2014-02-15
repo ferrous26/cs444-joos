@@ -101,8 +101,8 @@ class Joos::Entity::Method < Joos::Entity
   # @!group Inspect
 
   def inspect_params
-    return blue('()') if parameters.blank?
-    parameters.map { |p| inspect_type p }.join(blue ' -> ')
+    return '()'.blue if parameters.blank?
+    parameters.map { |p| inspect_type p }.join(' -> '.blue)
   end
 
   # @todo Make this less of a hack
@@ -112,15 +112,15 @@ class Joos::Entity::Method < Joos::Entity
     elsif node.is_a? Joos::AST::QualifiedIdentifier
       node.inspect
     elsif node.is_a? Joos::Token::Identifier
-      blue node.value
+      node.to_s.blue
     elsif node.kind_of? Joos::Entity
-      blue node.name.value
+      node.name.to_s.blue
     elsif node.to_sym == :Void
-      blue '()'
+      '()'.blue
     elsif node.kind_of? Joos::AST::Type
       inspect_type node.first
     else
-      blue node.first.to_sym.to_s
+      node.first.to_sym.to_s.blue
     end
   end
 

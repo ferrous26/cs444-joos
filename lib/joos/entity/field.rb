@@ -69,13 +69,13 @@ class Joos::Entity::Field < Joos::Entity
     elsif node.is_a? Joos::AST::QualifiedIdentifier
       node.inspect
     elsif node.kind_of? Joos::Entity
-      blue node.name.value
+      node.name.to_s.blue
     elsif node.to_sym == :Void
-      blue '()'
+      '()'.blue
     elsif node.kind_of? Joos::AST::Type
       inspect_type node.first
     else
-      blue node.first.to_sym.to_s
+      node.first.to_sym.to_s.blue
     end
   end
 

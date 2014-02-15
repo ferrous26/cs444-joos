@@ -12,7 +12,7 @@ class Joos::Token
   module Literal
     # @param tab [Fixnum] number of leading spaces (*2)
     def inspect tab = 0
-      "#{taby tab}#{magenta value} from #{red source}"
+      "#{taby tab}#{value.magenta} from #{source.red}"
     end
   end
 
@@ -412,14 +412,14 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     end
 
     def inspect tab = 0
-      "#{taby tab}#{QUOTE}#{magenta value}#{QUOTE} from #{red source}"
+      "#{taby tab}#{QUOTE}#{value.magenta}#{QUOTE} from #{source.red}"
     end
 
 
     private
 
     # @return [String]
-    QUOTE = Joos::Colour.yellow "'"
+    QUOTE = "'".yellow
   end
 
   ##
@@ -492,7 +492,7 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     end
 
     def inspect tab = 0
-      "#{taby tab}#{QUOTE}#{magenta value}#{QUOTE} from #{red source}"
+      "#{taby tab}#{QUOTE}#{value.magenta}#{QUOTE} from #{source.red}"
     end
   end
 
@@ -500,5 +500,5 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
   private
 
   # @return [String]
-  QUOTE = Joos::Colour.yellow '"'
+  QUOTE = '"'.yellow
 end

@@ -8,6 +8,6 @@ class Joos::AST::QualifiedIdentifier
   include ListCollapse
 
   def inspect tab = 0
-    taby(tab) << (@nodes.map { |x| cyan x.value }.join('.'))
+    taby(tab) << (@nodes.map { |x| x.to_s.cyan }.join('.'))
   end
 end
