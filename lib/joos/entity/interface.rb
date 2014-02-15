@@ -44,6 +44,10 @@ class Joos::Entity::Interface < Joos::Entity
     :Interface
   end
 
+  def unit_type
+    :interface
+  end
+
   def validate
     super
     ensure_modifiers_not_present(:Protected, :Final, :Native, :Static)

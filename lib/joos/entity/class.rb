@@ -74,6 +74,10 @@ class Joos::Entity::Class < Joos::Entity
     :Class
   end
 
+  def unit_type
+    :class
+  end
+
   def validate
     super
     ensure_modifiers_not_present(:Protected, :Native, :Static)

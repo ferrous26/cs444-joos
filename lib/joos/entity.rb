@@ -44,7 +44,7 @@ class Joos::Entity
   # @param tab [Fixnum]
   # @return [String]
   def inspect tab = 0
-    ('  ' * tab) << to_s
+    taby(tab) << to_s
   end
 
   # @param sub [Joos::Entity]
@@ -54,7 +54,6 @@ class Joos::Entity
     ERB.new(File.read(path), nil, '<>').def_method(sub, :inspect)
   end
 
-  require 'joos/entity/package'
   require 'joos/entity/class'
   require 'joos/entity/interface'
   require 'joos/entity/field'

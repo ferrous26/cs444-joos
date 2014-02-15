@@ -1,4 +1,6 @@
 require 'joos/entity'
+require 'joos/package'
+
 
 ##
 # Code common to all compilation units (classes and interfaces)
@@ -19,9 +21,9 @@ module Joos::Entity::CompilationUnit
   end
 
   ##
-  # The {Package} to which the compilation unit belongs
+  # The {Joos::Package} to which the compilation unit belongs
   #
-  # @return [Package]
+  # @return [Joos::Package]
   attr_reader :package
 
   ##
@@ -31,14 +33,14 @@ module Joos::Entity::CompilationUnit
   attr_reader :imported_types
 
   ##
-  # {Package}s (namespaces) which have been imported into the receiver
+  # {Joos::Package}s (namespaces) which have been imported into the receiver
   #
-  # @return [Array<Package>]
+  # @return [Array<Joos::Package>]
   attr_reader :imported_packages
 
   def initialize name
     super name
-    @package = Joos::Entity::Package[@node.QualifiedIdentifier]
+    @package = Joos::Package.declare @node.QualifiedIdentifier
     @package.add self
     # @todo extract imported_types (@node)
     # @todo extract imported_packages (@node)
