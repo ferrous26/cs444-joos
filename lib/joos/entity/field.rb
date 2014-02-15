@@ -55,7 +55,7 @@ class Joos::Entity::Field < Joos::Entity
 
   def ensure_final_field_is_initialized
     if modifiers.include? :Final
-      raise UninitializedFinalFinal.new(self) unless initializer
+      raise UninitializedFinalField.new(self) unless initializer
     end
   end
 
