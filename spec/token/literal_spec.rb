@@ -434,7 +434,7 @@ describe Joos::Token::Literal do
         end
       end
       thrd.each(&:join)
-      expect(strs.uniq).should be == [strs.first]
+      expect(strs.uniq).to be == [strs.first]
     end
   end
 
