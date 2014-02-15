@@ -62,6 +62,8 @@ class Joos::Compiler
       $stderr.puts unit.inspect if $DEBUG
       unit.validate
     end
+    compilation_units.each(&:link_imports)
+    compilation_units.each(&:resolve_declarations)
   end
 
 
