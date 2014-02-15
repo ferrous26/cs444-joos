@@ -31,6 +31,8 @@ class Joos::Token::Identifier < Joos::Token
     :Identifier
   end
 
+  alias_method :to_s, :value
+
   def inspect tab = 0
     "#{'  ' * tab}Identifier:#{cyan value} from #{red source}"
   end
