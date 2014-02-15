@@ -55,13 +55,13 @@ class Joos::Entity::Method < Joos::Entity
     super node.Identifier, node.Modifiers
     @parent     = parent
     @type       = node.Void || node.Type
-    @body       = node.nodes.last.MethodBody.Block
+    decl_rest   = node.nodes.last
     @parameters =
-      node.nodes.last.FormalParameters.FormalParameterList.map do |param|
+      (decl_rest.FormalParameters.FormalParameterList || []).map do |param|
         # @todo fix up the Parameter class
         param.Type.first
       end
-    @parameters ||= [] # in case there were no parameters
+    set_body decl_rest
   end
 
   def to_sym
@@ -77,6 +77,10 @@ class Joos::Entity::Method < Joos::Entity
 
 
   private
+
+  def set_body decl_rest
+    @body = decl_rest.MethodBody.Block
+  end
 
   def ensure_body_presence_if_required
     no_body = [:Abstract, :Native]

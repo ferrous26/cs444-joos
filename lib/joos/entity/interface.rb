@@ -68,7 +68,7 @@ class Joos::Entity::Interface < Joos::Entity
     .InterfaceDeclaration
     .InterfaceBody
     .InterfaceBodyDeclarations.map do |node|
-      @methods << InterfaceMethod.new(node, self) if node.InterfaceMethodDecl
+      @methods << InterfaceMethod.new(node, self) if node.Identifier
     end
   end
 
