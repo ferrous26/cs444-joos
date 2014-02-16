@@ -1,5 +1,6 @@
 desc 'Prepare the project for marmoset'
-task :marmoset => [:spec, :flog, :rubocop_ci, :clobber, 'report:a4'] do
+task :marmoset => 'report:a4' do
+  rm 'marmoset.zip'
   sh 'zip marmoset.zip * **/*'
 end
 
