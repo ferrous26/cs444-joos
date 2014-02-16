@@ -35,7 +35,7 @@ STDERR
         message << <<-EOM
 INPUT
 =====
-#{files.map { |f| f + ":\n" + File.read(f) }.join("\n\n") }
+#{files.map { |f| f + ":\n" + File.read(f) }.join("\n\n")}
        EOM
       end
 
