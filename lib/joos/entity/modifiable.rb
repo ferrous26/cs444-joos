@@ -71,6 +71,55 @@ module Joos::Entity::Modifiable
   end
 
 
+  # @!group Conveniences
+
+  ##
+  # Whether or not the entity is marked as `public`
+  def public?
+    modifier? :Public
+  end
+
+  ##
+  # Whether or not the entity is marked as `protected`
+  def protected?
+    modifier? :Protected
+  end
+
+  ##
+  # Whether or not the entity is marked as `static`
+  def static?
+    modifier? :Static
+  end
+
+  ##
+  # Whether or not the entity is marked as `abstract`
+  def abstract?
+    modifier? :Abstract
+  end
+
+  ##
+  # Whether or not the entity is marked as `final`
+  def final?
+    modifier? :Final
+  end
+
+  ##
+  # Whether or not the entity is marked as `native`
+  def native?
+    modifier? :Native
+  end
+
+  ##
+  # Whether or not the entity is marked with `name`.
+  #
+  # @param name [Symbol] modifier to check for (e.g. `:Public`)
+  def modifier? name
+    @modifiers.any? { |mod| mod == name }
+  end
+
+  # @!endgroup
+
+
   private
 
   def extract_modifiers mods
