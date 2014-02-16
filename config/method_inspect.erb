@@ -1,4 +1,4 @@
-    <%= cyan @name.value %>: <%= inspect_params %> <%= bold_blue '->' %> <%= inspect_type @type %> (<%= inspect_modifiers %>) =
+    <%= @name.value.cyan %>: <%= inspect_params %> <%= '->'.bold_blue %> <%= inspect_type @type %> (<%= inspect_modifiers %>) =
 <% if @body %>
 <%= @body.inspect 3 %>
 <% end %>
