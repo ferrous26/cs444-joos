@@ -64,6 +64,8 @@ class Joos::Compiler
     end
     compilation_units.each(&:link_imports)
     compilation_units.each(&:resolve_declarations)
+  rescue Exception => exception
+    print_exception exception
   end
 
 
