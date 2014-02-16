@@ -8,10 +8,6 @@ require 'joos/freedom_patches'
 # Abstract base of all declared entities in the Joos language.
 class Joos::Entity
 
-  # @todo A way to separate by simple and qualified names
-  # @todo A way to resolve names
-  # @todo A way to separate name and identifier (declaration and use)
-
   ##
   # The canonical name of the entity
   #
@@ -43,7 +39,6 @@ class Joos::Entity
     :Entity
   end
 
-  # @todo what does it mean to inspect an entity? (in tree format)
   # @param tab [Fixnum]
   # @return [String]
   def inspect tab = 0
