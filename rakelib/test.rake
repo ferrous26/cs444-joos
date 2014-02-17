@@ -44,7 +44,7 @@ task :one, :name do |_, args|
     glob = "a*/#{name}"
   end
 
-  names = Dir.glob("test/#{glob}*")
+  names = Dir.glob("test/#{glob}{.java,}")
   return puts "Could not find test named `#{name}'" if names.empty?
   return puts "Ambiguous test name:\n#{names}"      if names.size > 1
 
