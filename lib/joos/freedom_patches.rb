@@ -60,6 +60,8 @@ end
 ##
 # Freedom patches on NilClass.
 class NilClass
+  include Joos::Colour
+
   # +nil+ is blank:
   #
   #   nil.blank? # => true
