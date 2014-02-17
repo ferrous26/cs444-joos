@@ -49,6 +49,13 @@ class Joos::Entity::Class < Joos::Entity
     end
   end
 
+  class ExtendingFinalClass < Exception
+    def initialize klass
+      name = klass.name.cyan
+      super_name = klass.superclass.fully_qualified_name.cyan_join
+      super "#{name} is trying to extend final class #{super_name}"
+    end
+  end
 
   # @!endgroup
 
@@ -141,9 +148,9 @@ class Joos::Entity::Class < Joos::Entity
   def check_hierarchy
     super
     check_superclass_circularity
-    # A class must not extend a final class.
     check_fields_have_unique_names
     check_abstract_methods_only_if_class_is_abstract
+    check_superclass_is_not_final
   end
 
 
@@ -235,6 +242,10 @@ class Joos::Entity::Class < Joos::Entity
     if methods.any? { |method| method.abstract? }
       raise AbstractMethodNonAbsractClass.new(self) unless self.abstract?
     end
+  end
+
+  def check_superclass_is_not_final
+    raise ExtendingFinalClass.new(self) if superclass.final?
   end
 
 
