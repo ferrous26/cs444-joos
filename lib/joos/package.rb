@@ -25,12 +25,11 @@ class Joos::Package
   # and also does not name a {Joos::Entity::CompilationUnit}.
   #
   class DoesNotExist < Exception
-    # @param p  [Joos::Package]
-    # @param id [String]
-    def initialize p, id
-      id  = id.cyan
-      p   = p.fully_qualified_name.map { |x| x.cyan }.join('.')
-      super "#{id} is not a member of #{p}"
+    # @param qid [Joos::AST::QualifiedIdentifier]
+    # @param id  [String]
+    def initialize qid, id
+      n = qid.inspect
+      super "No package or type specified by #{n} at component #{id.to_s.cyan}"
     end
   end
 
@@ -95,6 +94,8 @@ class Joos::Package
       member = package.lookup id
       if member.is_a? Joos::Package
         member
+      elsif member.nil?
+        raise DoesNotExist.new(qualified_id, id)
       else
         raise BadPath.new(qualified_id, id)
       end
@@ -150,14 +151,12 @@ class Joos::Package
   ##
   # Try to lookup a member of the package with the given key.
   #
-  # If no member exists, then `nil` will be returned.
+  # If no member exists, then `nil` is returned.
   #
   # @param id [Joos::Token::Identifier] this __must__ be a single identifier
-  # @return [Joos::Package, Joos::Entity::CompilationUnit, nil]
+  # @return [Joos::Package, Joos::Entity::CompilationUnit]
   def lookup id
-    @members.fetch id.to_s do |_|
-      raise DoesNotExist.new(self, id.to_s)
-    end
+    @members[id.to_s]
   end
 
   ##
