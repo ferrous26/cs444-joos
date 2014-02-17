@@ -92,7 +92,22 @@ module Joos::Entity::CompilationUnit
     end
   end
 
+  ##
+  # Exception raised when a simple identifier has an ambiguous type resolution
+  #
+  class AmbiguousType < Exception
+    def initialize unit, dupes
+      simple   = dupes.first.name.cyan
+      fq_names = dupes.map { |d|
+        d.fully_qualified_name.map(&:cyan).join('.')
+      }.inspect
+      source   = unit.name.file.red
+      super "#{simple} is ambiguous betwen #{fq_names} in #{source}"
+    end
+  end
+
   # @!endgroup
+
 
   ##
   # The {Joos::Package} to which the compilation unit belongs
@@ -214,7 +229,7 @@ module Joos::Entity::CompilationUnit
     unit = Joos::Package.lookup(qid)
     if unit.kind_of? Joos::Entity::CompilationUnit
       if unit == self
-        return # we can ignore the import, this is ignored
+        return # we can ignore the import, no point in importing yourself
       elsif unit.name == self.name
         raise ImportNameClash.new(self, qid)
       elsif @imported_types.any? { |t| t.name == qid.simple && unit != t }
@@ -230,21 +245,23 @@ module Joos::Entity::CompilationUnit
   end
 
   ##
-  # @todo confirm that this is the correct order
-  # priority for simple name is:
+  # @note: this order is confirmed in some test cases, such as
+  #        `Je_3_ImportOnDemand_ClashWithImplicitImport`
+  #
+  # priority for simple name lookups is:
   #   is it the current unit?
   #   one of the single type imports?
   #   one of the types in same package as the current unit?
   #   one of the types in an on demand import package?
-  # qualified names must be fully qualified => just do package lookup
   def find_simple_type id
-    (self if id == name)                            ||
-    @imported_types.find { |type| type.name == id } ||
-    @package.lookup(id)                             ||
-    @imported_packages.find { |package|
-      type = package.lookup(id)
-      break type if type
-    }
+    unit = (self if id == name)                              ||
+           (@imported_types.find { |type| type.name == id }) ||
+           @package.lookup(id)
+    return unit if unit
+
+    units = @imported_packages.map { |package| package.lookup(id) }.compact
+    raise AmbiguousType.new(self, units) if units.size > 1
+    units.first
   end
 
   # @param qid [AST::QualifiedIdentifier]
