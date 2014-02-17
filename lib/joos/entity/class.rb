@@ -21,18 +21,33 @@ class Joos::Entity::Class < Joos::Entity
   end
 
   ##
+  # Exception raised when a class claims a package/interface as its superclass
+  #
+  class NonClassSuperClass < Exception
+    # @todo should pass the found unit so we can give more details on what we
+    #       actually resolved
+    def initialize klass
+      name = klass.fully_qualified_name.map(&:cyan).join('.')
+      supa = klass.superclass.fully_qualified_name.map(&:cyan).join('.')
+      super "#{name} cannot claim non-class #{supa} as a superclass"
+    end
+  end
+
+
+  ##
   # The superclass of the receiver.
   #
-  # @return [Token::QualifiedIdentifier]
-  attr_reader :extends
-  alias_method :superclass, :extends
+  # @return [Joos::Entity::CompilationUnit]
+  attr_reader :superclass
+  alias_method :extends, :superclass
 
   ##
   # Interfaces that the receiver conforms to.
   #
-  # @return [TypeList]
-  attr_reader :implements
-  alias_method :interfaces, :implements
+  # @return [AST::TypeList]
+  attr_reader :superinterfaces
+  alias_method :interfaces, :superinterfaces
+  alias_method :implements, :superinterfaces
 
   ##
   # Constructors implemented on the class.
@@ -88,6 +103,30 @@ class Joos::Entity::Class < Joos::Entity
     methods.each(&:validate)
   end
 
+  def link_declarations
+    super
+    link_superclass
+    # @todo fields.each(&:link_declarations)
+    # @todo methods.each(&:link_declarations)
+    # @todo constructors.each(&:link_declarations)
+  end
+
+  def check_superclass_circularity target = self
+    if superclass.equal? target
+      raise TypeCircularity.new(self)
+    elsif superclass
+      superclass.check_superclass_circularity target
+    end
+  end
+
+  def check_hierarchy
+    super
+    check_superclass_circularity
+    # no two fields have the same name
+    # A class that contains (declares or inherits) any abstract methods must be abstract.
+    # A class must not extend a final class.
+  end
+
 
   private
 
@@ -95,22 +134,34 @@ class Joos::Entity::Class < Joos::Entity
     raise NoConstructorError.new(self) if constructors.empty?
   end
 
+  # @private
+  OBJECT = ['java', 'lang', 'Object']
+
   ##
   # The default base class for any class that does not specify
   #
-  # @return [Joos::Token::Identifier]
+  # @return [Joos::AST::QualifiedIdentifier]
   BASE_CLASS = Joos::AST::QualifiedIdentifier.new(
-   ['java', 'lang', 'Object'].map do |id|
+   OBJECT.map do |id|
      Joos::Token::Identifier.new(id, 'internal', 0, 0)
    end)
 
   def set_superclass
-    @extends = @node.TypeDeclaration.ClassDeclaration.QualifiedIdentifier ||
-      BASE_CLASS
+    if fully_qualified_name == OBJECT
+      if @node.TypeDeclaration.ClassDeclaration.QualifiedIdentifier
+        # @todo proper exception
+        raise 'you tried to give java.lang.Object a superclass'
+      end
+      @superclass = nil
+    else
+      @superclass =
+        @node.TypeDeclaration.ClassDeclaration.QualifiedIdentifier ||
+        BASE_CLASS
+    end
   end
 
   def set_interfaces
-    @implements = @node.TypeDeclaration.ClassDeclaration.TypeList || []
+    @superinterfaces = @node.TypeDeclaration.ClassDeclaration.TypeList || []
   end
 
   def set_members
@@ -142,6 +193,14 @@ class Joos::Entity::Class < Joos::Entity
 
   def ensure_at_least_one_constructor
     raise NoConstructorError.new(self) if @constructors.empty?
+  end
+
+  def link_superclass
+    return unless superclass
+    @superclass = find_type superclass
+    unless @superclass.is_a? Joos::Entity::Class
+      raise NonClassSuperclass.new(self)
+    end
   end
 
 

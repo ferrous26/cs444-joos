@@ -18,9 +18,9 @@ class Joos::Entity::Interface < Joos::Entity
   # The superclass of the receiver.
   #
   # @return [Array<Joos::Entity::Interface>]
-  attr_reader :extends
-  alias_method :superinterfaces, :extends
-  alias_method :super_interfaces, :extends
+  attr_reader :superinterfaces
+  alias_method :implements, :superinterfaces
+  alias_method :extends, :superinterfaces
 
   ##
   # All fields and methods defined on the class.
@@ -54,22 +54,36 @@ class Joos::Entity::Interface < Joos::Entity
     methods.each(&:validate)
   end
 
+  def link_declarations
+    super
+    # @todo methods.each(&:link_declarations)
+  end
+
+  def check_superclass_circularity target = self
+    if superclass.equal? target
+      raise TypeCircularity.new(self)
+    else
+      superclass.check_superclass_circularity target
+    end
+  end
+
 
   private
 
   def set_superinterfaces
-    @extends = @node.TypeDeclaration.InterfaceDeclaration.TypeList || []
+    @superinterfaces = @node.TypeDeclaration.InterfaceDeclaration.TypeList ||
+                       []
   end
 
   def set_methods
-    @methods = []
-    @node
-    .TypeDeclaration
-    .InterfaceDeclaration
-    .InterfaceBody
-    .InterfaceBodyDeclarations.map do |node|
-      @methods << InterfaceMethod.new(node, self) if node.Identifier
-    end
+    @methods =
+      @node
+      .TypeDeclaration
+      .InterfaceDeclaration
+      .InterfaceBody
+      .InterfaceBodyDeclarations.map do |node|
+        InterfaceMethod.new(node, self) if node.Identifier
+      end.compact
   end
 
 end
