@@ -11,6 +11,8 @@ class Joos::Entity::Class < Joos::Entity
   include CompilationUnit
   include Modifiable
 
+  # @!group Exceptions
+
   ##
   # Exception raised when a class has no explicit constructors
   class NoConstructorError < Exception
@@ -32,6 +34,16 @@ class Joos::Entity::Class < Joos::Entity
       super "#{name} cannot claim non-class #{supa} as a superclass"
     end
   end
+
+  class DuplicateFieldName < Exception
+    # @todo better message
+    def initialize field, dupe
+      super "#{field.name.source.red}: #{field.inspect} and #{dupe.name.source.red}: #{dupe.inspect}"
+    end
+  end
+
+
+  # @!endgroup
 
 
   ##
@@ -122,9 +134,9 @@ class Joos::Entity::Class < Joos::Entity
   def check_hierarchy
     super
     check_superclass_circularity
-    # no two fields have the same name
     # A class that contains (declares or inherits) any abstract methods must be abstract.
     # A class must not extend a final class.
+    check_fields_have_unique_names
   end
 
 
@@ -200,6 +212,15 @@ class Joos::Entity::Class < Joos::Entity
     @superclass = find_type superclass
     unless @superclass.is_a? Joos::Entity::Class
       raise NonClassSuperclass.new(self)
+    end
+  end
+
+  def check_fields_have_unique_names
+    fields.each do |field|
+      dupe = fields.find { |field2|
+        field.name == field2.name && !(field.equal? field2)
+      }
+      raise DuplicateFieldName.new(field, dupe) if dupe
     end
   end
 
