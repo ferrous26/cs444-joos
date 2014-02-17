@@ -1,8 +1,10 @@
 require 'joos/token'
+require 'joos/colour'
 
 ##
 # Class for tokens that represent identifiers in Joos.
 class Joos::Token::Identifier < Joos::Token
+  include Joos::Colour
 
   ##
   # A simple regular expression to partially validate identifier names.
