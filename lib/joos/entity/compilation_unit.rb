@@ -210,12 +210,14 @@ module Joos::Entity::CompilationUnit
   #
   # Note that an import statement cannot import a subpackage, only a type.
   def import_single qid
-    raise ImportNameClash.new(self, qid) if qid.simple == name
 
     unit = Joos::Package.lookup(qid)
     if unit.kind_of? Joos::Entity::CompilationUnit
-
-      if @imported_types.any? { |t| t.name == qid.simple && unit != t }
+      if unit == self
+        return # we can ignore the import, this is ignored
+      elsif unit.name == self.name
+        raise ImportNameClash.new(self, qid)
+      elsif @imported_types.any? { |t| t.name == qid.simple && unit != t }
         raise DuplicateImport.new(self, qid)
       end
 
