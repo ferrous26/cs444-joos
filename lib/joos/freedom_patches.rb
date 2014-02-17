@@ -124,6 +124,10 @@ class Array
   def third
     at(2)
   end
+
+  def cyan_join
+    map(&:cyan).join('.')
+  end
 end
 
 ##
