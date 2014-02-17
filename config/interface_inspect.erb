@@ -1,5 +1,5 @@
 <%= '@'.green %><%= package.fully_qualified_name.map(&:cyan).join('.') %>
 
-<%= inspect_modifiers_space %>interface <%= name.value.cyan %> (<%= inspect_superinterfaces %>)
+<%= inspect_modifiers_space %>interface <%= name.cyan %> (<%= inspect_superinterfaces %>)
 
-<%= methods.map { |m| m.inspect }.join("\n\n") << "\n\n" %>
+<%= methods.map(&:inspect).join("\n\n") << "\n\n" %>

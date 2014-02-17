@@ -1,7 +1,7 @@
 <%= '@'.green %><%= package.fully_qualified_name.map(&:cyan).join('.') %>
 
-<%= inspect_modifiers_space %>class <%= name.value.cyan %> < <%= superclass.inspect %> (<%= interfaces.map(&:inspect).join(', ') %>)
+<%= inspect_modifiers_space %>class <%= name.cyan %> < <%= inspect_superclass %> (<%= inspect_superinterfaces %>)
 
-<%= fields.map { |f| f.inspect }.join("\n\n") << "\n\n" %>
-<%= methods.map { |m| m.inspect }.join("\n\n") << "\n\n" %>
-<%= constructors.map { |c| c.inspect }.join("\n\n") << "\n\n" %>
+<%= fields.map(&:inspect).join("\n\n") << "\n\n" %>
+<%= methods.map(&:inspect).join("\n\n") << "\n\n" %>
+<%= constructors.map(&:inspect).join("\n\n") << "\n\n" %>

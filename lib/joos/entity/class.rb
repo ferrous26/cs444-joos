@@ -144,4 +144,19 @@ class Joos::Entity::Class < Joos::Entity
     raise NoConstructorError.new(self) if @constructors.empty?
   end
 
+
+  # @!group Inspect
+
+  def inspect_superclass
+    if superclass.blank?
+      'ROOT'.white
+    elsif superclass.is_a? Joos::AST::QualifiedIdentifier
+      superclass.inspect
+    else # it is a compilation unit
+      superclass.fully_qualified_name.map(&:cyan).join('.')
+    end
+  end
+
+  # @!endgroup
+
 end

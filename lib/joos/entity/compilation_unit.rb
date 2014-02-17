@@ -117,4 +117,20 @@ module Joos::Entity::CompilationUnit
     end
   end
 
+  # @!group Inspect
+
+  def inspect_superinterfaces
+    if superinterfaces.blank?
+      ''
+    elsif superinterfaces.first.is_a? Joos::AST::QualifiedIdentifier
+      superinterfaces.map(&:inspect).join(', ')
+    else # it is a compilation unit
+      superinterfaces.map { |unit|
+        unit.fully_qualified_name.cyan
+      }.join(', ')
+    end
+  end
+
+  # @!endgroup
+
 end
