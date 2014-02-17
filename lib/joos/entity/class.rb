@@ -42,6 +42,13 @@ class Joos::Entity::Class < Joos::Entity
     end
   end
 
+  class AbstractMethodNonAbsractClass < Exception
+    def initialize klass
+      name = klass.name.cyan
+      super "#{name} has abstract methods but is not abstract itself"
+    end
+  end
+
 
   # @!endgroup
 
@@ -134,9 +141,9 @@ class Joos::Entity::Class < Joos::Entity
   def check_hierarchy
     super
     check_superclass_circularity
-    # A class that contains (declares or inherits) any abstract methods must be abstract.
     # A class must not extend a final class.
     check_fields_have_unique_names
+    check_abstract_methods_only_if_class_is_abstract
   end
 
 
@@ -221,6 +228,12 @@ class Joos::Entity::Class < Joos::Entity
         field.name == field2.name && !(field.equal? field2)
       }
       raise DuplicateFieldName.new(field, dupe) if dupe
+    end
+  end
+
+  def check_abstract_methods_only_if_class_is_abstract
+    if methods.any? { |method| method.abstract? }
+      raise AbstractMethodNonAbsractClass.new(self) unless self.abstract?
     end
   end
 
