@@ -35,6 +35,11 @@ class Joos::Token::Identifier < Joos::Token
 
   alias_method :to_s, :value
 
+  def == other
+    to_s == other.to_s
+  end
+
+  # @param tab [Fixnum]
   def inspect tab = 0
     "#{taby tab}Identifier:#{value.cyan} from #{source.red}"
   end
