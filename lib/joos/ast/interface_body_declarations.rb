@@ -1,7 +1,7 @@
 require 'joos/ast'
 
 ##
-# @todo Documentation
+# A list of declarations for an interface definition
 class Joos::AST::InterfaceBodyDeclarations
   include ListCollapse
 end

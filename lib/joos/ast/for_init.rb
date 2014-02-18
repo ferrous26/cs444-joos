@@ -10,15 +10,14 @@ class Joos::AST::ForInit
   class InvalidForInit < Exception
     # @todo Report file and line information
     def initialize node
-      super "#{node}"
+      super 'for-loop initializer must initialize a variable'
     end
   end
 
   def initialize nodes
     super
-    chain = self.Expression.SubExpression.Term.UnmodifiedTerm
-    if chain.Primary && !(chain.Selectors.Selector.Dot ||
-                          chain.Primary.IdentifierSuffix)
+    chain = self.Expression.SubExpression.Term
+    if chain.Primary && !(chain.Selectors.Selector.Dot)
       raise InvalidForInit.new(self)
     end
   end

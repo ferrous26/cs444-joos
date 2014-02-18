@@ -36,26 +36,4 @@ class Joos::Token
     CLASSES[symbol] = klass
   end
 
-  ##
-  # Token representing the `]` character in source code
-  class CloseStaple
-    ##
-    # Exception raised when multi-dimensional array use is detected.
-    class MultiDimensionalArray < Exception
-      # @param staple [Joos::Token::CloseStaple]
-      def initialize staple
-        super "Illegal multi-dimensional array use at #{staple.source}"
-      end
-    end
-
-    # @param parent [Joos::AST]
-    def validate parent
-      return # @todo fix this in the grammar or have less of a hack for it
-      if parent.parent.parent.parent.Selectors.Selector.OpenStaple
-        raise MultiDimensionalArray.new(self)
-      end
-    end
-  end
-
-
 end

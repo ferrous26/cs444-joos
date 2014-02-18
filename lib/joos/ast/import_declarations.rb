@@ -1,7 +1,7 @@
 require 'joos/ast'
 
 ##
-# @todo Documentation
+# A list of `import` statements.
 class Joos::AST::ImportDeclarations
   include ListCollapse
 end

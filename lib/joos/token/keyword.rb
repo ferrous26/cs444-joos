@@ -100,13 +100,15 @@ class Joos::Token
       end
     end
 
+    ##
+    # Check that the second operand is a reference type (qualified id or array)
+    #
     # @param parent [Joos::AST::Infixop]
     def validate parent
-      term = parent.parent.Term.UnmodifiedTerm
-      return if term.Selectors.nodes.empty? &&
-        term.Primary.QualifiedIdentifier &&
-        term.Primary.nodes.size == 1
-      raise InvalidReferenceType.new(self)
+      term = parent.parent.Term
+      raise InvalidReferenceType.new(self) if !(term.QualifiedIdentifier &&
+                                                term.Selectors.empty?    &&
+                                                !term.Arguments)
     end
   end
 
