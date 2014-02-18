@@ -109,8 +109,7 @@ GRAMMAR = {
     Creator: [
       [:BasicType, :ArrayCreator],
       [:QualifiedIdentifier, :ArrayCreator],
-      [:QualifiedIdentifier, :Arguments],
-      [:QualifiedIdentifier, :Arguments, :ClassBody]
+      [:QualifiedIdentifier, :Arguments]
     ],
     ArrayCreator: [
       [:OpenStaple, :CloseStaple],
