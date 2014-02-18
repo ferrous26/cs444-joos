@@ -19,8 +19,7 @@ class Joos::Entity::Interface < Joos::Entity
   #
   # @return [Array<Interface>]
   attr_reader :superinterfaces
-  alias_method :implements, :superinterfaces
-  alias_method :extends, :superinterfaces
+  alias_method :interfaces, :superinterfaces
 
   ##
   # All fields and methods defined on the class.

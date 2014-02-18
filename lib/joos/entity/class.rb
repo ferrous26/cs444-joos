@@ -63,17 +63,17 @@ class Joos::Entity::Class < Joos::Entity
   ##
   # The superclass of the receiver.
   #
-  # @return [Joos::Entity::CompilationUnit]
+  # This will only be `nil` for `java.lang.Object`.
+  #
+  # @return [Class, nil]
   attr_reader :superclass
-  alias_method :extends, :superclass
 
   ##
   # Interfaces that the receiver conforms to.
   #
-  # @return [AST::TypeList]
+  # @return [Array<Interface>]
   attr_reader :superinterfaces
   alias_method :interfaces, :superinterfaces
-  alias_method :implements, :superinterfaces
 
   ##
   # Constructors implemented on the class.
