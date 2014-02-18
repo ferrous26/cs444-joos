@@ -178,13 +178,19 @@ class Joos::Parser::ParserGenerator
   private
 
   def file_format
-    printable_reductions = {}
-    @reductions.each_with_index do |state, index|
-      printable_reductions[index] = Hash[ state.map{ |k2,v2| [k2.to_a, v2] } ]
+    printable_reductions = Array.new(@dfa.states.size)
+    printable_transitions = Array.new(@dfa.states.size)
+    for index in 0..@dfa.states.size-1
+      # This takes care of the cases where a state has no transitions,
+      # or no reductions
+      printable_reductions[index] = Hash[
+        @reductions[index].map{ |k2,v2| [k2.to_a, v2] }
+      ]
+      printable_transitions[index] = Hash @dfa.transitions[index]
     end
     {
-     transitions: @dfa.transitions,
-     reductions: printable_reductions
+     reductions: printable_reductions,
+     transitions: printable_transitions
     }
   end
 

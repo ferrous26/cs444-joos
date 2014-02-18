@@ -8,7 +8,7 @@ class Joos::Parser::LR1DFA
 
   def initialize
     @states = []
-    @transitions = {}
+    @transitions = []
   end
 
   def start_state
@@ -31,8 +31,8 @@ class Joos::Parser::LR1DFA
   end
 
   def add_transition from_state, symbol, next_state
-    state_transitions = ( self.transitions[from_state] ||= {} )
-    state_transitions[symbol] = next_state
+    @transitions[from_state] ||= {}
+    @transitions[from_state][symbol] = next_state
   end
 
 end
