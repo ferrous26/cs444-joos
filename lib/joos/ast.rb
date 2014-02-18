@@ -35,7 +35,7 @@ class Joos::AST
   # This will not search recursively.
   #
   # @param type [Symbol]
-  # @return [Joos::AST, Joos::Token, Joos::Entity, nil]
+  # @return [Joos::AST, Joos::Token, nil]
   def search type
     @nodes.find { |node| node.to_sym == type }
   end
@@ -113,7 +113,7 @@ class Joos::AST
 
     # @return [nil]
     def list_collapse
-      if @nodes.last.to_sym == to_sym
+      if @nodes.last && @nodes.last.to_sym == to_sym
         @nodes = @nodes.last.nodes.unshift @nodes.first
       end
     end

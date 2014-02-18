@@ -71,12 +71,18 @@ class NilClass
     true
   end
 
+  CAP_RANGE = 'A'.ord..'Z'.ord
+
   def method_missing name, *args
-    args.blank? ? nil : super
+    (CAP_RANGE.cover?(name.to_s.ord) && args.empty?) ? nil : super
   end
 
   def inspect tab = 0
-    raise 'YOU SHOULD NOT HAVE A nil IN THE FUCKING AST' unless tab.zero?
+    if tab.zero?
+      super
+    else
+      raise 'YOU SHOULD NOT HAVE A nil IN THE FUCKING AST'
+    end
   end
 end
 
