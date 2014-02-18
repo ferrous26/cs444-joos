@@ -73,7 +73,7 @@ class Joos::AST::Term
     # no more terms after it
     expr = self.Expression.SubExpression
     raise exception unless expr
-    raise exception unless expr.MoreTerms.blank?
+    raise exception unless expr.SubExpression.blank?
     raise exception unless expr.Term
     expr = expr.Term
     raise exception unless expr.Selectors.blank?
