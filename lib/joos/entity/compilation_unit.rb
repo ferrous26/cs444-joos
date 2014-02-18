@@ -287,7 +287,7 @@ module Joos::Entity::CompilationUnit
            @package.find(id)
     return unit if unit
 
-    units = @imported_packages.map { |package| package.lookup(id) }.compact
+    units = @imported_packages.map { |package| package.find(id) }.compact
     raise AmbiguousType.new(self, units) if units.size > 1
     units.first
   end
