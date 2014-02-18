@@ -106,7 +106,8 @@ class Joos::Entity::Method < Joos::Entity
   end
 
   # @todo Make this less of a hack
-  def inspect_type node
+  def inspect_type type
+    return ''
     if node.is_a? Joos::AST::ArrayType
       "[#{inspect_type node.first}]"
     elsif node.is_a? Joos::AST::QualifiedIdentifier
