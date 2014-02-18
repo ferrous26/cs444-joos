@@ -103,15 +103,25 @@ class Joos::AST
   end
 
   ##
-  # Consumes another node (preferably a child), adding all of that node's
-  # children nodes to its own, and removing the consumed node from the AST
+  # Consumes multiple nodes (preferably children), adding all of those nodes'
+  # children nodes to its own, and removing the consumed nodes from the AST
   #
   # @param node [Joos::AST]
-  def consume node
-    return unless node
-    node.nodes.each { |child| child.parent = self }
-    @nodes += node.nodes
-    node.parent.nodes.delete(node)
+  def consume nodes
+    return unless nodes
+    nodes.each do |node|
+      nodes.each do |child|
+        child.parent = self if child.respond_to? :parent
+      end
+      @nodes += node.nodes
+      node.parent.nodes.delete(node)
+    end
+  end
+
+  # Variant of consume that replaces all children
+  def consume! nodes
+    @nodes = []
+    consume nodes
   end
 
   ##
