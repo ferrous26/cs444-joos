@@ -21,8 +21,8 @@ module Joos::Entity::Modifiable
     # @param entity   [Joos::Entity]
     # @param modifier [Joos::Token::Modifier]
     def initialize entity, modifier
-      klass = entity.class.to_s.split('::').last
-      super "A #{klass} cannot use the #{modifier} modifier"
+      klass = entity.unit_type.to_s.green
+      super "A #{klass} cannot use the #{modifier.to_s.blue} modifier"
     end
   end
 

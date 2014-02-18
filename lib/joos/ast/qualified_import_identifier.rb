@@ -25,9 +25,7 @@ class Joos::AST::QualifiedImportIdentifier
   # Return the last component of the qualified identifier.
   #
   # @return [Joos::Token::Identifier]
-  def simple
-    @nodes.last
-  end
+  alias_method :simple, :last
 
   def inspect tab = 0
     taby(tab) << (@nodes.map { |x|

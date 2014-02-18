@@ -55,7 +55,7 @@ class Joos::Entity::Method < Joos::Entity
     super node.Identifier, node.Modifiers
     @parent     = parent
     @type       = node.Void || node.Type
-    decl_rest   = node.nodes.last
+    decl_rest   = node.last # MethodDeclRest, InterfaceMethodDeclRest, etc.
     @parameters =
       (decl_rest.FormalParameters.FormalParameterList || []).map do |param|
         # @todo fix up the Parameter class

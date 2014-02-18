@@ -69,6 +69,13 @@ class Joos::AST
   end
   alias_method :blank?, :empty?
 
+  ##
+  # Access the last child node of the receiver
+  #
+  # @return [Joos::AST, Joos::Token]
+  def last
+    @nodes.last
+  end
 
   ##
   # Generic validation for the AST node.
