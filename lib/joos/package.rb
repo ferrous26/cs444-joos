@@ -26,10 +26,9 @@ class Joos::Package
   #
   class DoesNotExist < Exception
     # @param qid [Joos::AST::QualifiedIdentifier]
-    # @param id  [String]
-    def initialize qid, id
+    def initialize qid
       n = qid.inspect
-      super "No package or type specified by #{n} at component #{id.to_s.cyan}"
+      super "No package or type specified by #{n}"
     end
   end
 
