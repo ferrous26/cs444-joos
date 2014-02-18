@@ -41,11 +41,8 @@ GRAMMAR = {
       [:Short]
     ],
     SubExpression: [
-      [:Term, :MoreTerms],
-    ],
-    MoreTerms: [
-      [:Infixop, :Term, :MoreTerms],
-      []
+      [:Term],
+      [:Term, :Infixop, :SubExpression]
     ],
     Infixop: [
       [:LazyOr],
@@ -95,16 +92,12 @@ GRAMMAR = {
       [:OpenStaple, :Expression, :CloseStaple]
     ],
     Arguments: [
+      [:OpenParen, :CloseParen],
       [:OpenParen, :Expressions, :CloseParen]
     ],
     Expressions: [
-      [:Expression, :MoreExpressions],
-      []
-    ],
-    # @todo I think we can clean this up
-    MoreExpressions: [
-      [:Comma, :Expression, :MoreExpressions],
-      []
+      [:Expression],
+      [:Expression, :Comma, :Expressions]
     ],
     Creator: [
       [:BasicType, :ArrayCreator],
@@ -262,8 +255,8 @@ GRAMMAR = {
               :Native, :Import, :Implements, :Extends, :Interface, :Short, :EndProgram],
 
   non_terminals: [:CompilationUnit, :QualifiedIdentifier, :Literal, :Expression, :Type,
-                  :SubExpression, :MoreTerms, :Infixop, :Term, :Selectors, :Primary, :Assignment,
-                  :TermModifier, :Selector, :BasicType, :Arguments, :Expressions, :MoreExpressions,
+                  :SubExpression, :Infixop, :Term, :Selectors, :Primary, :Assignment,
+                  :TermModifier, :Selector, :BasicType, :Arguments, :Expressions,
                   :Creator, :ArrayCreator,
                   :Block, :BlockStatement, :BlockStatements, :LocalVariableDeclarationStatement, :Statement,
                   :ForInit, :ForUpdate, :Modifiers, :Modifier, :VariableDeclarator,
