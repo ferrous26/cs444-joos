@@ -12,8 +12,8 @@ class Joos::Parser::ParserGenerator
   attr_reader :non_terminals
   attr_reader :start_symbol
   attr_reader :dfa
-  attr_reader :first
-  attr_reader :nullable
+  attr_reader :first_set
+  attr_reader :nullable_set
 
   def initialize grammar
     grammar = Hash(grammar)
@@ -44,6 +44,8 @@ class Joos::Parser::ParserGenerator
     build_reductions
     true
   end
+
+private
 
   def build_start_state
     items = []
@@ -178,13 +180,19 @@ class Joos::Parser::ParserGenerator
   private
 
   def file_format
-    printable_reductions = {}
-    @reductions.each_with_index do |state, index|
-      printable_reductions[index] = Hash[ state.map{ |k2,v2| [k2.to_a, v2] } ]
+    printable_reductions = Array.new(@dfa.states.size)
+    printable_transitions = Array.new(@dfa.states.size)
+    for index in 0..@dfa.states.size-1
+      # This takes care of the cases where a state has no transitions,
+      # or no reductions
+      printable_reductions[index] = Hash[
+        @reductions[index].map{ |k2,v2| [k2.to_a, v2] }
+      ]
+      printable_transitions[index] = Hash @dfa.transitions[index]
     end
     {
-     transitions: @dfa.transitions,
-     reductions: printable_reductions
+     reductions: printable_reductions,
+     transitions: printable_transitions
     }
   end
 

@@ -26,51 +26,6 @@ describe Joos::Parser::ParserGenerator do
     end
   end
 
-  context "#build_first_and_nullable" do
-    it "should build the first set properly" do
-
-    end
-
-    it "should build the nullable set properly" do
-      first_and_nullable_grammar = {
-        rules: {
-
-          Z: [
-            [:d],
-            [:X, :Y, :Z]
-          ],
-
-          Y: [
-            [:c],
-            []
-          ],
-
-          X: [
-            [:Y],
-            [:a]
-          ]
-        },
-
-        terminals: [:a,:c,:d],
-        non_terminals: [:X, :Y, :Z],
-        start_symbol: :Z
-
-      }
-      nullable = [:Y, :X]
-      first = { X: Set.new([:c, :a]), 
-                Y: Set.new([:c]), 
-                Z: Set.new([:d, :c, :a]), 
-                a: Set.new([:a]), 
-                c: Set.new([:c]), 
-                d: Set.new([:d]) }
-
-      @parser_generator = Joos::Parser::ParserGenerator.new(first_and_nullable_grammar)
-      @parser_generator.send :build_first_and_nullable
-      @parser_generator.nullable.should eq nullable
-      @parser_generator.first.should eq first
-    end
-  end
-
   context "#build_start_state" do
     before :each do
       @parser_generator = Joos::Parser::ParserGenerator.new(GRAMMAR)
@@ -91,17 +46,6 @@ describe Joos::Parser::ParserGenerator do
       @parser_generator.dfa.start_state.items.should include item2
       @parser_generator.dfa.start_state.items.should include item3
       @parser_generator.dfa.start_state.items.should include item4
-    end
-
-    it 'fills the transition queue with needed transitions from start_state' do
-      queue = @parser_generator.send(:transition_queue)
-      queue.size.should eq 1
-      from_state, symbols = queue.shift
-      from_state.should eq 0
-      symbols.size.should eq 3
-      symbols.should include :A
-      symbols.should include :B
-      symbols.should include :b
     end
 
   end
@@ -146,30 +90,6 @@ describe Joos::Parser::ParserGenerator do
     item4 = Joos::Parser::Item.new :A, [], [], Set.new([:b,:c])
     state = Joos::Parser::State.new [item1, item2, item3, item4]
     pg.dfa.states.should include state
-  end
-
-  it 'can have multiple reductions in a state' do
-    some_grammar = {
-      rules: {
-        S: [
-          [:A, :DOLLAR]
-        ],
-        A: [
-          [:a],
-          [:E, :Equals, :E]
-        ],
-        E: [
-          [:a]
-        ]
-      },
-      terminals: [:a, :Equals, :DOLLAR],
-      non_terminals: [:S, :A, :E],
-      start_symbol: :S
-    }
-    pg = Joos::Parser::ParserGenerator.new(some_grammar)
-    pg.build_parser
-    reduction = { 2 => { Set.new([:DOLLAR]) => [:A, 1], Set.new([:Equals]) => [:E, 1] } }
-    pg.reductions.should include reduction
   end
 
 end

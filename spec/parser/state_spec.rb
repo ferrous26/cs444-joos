@@ -6,7 +6,7 @@ describe Joos::Parser::State do
   it "should add a new item" do
     item = Joos::Parser::Item.new(:S, [:A], [:B,:c], Set.new([:a]))
     state = Joos::Parser::State.new
-    state.should_not include item
+    state.items.should_not include item
     state.add_item item
     state.items.should include item
   end

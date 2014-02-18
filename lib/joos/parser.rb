@@ -63,40 +63,32 @@ class Joos::Parser
 
   def oracle token
     token_sym = token.to_sym
-    return dangling_else if token_sym == :Else
-    reduction = @reductions[current_state].find { |arr, _|
-      arr.include? token_sym
-    }
 
-    # @todo wtf are we calling #to_a on the reduction?
-    return reduction.to_a.last if reduction
-
-    next_state = @transitions.fetch(current_state) do
-      # @todo we should do this with a bit more grace
-      raise("Expected one of #{@reductions[current_state].keys.inspect}" +
-            ", but got #{token.inspect} from state #{current_state}")
-    end
-
-    next_state.fetch token_sym do |_|
-      raise("no transition on #{next_state.inspect} with #{token_sym}")
-    end
+    if token_sym == :Else
+      get_transition(:Else) || get_reduction(:Else)
+    else
+      get_reduction(token_sym) || get_transition(token_sym)
+    end || raise_parse_error(token)
   end
 
-  def dangling_else
-    current_transitions = @transitions[current_state]
-    next_state = current_transitions && current_transitions[:Else]
-    unless next_state
-      reduction = @reductions[current_state].find { |arr, _|
-        arr.include? :Else
-      }
-      next_state = reduction.to_a.last
-    end
+  def get_reduction token_sym
+    # to_a is called to take care of the nil case
+    @reductions[current_state].find { |arr,_| arr.include? token_sym }.to_a.last
+  end
 
-    if next_state
-      return next_state
-    else
-      Raise "Parse error. Too lazy to figure out what to actually output."
+  def get_transition token_sym
+    @transitions[current_state].fetch token_sym, nil
+  end
+
+  def raise_parse_error token
+    all_symbols = []
+    @reductions[current_state].keys.each do |symbols|
+      all_symbols +=symbols
     end
+    all_symbols += @transitions[current_state].keys
+    all_symbols.uniq!
+
+    raise "Expected one of #{all_symbols.inspect}, but got #{token.inspect}"
   end
 
 end
