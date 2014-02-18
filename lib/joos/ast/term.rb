@@ -77,7 +77,7 @@ class Joos::AST::Term
     raise exception unless expr.Term
     expr = expr.Term
     raise exception unless expr.Selectors.blank?
-    raise exception if expr.Arguments.Expressions
+    raise exception if expr.Arguments
     raise exception unless expr.QualifiedIdentifier
   end
 
