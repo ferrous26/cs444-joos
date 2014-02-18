@@ -69,7 +69,8 @@ GRAMMAR = {
       [:OpenParen, :BasicType, :CloseParen, :Term],
       [:OpenParen, :BasicType, :OpenStaple, :CloseStaple, :CloseParen, :Term],
       [:Primary, :Selectors],
-      [:QualifiedIdentifier, :Selectors],
+      [:QualifiedIdentifier],
+      [:QualifiedIdentifier, :OpenStaple, :Expression, :CloseStaple, :Selectors],
       [:QualifiedIdentifier, :Arguments, :Selectors]
     ],
     TermModifier: [

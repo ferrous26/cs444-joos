@@ -45,8 +45,6 @@ class Joos::Parser::ParserGenerator
     true
   end
 
-private
-
   def build_start_state
     items = []
     @grammar[@start_symbol].each do |rule|
