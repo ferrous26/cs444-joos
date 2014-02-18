@@ -1,6 +1,19 @@
 ##
 # Item struct to be used by the parser generator
-Joos::Parser::Item = Struct.new :left_symbol, :before_dot, :after_dot, :follow do
+class Joos::Parser::Item
+
+  attr_accessor :left_symbol
+  attr_accessor :before_dot
+  attr_accessor :after_dot
+  attr_accessor :follow
+
+  def initialize left, before, after, follow
+    @left_symbol = left
+    @before_dot  = before
+    @after_dot   = after
+    @follow      = follow
+  end
+
   def == item2
     self.left_symbol == item2.left_symbol &&
     self.before_dot  == item2.before_dot  &&
@@ -9,7 +22,7 @@ Joos::Parser::Item = Struct.new :left_symbol, :before_dot, :after_dot, :follow d
 
   def merge! item2
     raise "Can not merge #{self.inspect} to #{item2.inspect}" unless self == item2
-    
+
     changed = !(item2.follow - self.follow).empty?
     self.follow += item2.follow
 
