@@ -12,8 +12,8 @@ class Joos::Parser::ParserGenerator
   attr_reader :non_terminals
   attr_reader :start_symbol
   attr_reader :dfa
-  attr_reader :first
-  attr_reader :nullable
+  attr_reader :first_set
+  attr_reader :nullable_set
 
   def initialize grammar
     grammar = Hash(grammar)
@@ -44,6 +44,8 @@ class Joos::Parser::ParserGenerator
     build_reductions
     true
   end
+
+private
 
   def build_start_state
     items = []
