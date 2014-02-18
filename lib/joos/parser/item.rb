@@ -1,18 +1,6 @@
 ##
 # Item struct to be used by the parser generator
-class Joos::Parser::Item
-
-  attr_accessor :left_symbol
-  attr_accessor :before_dot
-  attr_accessor :after_dot
-  attr_accessor :follow
-
-  def initialize left, before, after, follow
-    @left_symbol = left
-    @before_dot  = before
-    @after_dot   = after
-    @follow      = follow
-  end
+Joos::Parser::Item = Struct.new :left_symbol, :before_dot, :after_dot, :follow do
 
   def == item2
     self.left_symbol == item2.left_symbol &&
@@ -36,4 +24,5 @@ class Joos::Parser::Item
   def complete?
     self.after_dot.empty?
   end
+
 end
