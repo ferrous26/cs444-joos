@@ -103,6 +103,18 @@ class Joos::AST
   end
 
   ##
+  # Consumes another node (preferably a child), adding all of that node's
+  # children nodes to its own, and removing the consumed node from the AST
+  #
+  # @param node [Joos::AST]
+  def consume node
+    return unless node
+    node.nodes.each { |child| child.parent = self }
+    @nodes += node.nodes
+    node.parent.nodes.delete(node)
+  end
+
+  ##
   # Mixin used for AST nodes which represent a list of nodes but have
   # been modeled as a tree due to the way the parser works.
   module ListCollapse

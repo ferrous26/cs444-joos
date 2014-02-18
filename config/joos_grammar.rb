@@ -110,12 +110,11 @@ GRAMMAR = {
       [:OpenStaple, :Expression, :CloseStaple]
     ],
     Block: [
-      [:OpenBrace, :CloseBrace],
       [:OpenBrace, :BlockStatements, :CloseBrace]
     ],
     BlockStatements: [
-      [:BlockStatement],
-      [:BlockStatement, :BlockStatements]
+      [:BlockStatement, :BlockStatements],
+      []
     ],
     BlockStatement: [
       [:LocalVariableDeclarationStatement],
