@@ -7,7 +7,11 @@ SimpleCov.start do
   add_filter 'test/'
   add_filter 'spec/'
 
-  add_group 'Joos', 'lib/'
+  add_group 'Joos',   'lib/'
+  add_group 'Token',  'lib/joos/token*'
+  add_group 'AST',    'lib/joos/ast*'
+  add_group 'Entity', 'lib/joos/entity*'
+  add_group 'Config', 'config/'
 end
 
 $LOAD_PATH.unshift File.expand_path('./config')
