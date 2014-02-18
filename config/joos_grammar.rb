@@ -40,9 +40,6 @@ GRAMMAR = {
       [:Boolean],
       [:Short]
     ],
-    ConstantExpression: [
-      [:Expression]
-    ],
     SubExpression: [
       [:Term, :MoreTerms],
     ],
@@ -265,7 +262,7 @@ GRAMMAR = {
               :Class, :New, :Super, :Comma, :If, :Else, :For, :While, :Return, :Public, :Protected, :Static, :Abstract, :Final,
               :Native, :Import, :Implements, :Extends, :Interface, :Short, :EndProgram],
 
-  non_terminals: [:CompilationUnit, :QualifiedIdentifier, :Literal, :Expression, :Type, :ConstantExpression,
+  non_terminals: [:CompilationUnit, :QualifiedIdentifier, :Literal, :Expression, :Type,
                   :SubExpression, :MoreTerms, :Infixop, :Term, :Selectors, :Primary, :Assignment,
                   :TermModifier, :Selector, :BasicType, :Arguments, :Expressions, :MoreExpressions,
                   :Creator, :ArrayCreator,
