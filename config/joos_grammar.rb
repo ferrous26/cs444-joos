@@ -25,15 +25,12 @@ GRAMMAR = {
       [:SubExpression]
     ],
     Assignment: [
-      [:SubExpression, :Equals, :SubExpression]
+      [:SubExpression, :Equals, :Expression]
     ],
     Type: [
-      [:ArrayType],
       [:QualifiedIdentifier],
-      [:BasicType]
-    ],
-    ArrayType: [
       [:QualifiedIdentifier, :OpenStaple, :CloseStaple],
+      [:BasicType],
       [:BasicType, :OpenStaple, :CloseStaple]
     ],
     BasicType: [
@@ -48,6 +45,7 @@ GRAMMAR = {
     ],
     SubExpression: [
       [:Term, :MoreTerms],
+      [:Term, :Instanceof, :Type]
     ],
     MoreTerms: [
       [:Infixop, :Term, :MoreTerms],
@@ -73,14 +71,13 @@ GRAMMAR = {
     ],
     Term: [
       [:TermModifier, :Term],
-      [:UnmodifiedTerm]
-    ],
-    UnmodifiedTerm: [
-      [:OpenParen, :Expression, :OpenStaple, :CloseStaple, :CloseParen, :Term],
       [:OpenParen, :Expression, :CloseParen, :Term],
-      [:OpenParen, :BasicType, :OpenStaple, :CloseStaple, :CloseParen, :Term],
+      [:OpenParen, :Expression, :OpenStaple, :CloseStaple, :CloseParen, :Term],
       [:OpenParen, :BasicType, :CloseParen, :Term],
-      [:Primary, :Selectors]
+      [:OpenParen, :BasicType, :OpenStaple, :CloseStaple, :CloseParen, :Term],
+      [:Primary, :Selectors],
+      [:QualifiedIdentifier, :Selectors],
+      [:QualifiedIdentifier, :Arguments, :Selectors]
     ],
     TermModifier: [
       [:Not],
@@ -89,10 +86,8 @@ GRAMMAR = {
     Primary: [
       [:OpenParen, :Expression, :CloseParen],
       [:This],
-      [:Literal],
-      [:QualifiedIdentifier],
-      [:QualifiedIdentifier, :IdentifierSuffix],
-      [:New, :Creator]
+      [:New, :Creator],
+      [:Literal]
     ],
     Selectors: [
       [:Selector, :Selectors],
@@ -102,10 +97,6 @@ GRAMMAR = {
       [:Dot, :Identifier],
       [:Dot, :Identifier, :Arguments],
       [:OpenStaple, :Expression, :CloseStaple]
-    ],
-    IdentifierSuffix: [
-      [:OpenStaple, :Expression, :CloseStaple], # COME BACK
-      [:Arguments]
     ],
     Arguments: [
       [:OpenParen, :Expressions, :CloseParen]
@@ -120,13 +111,14 @@ GRAMMAR = {
       []
     ],
     Creator: [
-      [:ArrayCreator],
-      [:QualifiedIdentifier],
-      [:QualifiedIdentifier, :Arguments]
+      [:BasicType, :ArrayCreator],
+      [:QualifiedIdentifier, :ArrayCreator],
+      [:QualifiedIdentifier, :Arguments],
+      [:QualifiedIdentifier, :Arguments, :ClassBody]
     ],
     ArrayCreator: [
-      [:QualifiedIdentifier, :OpenStaple, :Expression, :CloseStaple],
-      [:BasicType, :OpenStaple, :Expression, :CloseStaple]
+      [:OpenStaple, :CloseStaple],
+      [:OpenStaple, :Expression, :CloseStaple]
     ],
     Block: [
       [:OpenBrace, :CloseBrace],
@@ -162,8 +154,7 @@ GRAMMAR = {
     ],
     ForUpdate: [
       [],
-      [:Expression],
-      [:VariableDeclarator]
+      [:Expression]
     ],
     Modifiers: [
       [:Modifier, :Modifiers],
@@ -178,7 +169,8 @@ GRAMMAR = {
       [:Native]
     ],
     VariableDeclarator: [
-      [:Identifier, :Equals, :Expression]
+      [:Identifier, :Equals, :Expression],
+      [:Identifier, :OpenStaple, :CloseStaple, :Equals, :Expression]
     ],
     ImportDeclarations: [
       [:ImportDeclaration, :ImportDeclarations],
@@ -276,8 +268,8 @@ GRAMMAR = {
 
   non_terminals: [:CompilationUnit, :QualifiedIdentifier, :Literal, :Expression, :Type, :ConstantExpression,
                   :SubExpression, :MoreTerms, :Infixop, :Term, :Selectors, :Primary, :Assignment,
-                  :IdentifierSuffix, :TermModifier, :Selector, :BasicType, :Arguments, :Expressions, :MoreExpressions,
-                  :Creator, :ArrayCreator, :UnmodifiedTerm,
+                  :TermModifier, :Selector, :BasicType, :Arguments, :Expressions, :MoreExpressions,
+                  :Creator, :ArrayCreator,
                   :Block, :BlockStatement, :BlockStatements, :LocalVariableDeclarationStatement, :Statement,
                   :ForInit, :ForUpdate, :Modifiers, :Modifier, :VariableDeclarator,
                   :ImportDeclarations, :ImportDeclaration,
@@ -286,7 +278,7 @@ GRAMMAR = {
 
                   :MethodDeclaratorRest, :InterfaceMemberDeclRest, :QualifiedImportIdentifier,
                   :ConstructorDeclaratorRest, :FormalParameters, :FormalParameter,
-                  :FormalParameterList, :MethodBody, :ArrayType, :AugmentedCompilationUnit],
+                  :FormalParameterList, :MethodBody, :AugmentedCompilationUnit],
 
   start_symbol: :AugmentedCompilationUnit
 }
