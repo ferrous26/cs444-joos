@@ -15,9 +15,9 @@ class Joos::Entity::Interface < Joos::Entity
   include Modifiable
 
   ##
-  # The superclass of the receiver.
+  # The superinterfaces of the receiver.
   #
-  # @return [Array<Joos::Entity::Interface>]
+  # @return [Array<Interface>]
   attr_reader :superinterfaces
   alias_method :implements, :superinterfaces
   alias_method :extends, :superinterfaces
@@ -57,14 +57,6 @@ class Joos::Entity::Interface < Joos::Entity
   def link_declarations
     super
     # @todo methods.each(&:link_declarations)
-  end
-
-  def check_superclass_circularity target = self
-    if superclass.equal? target
-      raise TypeCircularity.new(self)
-    else
-      superclass.check_superclass_circularity target
-    end
   end
 
 
