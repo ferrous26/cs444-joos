@@ -51,12 +51,9 @@ class Joos::Package
   # qualified path, if part of the package path is missing it will be
   # created on demand.
   #
-  # Whether you want another {Package} or a {Joos::Entity::CompilationUnit}
-  # at the end is up to you to handle, though if some non-last component of
-  # the path is not a {Package} then an exception will be raised.
-  #
-  # Passing `nil` as the argument here indicates that you want the
-  # "unnamed" package.
+  # If some non-last component of the path is not a {Package} then an
+  # exception will be raised. Passing `nil` as the argument here
+  # indicates that you want the "unnamed" package.
   #
   # @raise [BadPath]
   # @param qualified_id [Joos::AST::QualifiedIdentifier, nil]
@@ -76,32 +73,41 @@ class Joos::Package
   # Perform a path lookup through the package hierarchy using a fully
   # qualified path.
   #
-  # Whether you want another {Package} or a {Joos::Entity::CompilationUnit}
-  # at the end is up to you to handle, though if some non-last component of
-  # the path is not a {Package} then an exception will be raised. If a part
-  # of the path does not exist then an exception will be raised.
+  # If some non-last component of the path is not a {Package} then `nil`
+  # will be returned. Passing `nil` as the argument here
+  # indicates that you want the anonymous "unnamed" package.
   #
-  # Passing `nil` as the argument here indicates that you want the
-  # anonymous "unnamed" package.
-  #
-  # @raise [BadPath]
   # @param qualified_id [Joos::AST::QualifiedImportIdentifier, nil]
   # @return [Package, Joos::Entity::CompilationUnit, nil]
-  def self.lookup qualified_id
+  def self.find qualified_id
     qid = qualified_id.to_a || [nil]
     # lookup _and_ check the all but the last id
     qid[0..-2].reduce(ROOT) do |package, id|
-      member = package.lookup id
+      member = package.find id
       if member.is_a? Joos::Package
         member
       elsif member.nil?
-        raise DoesNotExist.new(qualified_id, id)
+        return
       else
         raise BadPath.new(qualified_id, id)
       end
     # only lookup the last id, let caller deal with result
-    end.lookup qid.last
+    end.find qid.last
   end
+
+  ##
+  # Same contract as {.find} except that an exception is raised if the
+  # package cannot be found.
+  #
+  # @raise [BadPath]
+  # @param qualified_id [Joos::AST::QualifiedImportIdentifier, nil]
+  # @return [Package, Joos::Entity::CompilationUnit]
+  def self.get qualified_id
+    p = find qualified_id
+    raise DoesNotExist.new(qualified_id) unless p
+    p
+  end
+
 
   ##
   # The name of the entity
@@ -134,7 +140,7 @@ class Joos::Package
   end
 
   ##
-  # This is different from {#lookup} in that this method guarantees to
+  # This is different from {#find} in that this method guarantees to
   # return a {Package} or {Joos::Entity::CompilationUnit}.
   #
   # If the key does not exist in the package, then a new subpackage will
@@ -155,7 +161,7 @@ class Joos::Package
   #
   # @param id [Joos::Token::Identifier] this __must__ be a single identifier
   # @return [Joos::Package, Joos::Entity::CompilationUnit]
-  def lookup id
+  def find id
     @members[id.to_s]
   end
 

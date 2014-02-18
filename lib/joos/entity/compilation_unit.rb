@@ -144,6 +144,34 @@ module Joos::Entity::CompilationUnit
     @package.fully_qualified_name << @name.to_s
   end
 
+  ##
+  # Try to find the type associated with the given identifier.
+  #
+  # If no type is found then no type _can_ be found, and `nil`
+  # is returned.
+  #
+  # @param qid [AST::QualifiedIdentifier]
+  # @return [Joos::Entity::CompilationUnit, nil]
+  def find_type qid
+    if qid.simple?
+      find_simple_type qid.simple
+    else
+      Joos::Package.find qid
+    end
+  end
+
+  ##
+  # Same contract as {#find_type} except an exception is raised if no
+  # type can be found.
+  #
+  # @param qid [AST::QualifiedIdentifier]
+  # @return [Joos::Entity::CompilationUnit]
+  def get_type qid
+    unit = find_type qid
+    raise TypeNotFound.new(self, qid) unless unit
+    unit
+  end
+
   def validate
     super
     ensure_unit_name_matches_file_name
@@ -184,7 +212,7 @@ module Joos::Entity::CompilationUnit
   end
 
   def link_identifiers
-    # link them to their declarations
+    # nop
   end
 
 
@@ -202,11 +230,11 @@ module Joos::Entity::CompilationUnit
   ##
   # The one and only automatic import, as listed in JLS 7.5.3
   def default_package
-    Joos::Package.lookup(['java', 'lang'])
+    Joos::Package.get ['java', 'lang']
   end
 
   def import_package qid
-    package = Joos::Package.lookup(qid.nodes[0..-2])
+    package = Joos::Package.get(qid.nodes[0..-2])
     if package.is_a? Joos::Package
       @imported_packages << package
     else
@@ -226,7 +254,7 @@ module Joos::Entity::CompilationUnit
   # Note that an import statement cannot import a subpackage, only a type.
   def import_single qid
 
-    unit = Joos::Package.lookup(qid)
+    unit = Joos::Package.get(qid)
     if unit.kind_of? Joos::Entity::CompilationUnit
       if unit == self
         return # we can ignore the import, no point in importing yourself
@@ -256,7 +284,7 @@ module Joos::Entity::CompilationUnit
   def find_simple_type id
     unit = (self if id == name)                              ||
            (@imported_types.find { |type| type.name == id }) ||
-           @package.lookup(id)
+           @package.find(id)
     return unit if unit
 
     units = @imported_packages.map { |package| package.lookup(id) }.compact
@@ -264,20 +292,9 @@ module Joos::Entity::CompilationUnit
     units.first
   end
 
-  # @param qid [AST::QualifiedIdentifier]
-  def find_type qid
-    unit = if qid.simple?
-             find_simple_type qid.simple
-           else
-             Joos::Package.lookup qid
-           end
-    raise TypeNotFound.new(self, qid) unless unit
-    unit
-  end
-
   def link_superinterfaces
     @superinterfaces = @superinterfaces.map do |qid|
-      find_type(qid).tap do |interface|
+      get_type(qid).tap do |interface|
         unless interface.is_a? Joos::Entity::Interface
           raise NonInterfaceSuperInterface.new(self, qid)
         end
@@ -302,7 +319,7 @@ module Joos::Entity::CompilationUnit
       superinterfaces.map(&:inspect).join(', ')
     else # it is a compilation unit
       superinterfaces.map { |unit|
-        unit.fully_qualified_name.cyan
+        unit.fully_qualified_name.cyan_join
       }.join(', ')
     end
   end

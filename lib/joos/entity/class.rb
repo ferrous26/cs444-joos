@@ -223,7 +223,7 @@ class Joos::Entity::Class < Joos::Entity
 
   def link_superclass
     return unless superclass
-    @superclass = find_type superclass
+    @superclass = get_type superclass
     unless @superclass.is_a? Joos::Entity::Class
       raise NonClassSuperclass.new(self)
     end
@@ -245,7 +245,7 @@ class Joos::Entity::Class < Joos::Entity
   end
 
   def check_superclass_is_not_final
-    raise ExtendingFinalClass.new(self) if superclass.final?
+    raise ExtendingFinalClass.new(self) if superclass && superclass.final?
   end
 
 
