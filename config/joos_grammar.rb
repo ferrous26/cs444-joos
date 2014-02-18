@@ -45,7 +45,6 @@ GRAMMAR = {
     ],
     SubExpression: [
       [:Term, :MoreTerms],
-      [:Term, :Instanceof, :Type]
     ],
     MoreTerms: [
       [:Infixop, :Term, :MoreTerms],
