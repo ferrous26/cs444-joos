@@ -86,22 +86,16 @@ class Joos::Compiler
 
   rescue Joos::CompilerException => exception
     @result = ERROR
-    print_exception exception
+    $stderr.puts exception.message
+    $stderr.puts exception.backtrace if $DEBUG
 
   rescue Exception => exception
     @result = FATAL
-    print_exception exception
+    $stderr.puts exception.inspect
   end
 
 
   private
-
-  def print_exception exception
-    $stderr.puts exception.message
-    if $DEBUG || !exception.kind_of?(Joos::CompilerException)
-      $stderr.puts exception.backtrace
-    end
-  end
 
   ##
   # Returns an exception if scanning or parsing failed, otherwise returns
