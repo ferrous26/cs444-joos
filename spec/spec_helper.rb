@@ -19,13 +19,10 @@ gem 'rspec'
 require 'rspec'
 require 'joos'
 
-def make_modifiers *mods
-  modifiers = Joos::CST::Modifiers.new([])
-  mods.each do |mod|
-    modifier  = Joos::CST::Modifier.new([mod])
-    modifiers = Joos::CST::Modifiers.new([modifier, modifiers])
-  end
-  modifiers
+##
+# look into the A1 tests and return the AST for the given file
+# @return [Joos::AST]
+def get_ast name
+  job = "test/a1/#{name}.java"
+  Joos::Parser.new(Joos::Scanner.scan_file job).parse
 end
-
-alias :make_mods :make_modifiers

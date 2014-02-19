@@ -1,0 +1,3 @@
+class Je_nomodifiers {
+}
+

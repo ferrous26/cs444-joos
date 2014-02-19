@@ -156,11 +156,8 @@ class Joos::Entity::Class < Joos::Entity
   end
 
 
-  private
 
-  def ensure_at_least_one_constructor
-    raise NoConstructorError.new(self) if constructors.empty?
-  end
+  private
 
   # @private
   OBJECT = ['java', 'lang', 'Object']
