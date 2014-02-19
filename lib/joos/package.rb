@@ -55,7 +55,8 @@ class Joos::Package
   # @param qualified_id [Joos::AST::QualifiedIdentifier, nil]
   # @return [Package, Joos::Entity::CompilationUnit]
   def self.declare qualified_id
-    Array(qualified_id).reduce(ROOT) do |package, id|
+    qid = qualified_id.blank? ? [nil] : Array(qualified_id)
+    qid.reduce(ROOT) do |package, id|
       package.declare(id).tap do |member|
         raise BadPath.new(qualified_id, id) unless member.is_a? Joos::Package
       end
@@ -168,7 +169,7 @@ class Joos::Package
       (members.map { |_, m|
          inner = tab + 1
          if m.kind_of? Joos::Entity::CompilationUnit
-           "#{taby inner}#{m.unit_type} #{m.name.value.cyan}"
+           "#{taby inner}#{m.unit_type} #{m.name.cyan}"
          else
            m.inspect inner
          end
@@ -200,14 +201,12 @@ class Joos::Package
   ##
   # A hack so that children build their FQDN in a nice clean
   # manner without the need for branching.
-  def ROOT.fully_qualified_name
-    []
-  end
+  ROOT.define_singleton_method(:fully_qualified_name) { [] }
 
   ##
   # A special case of the way we want to inspect, so let's use
   # instance specialization to do it without weird branching!
-  def ROOT.inspect tab = 0
+  ROOT.define_singleton_method(:inspect) do |tab = 0|
     @members.map { |_, m| m.inspect tab }.join("\n")
   end
 

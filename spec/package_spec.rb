@@ -104,4 +104,9 @@ describe Joos::Package do
     expect(p.inspect).to be_kind_of String
   end
 
+  it 'returns the unnamed package when you lookup nil' do
+    p = Joos::Package::ROOT.find nil
+    expect(Joos::Package.find nil).to be == p
+  end
+
 end
