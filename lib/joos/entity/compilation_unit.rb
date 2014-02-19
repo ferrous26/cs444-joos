@@ -9,16 +9,13 @@ require 'joos/exceptions'
 # {Joos::Entity} interface.
 module Joos::Entity::CompilationUnit
 
-  class Exception < Joos::CompilerException
-  end
-
   # @!group Exceptions
 
   ##
   # Error raised when the name of the class/interface does not match the
   # name of the file.
   #
-  class NameDoesNotMatchFileError < Exception
+  class NameDoesNotMatchFileError < Joos::CompilerException
     # @param unit [CompilationUnit]
     def initialize unit
       super "#{unit.name.cyan} does not match file name #{unit.name.file.red}"
@@ -29,7 +26,7 @@ module Joos::Entity::CompilationUnit
   # Exception raised when a unit tries to import a single type that names
   # a package instead of a compilation unit.
   #
-  class ImportSinglePackage < Exception
+  class ImportSinglePackage < Joos::CompilerException
     # @param qid  [Joos::AST::ImportQualifiedIdentifier]
     # @param unit [Joos::Entity::CompilationUnit]
     def initialize qid, unit
@@ -38,14 +35,14 @@ module Joos::Entity::CompilationUnit
     end
   end
 
-  class DuplicateImport < Exception
+  class DuplicateImport < Joos::CompilerException
     def initialize unit, qid
       name = unit.name.cyan
       super "#{name} imports two different #{qid.simple.cyan} definitions"
     end
   end
 
-  class ImportNameClash < Exception
+  class ImportNameClash < Joos::CompilerException
     def initialize unit, qid
       name = unit.name.cyan
       super "#{name} imports another type named #{qid.simple.cyan}"
@@ -55,7 +52,7 @@ module Joos::Entity::CompilationUnit
   ##
   # Exception raised when an interface has a circular extension.
   #
-  class InterfaceCircularity < Exception
+  class InterfaceCircularity < Joos::CompilerException
     # @param interface [Joos::Entity::CompilationUnit]
     def initialize unit
       name = "#{unit.unit_type} #{unit.name.cyan}"
@@ -66,7 +63,7 @@ module Joos::Entity::CompilationUnit
   ##
   # Exception raised when a unit claims a class or package as a superinterface.
   #
-  class NonInterfaceSuperInterface < Exception
+  class NonInterfaceSuperInterface < Joos::CompilerException
     # @todo should pass the found unit so we can give more details on what we
     #       actually resolved
     def initialize unit, qid
@@ -80,7 +77,7 @@ module Joos::Entity::CompilationUnit
   # Exception raised when an interface tries to extend something that cannot
   # be found.
   #
-  class InterfaceNotFound < Exception
+  class InterfaceNotFound < Joos::CompilerException
     def initialize unit, qid
       name = "#{unit.unit_type} #{unit.name.cyan}"
       qid  = qid.inspect
@@ -88,7 +85,7 @@ module Joos::Entity::CompilationUnit
     end
   end
 
-  class DuplicateSuperInterface < Exception
+  class DuplicateSuperInterface < Joos::CompilerException
     def initialize unit, name
       unit = "#{unit.unit_type} #{unit.name.cyan}"
       super "#{unit} claims superinterface #{qid.inspect} twice"
@@ -98,7 +95,7 @@ module Joos::Entity::CompilationUnit
   ##
   # Exception raised when a simple identifier has an ambiguous type resolution
   #
-  class AmbiguousType < Exception
+  class AmbiguousType < Joos::CompilerException
     def initialize unit, dupes
       simple   = dupes.first.name.cyan
       fq_names = dupes.map { |d|
