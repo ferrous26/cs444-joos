@@ -1,4 +1,5 @@
 require 'joos/token'
+require 'joos/exceptions'
 
 # Extensions to the Token class
 class Joos::Token
@@ -93,7 +94,7 @@ class Joos::Token
     ##
     # Exception raised when the `instanceof` operator is given a non-reference
     # type for the right hand operand.
-    class InvalidReferenceType < Exception
+    class InvalidReferenceType < Joos::CompilerException
       def initialize op
         l = op.source
         super "#{l} | instanceof expects a reference type as the right operand"

@@ -1,4 +1,5 @@
 require 'joos/ast'
+require 'joos/exceptions'
 
 ##
 # Extensions to the basic node to support validation.
@@ -7,7 +8,7 @@ class Joos::AST::ForInit
   ##
   # Exception raised when a for loop update contains a
   # non assignment expression.
-  class InvalidForInit < Exception
+  class InvalidForInit < Joos::CompilerException
     # @todo Report file and line information
     def initialize node
       super 'for-loop initializer must initialize a variable'

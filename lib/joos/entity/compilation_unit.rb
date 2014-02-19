@@ -1,6 +1,6 @@
 require 'joos/entity'
 require 'joos/package'
-
+require 'joos/exceptions'
 
 ##
 # Code common to all compilation units (classes and interfaces)
@@ -8,6 +8,9 @@ require 'joos/package'
 # This module can only be mixed into classes that implement the
 # {Joos::Entity} interface.
 module Joos::Entity::CompilationUnit
+
+  class Exception < Joos::CompilerException
+  end
 
   # @!group Exceptions
 

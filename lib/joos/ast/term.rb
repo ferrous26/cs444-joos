@@ -1,4 +1,5 @@
 require 'joos/ast'
+require 'joos/exceptions'
 
 ##
 # Extensions to the basic node to support term rewriting.
@@ -6,7 +7,7 @@ class Joos::AST::Term
 
   ##
   # Exception raised when an illegal cast is detected.
-  class BadCast < Exception
+  class BadCast < Joos::CompilerException
     # @todo Report file and line information
     def initialize node
       super 'Type casts must be basic or reference types only'
@@ -15,7 +16,7 @@ class Joos::AST::Term
 
   ##
   # Exception raised when multi-dimensional array use is detected.
-  class MultiDimensionalArray < Exception
+  class MultiDimensionalArray < Joos::CompilerException
     # @param staple [Joos::Token::CloseStaple]
     def initialize node
       super 'Illegal multi-dimensional array'

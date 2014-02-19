@@ -1,4 +1,6 @@
 require 'joos/colour'
+require 'joos/source'
+require 'joos/exceptions'
 
 ##
 # @abstract
@@ -7,6 +9,7 @@ require 'joos/colour'
 # language.
 #
 class Joos::Token
+  include Joos::SourceInfo
 
   ##
   # A mapping of strings to their corresponding class
@@ -62,6 +65,7 @@ class Joos::Token
   def file
     @file.dup
   end
+  alias_method :file_name, :file
 
   ##
   # The concrete value of the token.
@@ -71,14 +75,6 @@ class Joos::Token
     @token.dup
   end
   alias_method :value, :token
-
-  ##
-  # Source code location of the token formatted as a string
-  #
-  # @return [String]
-  def source
-    "#{file}:#{line}:#{column}"
-  end
 
   ##
   # Find out what type of token the receiver is.
@@ -117,7 +113,7 @@ class Joos::Token
     # Exception that is used for instantiated tokens which have been marked
     # as illegal.
     #
-    class Exception < ::RuntimeError
+    class Exception < Joos::CompilerException
       # @param token [Joos::Token]
       def initialize token
         super <<-EOM
