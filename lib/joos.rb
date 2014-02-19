@@ -17,6 +17,12 @@ class Joos::Compiler
   ERROR = 42
 
   ##
+  # Error code used to indicate an unexpected failure
+  #
+  # @return [Fixnum]
+  FATAL = 1
+
+  ##
   # Success code used for binaries to indicate successful operation
   #
   # @return [Fixnum]
@@ -37,6 +43,14 @@ class Joos::Compiler
   # @return [Fixnum]
   attr_reader :result
 
+  ##
+
+  class NoDeclarationError < Joos::CompilerException
+    def initialize ast
+      super "File has no declarations"
+    end
+  end
+
   # @param files [Array<String>]
   def initialize *files
     @files  = files.flatten
@@ -53,8 +67,8 @@ class Joos::Compiler
       Thread.new do scan_and_parse(file) end
     end
 
-    asts = threads.map(&:value).each do |ast|
-      return if @result == ERROR # bust outta here
+    asts = threads.map(&:value).each do |result|
+      raise result if result.is_a? Exception
     end
 
     compilation_units = asts.map { |ast| build_entities ast }
@@ -68,7 +82,11 @@ class Joos::Compiler
     compilation_units.each(&:check_hierarchy)
     compilation_units.each(&:link_identifiers)
 
+  rescue Joos::CompilerException => exception
+    @result = ERROR
+    print_exception exception if $DEBUG
   rescue Exception => exception
+    @result = FATAL
     print_exception exception
   end
 
@@ -76,10 +94,10 @@ class Joos::Compiler
   private
 
   def print_exception exception
-    @result = ERROR
     $stderr.puts exception.message
-    $stderr.puts exception.backtrace if $DEBUG # used internally
+    $stderr.puts exception.backtrace
   end
+
 
   ##
   # Returns an exception if scanning or parsing failed, otherwise returns
@@ -92,7 +110,7 @@ class Joos::Compiler
     $stderr.safe_puts ast.inspect if $DEBUG
     ast.visit { |parent, node| node.validate(parent) } # weeder checks
   rescue Exception => exception
-    print_exception exception
+    exception
   end
 
   def build_entities ast
@@ -102,8 +120,7 @@ class Joos::Compiler
     elsif type.InterfaceDeclaration
       Joos::Entity::Interface.new ast
     else
-      # @todo maybe we shoud raise an exception?
-      $stderr.puts 'ZOMG, you tried to compile a file that declares nothing!'
+      raise NoDeclarationError ast
     end
   end
 
