@@ -1,5 +1,6 @@
 require 'joos/token'
 require 'joos/ast'
+require 'joos/exceptions'
 
 ##
 # @todo Documentation
@@ -88,7 +89,7 @@ class Joos::Parser
     all_symbols += @transitions[current_state].keys
     all_symbols.uniq!
 
-    raise "Expected one of #{all_symbols.inspect}, but got #{token.inspect}"
+    raise Joos::CompilerException, "Expected one of #{all_symbols.inspect}, but got #{token.inspect}"
   end
 
 end

@@ -1,4 +1,5 @@
 require 'joos/ast'
+require 'joos/exceptions'
 
 ##
 # Extensions to the basic node to support validation.
@@ -7,7 +8,7 @@ class Joos::AST::ForUpdate
   ##
   # Exception raised when a for loop update contains a
   # non assignment expression.
-  class InvalidForUpdate < Exception
+  class InvalidForUpdate < Joos::CompilerException
     # @todo Report file and line information
     def initialize
       super 'for-loop updates must be full expressions'

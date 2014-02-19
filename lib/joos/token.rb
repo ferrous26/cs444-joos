@@ -113,7 +113,7 @@ class Joos::Token
     # Exception that is used for instantiated tokens which have been marked
     # as illegal.
     #
-    class Exception < ::RuntimeError
+    class Exception < Joos::CompilerException
       # @param token [Joos::Token]
       def initialize token
         super <<-EOM

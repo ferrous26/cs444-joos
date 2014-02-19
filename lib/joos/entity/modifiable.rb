@@ -1,9 +1,13 @@
 require 'joos/entity'
+require 'joos/exceptions'
 
 ##
 # Code common to all entities which can have modifiers.
 #
 module Joos::Entity::Modifiable
+
+  class Exception < Joos::CompilerException
+  end
 
   ##
   # Exception raised when an entity is declared with duplicated modifiers

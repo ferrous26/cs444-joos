@@ -1,6 +1,7 @@
 require 'joos/entity'
 require 'joos/entity/compilation_unit'
 require 'joos/entity/modifiable'
+require 'joos/exceptions'
 
 ##
 # Entity representing the definition of a class.
@@ -10,6 +11,9 @@ require 'joos/entity/modifiable'
 class Joos::Entity::Class < Joos::Entity
   include CompilationUnit
   include Modifiable
+
+  class Exception < Joos::CompilerException
+  end
 
   # @!group Exceptions
 
