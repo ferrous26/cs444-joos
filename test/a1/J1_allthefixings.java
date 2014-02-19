@@ -3,10 +3,10 @@ package Foo;
 import java.util.*;
 
 public abstract class J1_allthefixings extends all implements the.fixings, andMore {
-  J1_allthefixings(int num) {
+  public J1_allthefixings(int num) {
   }
 
-  final void fixings(int lint) {
+  public final void fixings(int lint) {
     return 1 + lint;
   }
 
