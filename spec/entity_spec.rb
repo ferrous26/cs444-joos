@@ -7,11 +7,9 @@ require 'joos/entity'
 describe Joos::Entity do
 
   it 'defines an entity class for each type of entity' do
-    klasses = Joos::Entity.constants.select { |x| x.is_a? Class }
-    klasses.map! { |klass| klass.to_s.split('::').last }
+    klasses = Joos::Entity.constants.map(&:to_s)
 
     [
-     'Package',
      'Class',
      'Interface',
      'Field',
@@ -21,7 +19,7 @@ describe Joos::Entity do
      'LocalVariable',
      'Constructor'
     ].each do |type|
-      expect(klasses).to include
+      expect(klasses).to include type
     end
   end
 
@@ -30,18 +28,27 @@ describe Joos::Entity do
     expect(e.name).to be == 'hi'
   end
 
-  it 'provides nice trace info via #to_s' do
-    token  = Joos::Token::Identifier.new('canopy', 'roof.java', 1, 3)
-    entity = Joos::Entity.new(token)
-    expect(entity.to_s).to be == 'Entity:canopy @ roof.java:1'
+  it 'provides a landing pad for #validate' do
+    e = Joos::Entity.new 'hi'
+    expect(e.validate).to be_nil
   end
 
-  context '#validate' do
-    it 'always passes for an abstract entity due to no constraints' do
-      expect {
-        Joos::Entity.new('hi').validate
-      }.to_not raise_error
-    end
+  it 'provides basic trace info via #to_s' do
+    token  = Joos::Token::Identifier.new('canopy', 'roof.java', 1, 3)
+    entity = Joos::Entity.new(token)
+    str    = "Entity:#{'canopy'.cyan} from #{'roof.java:1:3'.red}"
+    expect(entity.to_s).to be == str
+  end
+
+  it 'provides a landing pad for #to_sym' do
+    e = Joos::Entity.new 'hi'
+    expect(e.to_sym).to be == :Entity
+  end
+
+  it 'provides a default impl of #inspect' do
+    token = Joos::Token::Identifier.new('canopy', 'roof.java', 1, 3)
+    e = Joos::Entity.new token
+    expect(e.inspect 1).to match(/^  Entity:/)
   end
 
 end

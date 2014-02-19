@@ -9,9 +9,10 @@ require 'joos/freedom_patches'
 class Joos::Entity
 
   ##
-  # The canonical name of the entity
+  # The simple name of the entity, get the fully qualified name with
+  # {#fully_qualified_name}.
   #
-  # @return [Joos::Token::Identifier, Joos::AST::QualifiedIdentifier]
+  # @return [Joos::Token::Identifier]
   attr_reader :name
 
   # @param name [Joos::Token::Identifier, Joos::AST::QualifiedIdentifier]
@@ -24,15 +25,14 @@ class Joos::Entity
   # language specification.
   #
   # An error will be raised if the entity is not valid.
-  #
-  # @return [Void]
   def validate
+    # nop
   end
 
   ##
   # A simple string identifier for the entity's type and source location.
   def to_s
-    "#{to_sym}:#{name.inspect}"
+    "#{to_sym}:#{name.to_s.cyan} from #{name.source.red}"
   end
 
   def to_sym
