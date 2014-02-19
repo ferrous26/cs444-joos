@@ -11,6 +11,14 @@ require 'joos/entity'
 class Joos::Compiler
 
   ##
+  # Exception raised when trying to compile an empty file
+  class NoDeclarationError < Joos::CompilerException
+    def initialize ast
+      super 'File has no declarations'
+    end
+  end
+
+  ##
   # Error code used for binaries to indicate a general failure
   #
   # @return [Fixnum]
@@ -43,14 +51,6 @@ class Joos::Compiler
   # @return [Fixnum]
   attr_reader :result
 
-  ##
-
-  class NoDeclarationError < Joos::CompilerException
-    def initialize ast
-      super "File has no declarations"
-    end
-  end
-
   # @param files [Array<String>]
   def initialize *files
     @files  = files.flatten
@@ -68,13 +68,12 @@ class Joos::Compiler
     end
 
     asts = threads.map(&:value).each do |result|
-      raise result if result.is_a? Exception
+      raise result if result.kind_of? Exception
     end
 
     compilation_units = asts.map { |ast| build_entities ast }
-    compilation_units.each { |unit| $stderr.puts unit.inspect } if $DEBUG
-
     compilation_units.each(&:validate)
+    compilation_units.each { |unit| $stderr.puts unit.inspect } if $DEBUG
 
     # Assignment 2
     compilation_units.each(&:link_imports)
@@ -82,9 +81,13 @@ class Joos::Compiler
     compilation_units.each(&:check_hierarchy)
     compilation_units.each(&:link_identifiers)
 
+    # Assignment 3
+    # compilation_units.each(&:resolve_types)
+
   rescue Joos::CompilerException => exception
     @result = ERROR
-    print_exception exception if $DEBUG
+    print_exception exception
+
   rescue Exception => exception
     @result = FATAL
     print_exception exception
@@ -95,9 +98,10 @@ class Joos::Compiler
 
   def print_exception exception
     $stderr.puts exception.message
-    $stderr.puts exception.backtrace
+    if $DEBUG || !exception.kind_of?(Joos::CompilerException)
+      $stderr.puts exception.backtrace
+    end
   end
-
 
   ##
   # Returns an exception if scanning or parsing failed, otherwise returns
@@ -109,8 +113,6 @@ class Joos::Compiler
     ast = Joos::Parser.new(Joos::Scanner.scan_file job).parse
     $stderr.safe_puts ast.inspect if $DEBUG
     ast.visit { |parent, node| node.validate(parent) } # weeder checks
-  rescue Exception => exception
-    exception
   end
 
   def build_entities ast
@@ -120,7 +122,7 @@ class Joos::Compiler
     elsif type.InterfaceDeclaration
       Joos::Entity::Interface.new ast
     else
-      raise NoDeclarationError ast
+      raise NoDeclarationError.new ast
     end
   end
 
