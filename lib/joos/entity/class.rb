@@ -12,14 +12,12 @@ class Joos::Entity::Class < Joos::Entity
   include CompilationUnit
   include Modifiable
 
-  class Exception < Joos::CompilerException
-  end
 
   # @!group Exceptions
 
   ##
   # Exception raised when a class has no explicit constructors
-  class NoConstructorError < Exception
+  class NoConstructorError < Joos::CompilerException
     # @param klass [Joos::Entity::Class]
     def initialize klass
       super "#{klass} must include at least one explicit constructor"
@@ -29,7 +27,7 @@ class Joos::Entity::Class < Joos::Entity
   ##
   # Exception raised when a class claims a package/interface as its superclass
   #
-  class NonClassSuperClass < Exception
+  class NonClassSuperClass < Joos::CompilerException
     # @todo should pass the found unit so we can give more details on what we
     #       actually resolved
     def initialize klass
@@ -39,21 +37,21 @@ class Joos::Entity::Class < Joos::Entity
     end
   end
 
-  class DuplicateFieldName < Exception
+  class DuplicateFieldName < Joos::CompilerException
     # @todo better message
     def initialize field, dupe
       super "#{field.name.source.red}: #{field.inspect} and #{dupe.name.source.red}: #{dupe.inspect}"
     end
   end
 
-  class AbstractMethodNonAbsractClass < Exception
+  class AbstractMethodNonAbsractClass < Joos::CompilerException
     def initialize klass
       name = klass.name.cyan
       super "#{name} has abstract methods but is not abstract itself"
     end
   end
 
-  class ExtendingFinalClass < Exception
+  class ExtendingFinalClass < Joos::CompilerException
     def initialize klass
       name = klass.name.cyan
       super_name = klass.superclass.fully_qualified_name.cyan_join
