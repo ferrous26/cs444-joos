@@ -1,6 +1,7 @@
 package Foo;
 
 import java.util.*;
+import java.util.Arrays;
 
 public abstract class J1_allthefixings extends all implements the.fixings, andMore {
   public J1_allthefixings(int num) {

@@ -144,6 +144,14 @@ module Joos::Entity::CompilationUnit
     @package.fully_qualified_name << @name.to_s
   end
 
+  def validate
+    super
+    ensure_unit_name_matches_file_name
+  end
+
+
+  # @!group Assignment 2
+
   ##
   # Try to find the type associated with the given identifier.
   #
@@ -153,11 +161,7 @@ module Joos::Entity::CompilationUnit
   # @param qid [AST::QualifiedIdentifier]
   # @return [Joos::Entity::CompilationUnit, nil]
   def find_type qid
-    if qid.simple?
-      find_simple_type qid.simple
-    else
-      Joos::Package.find qid
-    end
+    qid.simple? ? find_simple_type(qid.simple) : Joos::Package.find(qid)
   end
 
   ##
@@ -170,11 +174,6 @@ module Joos::Entity::CompilationUnit
     unit = find_type qid
     raise TypeNotFound.new(self, qid) unless unit
     unit
-  end
-
-  def validate
-    super
-    ensure_unit_name_matches_file_name
   end
 
   def link_imports
@@ -215,6 +214,8 @@ module Joos::Entity::CompilationUnit
     # nop
   end
 
+  # @!endgroup
+
 
   private
 
@@ -224,7 +225,7 @@ module Joos::Entity::CompilationUnit
   #
   def ensure_unit_name_matches_file_name
     file_name = File.basename(name.file, '.java')
-    raise NameDoesNotMatchFileError.new(self) unless file_name == name.value
+    raise NameDoesNotMatchFileError.new(self) unless file_name == name.to_s
   end
 
   ##
