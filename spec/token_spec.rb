@@ -87,8 +87,8 @@ describe Joos::Token do
 
   it 'responds to #inspect with something human readable for exceptions' do
     token = Joos::Token::Identifier.new('hello', 'there.c', 3, 21)
-    str   = "Identifier:#{Joos::Colour.cyan 'hello'} from " <<
-      "#{Joos::Colour.red 'there.c:3:21'}"
+    str   = "Identifier:#{'hello'.cyan} from " <<
+      "#{'there.c:3:21'.red}"
     expect(token.inspect).to be == str
   end
 
