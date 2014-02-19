@@ -78,6 +78,14 @@ class Joos::AST
   end
 
   ##
+  # Optimized version of `Enumerable#to_a`
+  #
+  # @return [Array<Joos::AST, Joos::Token>]
+  def to_a
+    @nodes
+  end
+
+  ##
   # Generic validation for the AST node.
   #
   # This is used by the weeder to ask the receiver to make sure that
