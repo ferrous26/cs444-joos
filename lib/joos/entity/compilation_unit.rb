@@ -53,10 +53,13 @@ module Joos::Entity::CompilationUnit
   # Exception raised when an interface has a circular extension.
   #
   class InterfaceCircularity < Joos::CompilerException
-    # @param interface [Joos::Entity::CompilationUnit]
-    def initialize unit
-      name = "#{unit.unit_type} #{unit.name.cyan}"
-      super "#{name} is circularly claiming itself as a superinterface"
+    # @param chain [Array<Joos::Entity::Interface>]
+    # @param interface [Joos::Entity::Interface]
+    def initialize chain, interface
+      chain = (chain + [interface]).map { |unit|
+        unit.fully_qualified_name.cyan_join
+      }.join(' -> '.red)
+      super "Superinterface circularity detected by cycle: #{chain}"
     end
   end
 
@@ -86,15 +89,16 @@ module Joos::Entity::CompilationUnit
   end
 
   class DuplicateSuperInterface < Joos::CompilerException
-    def initialize unit, name
+    # @param unit [CompilationUnit]
+    # @param other_super [Joos::Entity::Interface]
+    def initialize unit, other_super
       unit = "#{unit.unit_type} #{unit.name.cyan}"
-      super "#{unit} claims superinterface #{qid.inspect} twice"
+      super "#{unit} claims superinterface #{other_super.name.cyan} twice"
     end
   end
 
   ##
   # Exception raised when a simple identifier has an ambiguous type resolution
-  #
   class AmbiguousType < Joos::CompilerException
     def initialize unit, dupes
       simple   = dupes.first.name.cyan
@@ -103,6 +107,15 @@ module Joos::Entity::CompilationUnit
       }.inspect
       source   = unit.name.file.red
       super "#{simple} is ambiguous betwen #{fq_names} in #{source}"
+    end
+  end
+
+  ##
+  # Exception raised a type cannot be found for a given identifier.
+  class TypeNotFound < Joos::CompilerException
+    def initialize unit, qid
+      unit = "#{unit.unit_type} #{unit.name.cyan}"
+      super "No definition of #{qid.inspect} is observable from #{unit}"
     end
   end
 
@@ -196,12 +209,13 @@ module Joos::Entity::CompilationUnit
     link_superinterfaces
   end
 
-  def check_interface_circularity target = self
-    if superinterfaces.find { |i| i.equal? target }
-      raise InterfaceCircularity.new(self)
-    else
-      superinterfaces.each do |unit|
-        unit.check_interface_circularity target
+  def check_interface_circularity chain = []
+    chain = chain.dup << self
+    superinterfaces.each do |interface|
+      if chain.include? interface
+        raise InterfaceCircularity.new(chain, interface)
+      else
+        interface.check_interface_circularity chain
       end
     end
   end
@@ -305,7 +319,7 @@ module Joos::Entity::CompilationUnit
     # detect duplicate extends clauses (not allowed!)
     @superinterfaces.each do |unit|
       if @superinterfaces.select { |x| unit.equal? x }.size > 1
-        raise DuplicateSuperInterface.new(self, unit.name)
+        raise DuplicateSuperInterface.new(self, unit)
       end
     end
   end

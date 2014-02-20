@@ -27,7 +27,7 @@ class Joos::Entity::Class < Joos::Entity
   ##
   # Exception raised when a class claims a package/interface as its superclass
   #
-  class NonClassSuperClass < Joos::CompilerException
+  class NonClassSuperclass < Joos::CompilerException
     # @todo should pass the found unit so we can give more details on what we
     #       actually resolved
     def initialize klass
@@ -63,10 +63,13 @@ class Joos::Entity::Class < Joos::Entity
   # Exception raised when an class has a circular superclass hierarchy.
   #
   class ClassCircularity < Joos::CompilerException
-    # @param interface [Joos::Entity::Class]
-    def initialize klass
-      name = klass.name.cyan
-      super "class #{name} is circularly claiming itself as a superclass"
+    # @param chain  [Array<Joos::Entity::Class>]
+    # @param superk [Joos::Entity::Class]
+    def initialize chain, superk
+      chain = (chain + [superk]).map { |unit|
+        unit.fully_qualified_name.cyan_join
+      }.join(' -> '.red)
+      super "Superclass circularity detected by cycle: #{chain}"
     end
   end
 
@@ -150,11 +153,12 @@ class Joos::Entity::Class < Joos::Entity
     # @todo constructors.each(&:link_declarations)
   end
 
-  def check_superclass_circularity target = self
-    if superclass.equal? target
-      raise ClassCircularity.new(self)
+  def check_superclass_circularity chain = []
+    chain << self
+    if chain.include? superclass
+      raise ClassCircularity.new(chain, superclass)
     elsif superclass
-      superclass.check_superclass_circularity target
+      superclass.check_superclass_circularity chain
     end
   end
 

@@ -8,7 +8,7 @@ class Joos::Package
   ##
   # Error raised when a package path component does not name a package
   # but instead names a {Joos::Entity::CompilationUnit} (e.g. a class).
-  class BadPath < Exception
+  class BadPath < Joos::CompilerException
     # @param qualified_id [Joos::AST::QualifiedIdentifier]
     # @param bad_id       [Joos::Token::Identifier]
     def initialize qualified_id, bad_id
@@ -20,7 +20,7 @@ class Joos::Package
 
   ##
   # Error raised when looking up a package which does not exist.
-  class DoesNotExist < Exception
+  class DoesNotExist < Joos::CompilerException
     # @param qid [Joos::AST::QualifiedIdentifier]
     def initialize qid
       super "No package or type specified by #{qid.inspect}"
@@ -30,7 +30,7 @@ class Joos::Package
   ##
   # Exception raised when a declaration is made using a name that is
   # already in use.
-  class NameClash < Exception
+  class NameClash < Joos::CompilerException
     # @param package [Joos::Package]
     # @param unit [Joos::Entity::CompilationUnit]
     def initialize package, unit
@@ -196,7 +196,7 @@ class Joos::Package
   ROOT = new('', nil)
 
   # Add the "unnamed" package to the root package
-  ROOT.declare nil
+  ROOT.declare(nil).define_singleton_method(:fully_qualified_name) { [] }
 
   ##
   # A hack so that children build their FQDN in a nice clean
