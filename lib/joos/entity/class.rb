@@ -59,6 +59,17 @@ class Joos::Entity::Class < Joos::Entity
     end
   end
 
+  ##
+  # Exception raised when an class has a circular superclass hierarchy.
+  #
+  class ClassCircularity < Joos::CompilerException
+    # @param interface [Joos::Entity::Class]
+    def initialize klass
+      name = klass.name.cyan
+      super "class #{name} is circularly claiming itself as a superclass"
+    end
+  end
+
   # @!endgroup
 
 
@@ -141,7 +152,7 @@ class Joos::Entity::Class < Joos::Entity
 
   def check_superclass_circularity target = self
     if superclass.equal? target
-      raise TypeCircularity.new(self)
+      raise ClassCircularity.new(self)
     elsif superclass
       superclass.check_superclass_circularity target
     end
