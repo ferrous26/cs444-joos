@@ -39,13 +39,16 @@ class Joos::Entity::Method < Joos::Entity
   attr_reader :parent
   alias_method :owner, :parent
 
-  # @return [Class, Interface, Joos::AST::BasicType]
+  # @return [Class, Interface, Joos::BasicType]
   attr_reader :type
   alias_method :return_type, :type
 
-  # @todo figure out the type for this sucker
+  # @return [Array<Entity::FormalParameter>]
   attr_reader :parameters
 
+  ##
+  # This should only be `nil` for abstract methods.
+  #
   # @return [Joos::AST::Block, nil]
   attr_reader :body
 
@@ -55,13 +58,9 @@ class Joos::Entity::Method < Joos::Entity
     super node.Identifier, node.Modifiers
     @parent     = parent
     @type       = node.Void || node.Type
-    decl_rest   = node.last # MethodDeclRest, InterfaceMethodDeclRest, etc.
-    @parameters =
-      (decl_rest.FormalParameters.FormalParameterList || []).map do |param|
-        # @todo fix up the Parameter class
-        param.Type.first
-      end
-    set_body decl_rest
+    decl        = node.last # MethodDeclRest, InterfaceMethodDeclRest, etc.
+    @parameters = Array(decl.FormalParameters.FormalParameterList)
+    parse_body decl
   end
 
   def to_sym
@@ -78,23 +77,21 @@ class Joos::Entity::Method < Joos::Entity
 
   private
 
-  def set_body decl_rest
-    @body = decl_rest.MethodBody.Block
+  # Keep this as a separate method because we want to override in a subclass
+  def parse_body decl
+    @body = decl.MethodBody.Block
   end
 
   def ensure_body_presence_if_required
-    no_body = [:Abstract, :Native]
-    if (modifiers & no_body).empty?
-      raise ExpectedBody.new(self) unless body
-    else
+    if abstract? || native?
       raise UnexpectedBody.new(self) if body
+    else
+      raise ExpectedBody.new(self) unless body
     end
   end
 
   def ensure_native_method_is_static
-    if modifiers.include? :Native
-      raise NonStaticNativeMethod.new(self) unless modifiers.include? :Static
-    end
+    raise NonStaticNativeMethod.new(self) if native? && !static?
   end
 
 
@@ -107,7 +104,11 @@ class Joos::Entity::Method < Joos::Entity
 
   # @todo Make this less of a hack
   def inspect_type type
-    ''
+    if type.to_sym == :Void
+      '()'.blue
+    else
+      ''
+    end
   end
 
   # @!endgroup

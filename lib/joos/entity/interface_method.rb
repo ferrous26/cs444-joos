@@ -20,7 +20,7 @@ class Joos::Entity::InterfaceMethod < Joos::Entity::Method
 
   private
 
-  def set_body _
+  def parse_body _
     @body = nil
   end
 

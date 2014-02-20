@@ -1,4 +1,4 @@
-public interface Hi {
+public interface J1_interfaceMethod {
   public int test();
 }
 

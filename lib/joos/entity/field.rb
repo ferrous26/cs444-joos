@@ -74,7 +74,11 @@ class Joos::Entity::Field < Joos::Entity
 
   # @todo Make this less of a hack
   def inspect_type node
-    ''
+    if type.to_sym == :Void
+      '()'.blue
+    else
+      ''
+    end
   end
 
   # @!endgroup
