@@ -6,12 +6,11 @@ require 'joos/exceptions'
 #
 module Joos::Entity::Modifiable
 
-  class Exception < Joos::CompilerException
-  end
+  # @!group Exceptions
 
   ##
   # Exception raised when an entity is declared with duplicated modifiers
-  class DuplicateModifier < Exception
+  class DuplicateModifier < Joos::CompilerException
     # @param entity [Joos::Entity]
     def initialize entity
       super "#{entity} is being declared with duplicate modifiers"
@@ -21,7 +20,7 @@ module Joos::Entity::Modifiable
   ##
   # Exception raised when an entity uses a modifier that it is not allowed
   # to use.
-  class InvalidModifier < Exception
+  class InvalidModifier < Joos::CompilerException
     # @param entity   [Joos::Entity]
     # @param modifier [Joos::Token::Modifier]
     def initialize entity, modifier
@@ -34,7 +33,7 @@ module Joos::Entity::Modifiable
   # Exception raised when 2 modifiers which are mutually exclusive for an
   # entity are applied to the same entity.
   #
-  class MutuallyExclusiveModifiers < Exception
+  class MutuallyExclusiveModifiers < Joos::CompilerException
     # @param entity [Joos::Entity]
     # @param mods [Array(Joos::Token::Modifier, Joos::Token::Modifier)]
     def initialize entity, mods
@@ -47,12 +46,14 @@ module Joos::Entity::Modifiable
   # Exception raised when 0 or 2 visibilty modifiers are used on the same
   # entity.
   #
-  class MissingVisibilityModifier < Exception
+  class MissingVisibilityModifier < Joos::CompilerException
     # @param entity [Joos::Entity]
     def initialize entity
       super "#{entity} must have exactly one visibility modifier (i.e. public)"
     end
   end
+
+  # @!endgroup
 
 
   ##
