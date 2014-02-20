@@ -35,6 +35,7 @@ class Joos::Token
   #
   # @return [Fixnum]
   attr_reader :line
+  alias_method :line_number, :line
 
   ##
   # The column in {#file} where the token originates.

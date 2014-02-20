@@ -1,9 +1,23 @@
 require 'joos/scanner_dfa'
 require 'joos/token'
+require 'joos/exceptions'
 
 ##
 # @todo Documentation
 class Joos::Scanner
+
+  class FileError < Joos::CompilerException
+    attr_reader :file
+    attr_reader :original_exception
+
+    def initialize file, e=nil
+      @file = file
+      @original_exception = e
+
+      reason = e ? e.errno_string : 'reason unknown'
+      super "Could not open '#{file}' - #{reason}"
+    end
+  end
 
   ##
   # Scan the given set of strings as a compilation unit.
@@ -13,9 +27,10 @@ class Joos::Scanner
   # @param path [String]
   # @return [Array<Joos::Token>]
   def self.scan_file path
-    raise "#{path} is a non-existant file" unless File.exists? path
-
     scan_lines File.readlines(path), path
+  rescue SystemCallError => e
+    # Re-raise as a CompilerException: this is typically a file not found
+    raise FileError.new(path, e)
   rescue Joos::CompilerException => e
     # Add file name to compiler exceptions
     e.file = path
@@ -32,7 +47,7 @@ class Joos::Scanner
     tokens = []
     line_number = start_line_number
 
-    # Tokenize each line separately and it to the array of tokens
+    # Tokenize each line separately and add it to the array of tokens
     lines.each do |line|
       scanner_tokens, state = dfa.tokenize line, state
       dfa.raise_if_illegal_line_end! state
