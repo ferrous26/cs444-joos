@@ -3,7 +3,6 @@ require 'joos/entity/modifiable'
 
 ##
 # Entity representing the definition of an class/interface field.
-#
 class Joos::Entity::Field < Joos::Entity
   include Modifiable
 
@@ -11,7 +10,7 @@ class Joos::Entity::Field < Joos::Entity
   # Exception raised when a field is declared to be final but does not
   # include an expression to be used as the value initializer.
   #
-  class UninitializedFinalField < Exception
+  class UninitializedFinalField < Joos::CompilerException
     # @param field [Joos::Entity::Field]
     def initialize field
       super "#{field} MUST include an initializer if it is declared final"
@@ -33,8 +32,8 @@ class Joos::Entity::Field < Joos::Entity
     @node        = node
     super node.Identifier, node.Modifiers
     @parent      = parent
+    @type        = node.Type
     @initializer = node.Expression
-    set_type
   end
 
   def to_sym
@@ -47,11 +46,17 @@ class Joos::Entity::Field < Joos::Entity
   end
 
 
-  private
+  # @!group Assignment 2
 
-  def set_type
-    @type = @node.Type.first
+  def link_declarations
+    @type = parent.find_type(@type)
+    # @todo @initializer.link_declarations(self) if @initializer
   end
+
+  # @!endgroup
+
+
+  private
 
   def ensure_final_field_is_initialized
     if modifiers.include? :Final
