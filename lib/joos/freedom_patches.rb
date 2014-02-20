@@ -198,6 +198,12 @@ end
 
 ##
 # Freedom patches on SystemCallError exception
+class Symbol
+  include Joos::Colour
+end
+
+##
+# Freedom patches on SystemCallError exception
 class SystemCallError
 
   ##
@@ -215,4 +221,5 @@ class SystemCallError
       "errno #{number}"
     end
   end
+
 end
