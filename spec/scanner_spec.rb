@@ -12,7 +12,7 @@ describe Joos::Scanner do
   it 'raises an exception is the file is not found' do
     expect {
       Joos::Scanner.scan_file 'herpDerp.java'
-    }.to raise_error 'herpDerp.java is a non-existant file'
+    }.to raise_error Joos::Scanner::FileError
   end
 
   it 'raises an exception when an input token is not valid' do

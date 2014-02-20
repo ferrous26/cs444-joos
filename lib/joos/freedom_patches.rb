@@ -195,3 +195,24 @@ class IO
     Thread.exclusive { puts str }
   end
 end
+
+##
+# Freedom patches on SystemCallError exception
+class SystemCallError
+
+  ##
+  # Convert errno code into a string, sometimes.
+  # Why the Errno module is totally useless, I don't know
+  # @return [String]
+  def errno_string
+    number = errno
+    case number
+    when Errno::ENOENT::Errno
+      "Not Found"
+    when Errno::EPERM::Errno
+      "Permission denied"
+    else
+      "errno #{number}"
+    end
+  end
+end

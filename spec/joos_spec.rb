@@ -38,7 +38,7 @@ describe Joos::Compiler do
     c = Joos::Compiler.new('herpDerp.java')
     c.compile
     expect(c.result).to be == Joos::Compiler::ERROR
-    expect($stderr.string).to match(/herpDerp.java is a non-existant file/i)
+    expect($stderr.string).to match(/COuld not open 'herpDerp\.java' - not found/i)
   end
 
   it 'does not allow exceptions to crash the program' do
