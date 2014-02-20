@@ -10,7 +10,7 @@ class Joos::Entity::Method < Joos::Entity
   ##
   # Exception raised when a method body is not given for a non-abstract and
   # non-native method that requires a body.
-  class ExpectedBody < Exception
+  class ExpectedBody < Joos::CompilerException
     def initialize method
       super "#{method} does not include a method body, but must have one"
     end
@@ -18,7 +18,7 @@ class Joos::Entity::Method < Joos::Entity
 
   ##
   # Exception raised when method body is given for native or abstract methods.
-  class UnexpectedBody < Exception
+  class UnexpectedBody < Joos::CompilerException
     def initialize method
       super "#{method} must NOT include a method body, but has one"
     end
@@ -26,7 +26,7 @@ class Joos::Entity::Method < Joos::Entity
 
   ##
   # Exception raised when a native method is declared as an instance method.
-  class NonStaticNativeMethod < Exception
+  class NonStaticNativeMethod < Joos::CompilerException
     def initialize method
       super "#{method} must be declared static if it is also declared native"
     end
