@@ -64,7 +64,7 @@ class Joos::Compiler
   # assembly code.
   def compile
     scan_and_parse_and_weed     # Assignment 1
-    #resolve_names               # Assignment 2
+    resolve_names               # Assignment 2
     # type_check                # Assignment 3
     # static analysis           # Assignment 4
     # generate_code             # Assignment 5
