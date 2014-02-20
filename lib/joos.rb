@@ -63,32 +63,16 @@ class Joos::Compiler
   # For each {#files}, a `.s` file will be created with the appropriate
   # assembly code.
   def compile
-    threads = @files.map do |file|
-      Thread.new do scan_and_parse(file) end
-    end
-
-    asts = threads.map(&:value).each do |result|
-      raise result if result.kind_of? Exception
-    end
-
-    compilation_units = asts.map { |ast| build_entities ast }
-    compilation_units.each(&:validate)
-    compilation_units.each { |unit| $stderr.puts unit.inspect } if $DEBUG
-
-    # Assignment 2
-    compilation_units.each(&:link_imports)
-    compilation_units.each(&:link_declarations)
-    compilation_units.each(&:check_hierarchy)
-    compilation_units.each(&:link_identifiers)
-
-    # Assignment 3
-    # compilation_units.each(&:resolve_types)
+    scan_and_parse_and_weed     # Assignment 1
+    #resolve_names               # Assignment 2
+    # type_check                # Assignment 3
+    # static analysis           # Assignment 4
+    # generate_code             # Assignment 5
 
   rescue Joos::CompilerException => exception
     @result = ERROR
     $stderr.puts exception.message
     $stderr.puts exception.backtrace if $DEBUG
-
   rescue Exception => exception
     @result = FATAL
     $stderr.puts exception.inspect
@@ -106,7 +90,7 @@ class Joos::Compiler
   def scan_and_parse job
     ast = Joos::Parser.new(Joos::Scanner.scan_file job).parse
     $stderr.safe_puts ast.inspect if $DEBUG
-    ast.visit { |parent, node| node.validate(parent) } # weeder checks
+    ast.visit { |parent, node| node.validate(parent) } # some weeder checks
   end
 
   def build_entities ast
@@ -118,6 +102,36 @@ class Joos::Compiler
     else
       raise NoDeclarationError.new ast
     end
+  end
+
+  def scan_and_parse_and_weed
+    threads = @files.map do |file|
+      Thread.new do
+        scan_and_parse(file)
+      end
+    end
+
+    asts = threads.map(&:value).each do |result|
+      raise result if result.kind_of? Exception
+    end
+
+    @compilation_units = asts.map do |ast|
+      build_entities(ast).tap do |entity|
+        entity.validate
+        $stderr.puts entity.inspect if $DEBUG
+      end
+    end
+  end
+
+  def resolve_names
+    @compilation_units.each(&:link_imports)
+    @compilation_units.each(&:link_declarations)
+    @compilation_units.each(&:check_hierarchy)
+    @compilation_units.each(&:link_identifiers)
+  end
+
+  def type_check
+    @compilation_units.each(&:type_check)
   end
 
 end
