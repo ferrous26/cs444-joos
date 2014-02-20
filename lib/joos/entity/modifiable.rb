@@ -25,7 +25,7 @@ module Joos::Entity::Modifiable
     # @param modifier [Joos::Token::Modifier]
     def initialize entity, modifier
       klass = entity.to_sym.to_s.green
-      super "A #{klass} cannot use the #{modifier.to_s.blue} modifier"
+      super "A #{klass} cannot use the #{modifier.yellow} modifier"
     end
   end
 
@@ -151,18 +151,16 @@ module Joos::Entity::Modifiable
 
   def ensure_exactly_one_visibility_modifier
     ensure_mutually_exclusive_modifiers(:Public, :Protected)
-    unless (modifiers & [:Public, :Protected]).size == 1
-      raise MissingVisibilityModifier.new(self)
-    end
+    raise MissingVisibilityModifier.new(self) unless public? || protected?
   end
 
   def inspect_modifiers
-    modifiers.map { |mod| mod.to_s.yellow }.join(' ')
+    modifiers.map { |mod| mod.yellow }.join(' ')
   end
 
   def inspect_modifiers_space
     str = inspect_modifiers
-    str.blank? ? str : str << ' '
+    str.blank? ? str : (str << ' ')
   end
 
 end
