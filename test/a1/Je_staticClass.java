@@ -1,4 +1,4 @@
 public static class Je_staticClass {
-  Je_staticClass() {}
+  public static Je_staticClass() {}
 }
 

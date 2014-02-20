@@ -1,4 +1,4 @@
 public final abstract class Je_finalAbstractClass {
-  Je_finalAbstractClass() {}
+  public final Je_finalAbstractClass() {}
 }
 

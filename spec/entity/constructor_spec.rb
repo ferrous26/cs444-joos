@@ -3,49 +3,48 @@ require 'joos/entity/constructor'
 
 describe Joos::Entity::Constructor do
 
-  it 'should accept name, modifiers, and body at init' do
-    name = Joos::Token::Identifier.new('hi', 'hi', 4, 4)
-    mods = make_mods :Public
-    constructor = Joos::Entity::Constructor.new(name,
-                                                modifiers: mods,
-                                                body: 4)
-    expect(constructor.name).to be == name
+  it 'should accept a node at init and parse it correctly' do
+    ast  = get_ast 'J1_fullyLoadedConstructor'
+    body = ast.TypeDeclaration.ClassDeclaration.ClassBody.ClassBodyDeclarations
+    constructor = body.find { |decl| decl.ConstructorDeclaratorRest }
+    constructor = Joos::Entity::Constructor.new(constructor, self)
+
+    expect(constructor.name.to_s).to be == 'J1_fullyLoadedConstructor'
     expect(constructor.modifiers).to be == [:Public]
-    expect(constructor.body).to be == 4
+    expect(constructor.body).to_not be_nil
+    expect(constructor.type).to be == self # dirty check
   end
 
   it 'makes sure that modifiers is empty if there are none' do
-    name = Joos::Token::Identifier.new('hi', 'hi', 4, 4)
-    constructor = Joos::Entity::Constructor.new(name)
+    ast  = get_ast 'Je_unloadedLoadedConstructor'
+    body = ast.TypeDeclaration.ClassDeclaration.ClassBody.ClassBodyDeclarations
+    constructor = body.find { |decl| decl.ConstructorDeclaratorRest }
+    constructor = Joos::Entity::Constructor.new(constructor, self)
     expect(constructor.modifiers).to be_empty
   end
 
-  it 'responds to #to_constructor with itself' do
-    name = Joos::Token::Identifier.new('hi', 'hi', 4, 4)
-    constructor = Joos::Entity::Constructor.new(name,
-                                                modifiers: make_mods(:Public),
-                                                body: 4)
-    expect(constructor.to_constructor).to be constructor
-  end
-
-  it 'validates that duplicate modifiers are not used' do
-    name = Joos::Token::Identifier.new('hi', 'hi', 4, 4)
-    mods = make_mods(:Public, :Public)
-    constructor = Joos::Entity::Constructor.new(name, modifiers: mods)
-    expect {
-      constructor.validate
-    }.to raise_error Joos::Entity::Modifiable::DuplicateModifier
+  it 'responds to #to_sym correctly' do
+    ast  = get_ast 'J1_fullyLoadedConstructor'
+    body = ast.TypeDeclaration.ClassDeclaration.ClassBody.ClassBodyDeclarations
+    constructor = body.find { |decl| decl.ConstructorDeclaratorRest }
+    constructor = Joos::Entity::Constructor.new(constructor, self)
+    expect(constructor.to_sym).to be == :Constructor
   end
 
   it 'validates that the constructor does not use illegal modifiers' do
-    name = Joos::Token::Identifier.new('hi', 'hi', 4, 4)
     [
-     make_mods(:Static, :Public),
-     make_mods(:Abstract, :Public),
-     make_mods(:Final, :Public),
-     make_mods(:Native, :Public)
-    ].each do |mod|
-      constructor = Joos::Entity::Constructor.new(name, modifiers: mod)
+     'Je_nativeClass',
+     'Je_staticClass',
+     'Je_abstractConstructor',
+     'Je_finalConstructor'
+    ].each do |file|
+      ast  = get_ast file
+      body = ast.TypeDeclaration
+                .ClassDeclaration
+                .ClassBody
+                .ClassBodyDeclarations
+      constructor = body.find { |decl| decl.ConstructorDeclaratorRest }
+      constructor = Joos::Entity::Constructor.new(constructor, self)
       expect {
         constructor.validate
       }.to raise_error Joos::Entity::Modifiable::InvalidModifier
