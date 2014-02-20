@@ -64,27 +64,18 @@ class Joos::Entity::Field < Joos::Entity
     end
   end
 
+  def resolve
+    # basic type? then put that in
+    # array type? that's a weird one, but we can look it up
+  end
+
 
   # @!group Inspect
 
   # @todo Make this less of a hack
   def inspect_type node
-    return ''
-    if node.is_a? Joos::AST::ArrayType
-      "[#{inspect_type node.first}]"
-    elsif node.is_a? Joos::AST::QualifiedIdentifier
-      node.inspect
-    elsif node.kind_of? Joos::Entity
-      node.name.to_s.blue
-    elsif node.to_sym == :Void
-      '()'.blue
-    elsif node.kind_of? Joos::AST::Type
-      inspect_type node.first
-    else
-      node.first.to_sym.to_s.blue
-    end
+    ''
   end
-
 
   # @!endgroup
 
