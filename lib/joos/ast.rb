@@ -140,6 +140,8 @@ class Joos::AST
       if @nodes.last && @nodes.last.to_sym == to_sym
         @nodes = @nodes.last.nodes.unshift @nodes.first
       end
+
+      @nodes.each { |node| node.parent = self }
     end
   end
 
