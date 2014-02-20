@@ -28,10 +28,9 @@ GRAMMAR = {
       [:SubExpression, :Equals, :Expression]
     ],
     Type: [
+      [:ArrayType],
       [:QualifiedIdentifier],
-      [:QualifiedIdentifier, :OpenStaple, :CloseStaple],
-      [:BasicType],
-      [:BasicType, :OpenStaple, :CloseStaple]
+      [:BasicType]
     ],
     BasicType: [
       [:Byte],
@@ -39,6 +38,10 @@ GRAMMAR = {
       [:Int],
       [:Boolean],
       [:Short]
+    ],
+    ArrayType: [
+      [:BasicType, :OpenStaple, :CloseStaple],
+      [:QualifiedIdentifier, :OpenStaple, :CloseStaple]
     ],
     SubExpression: [
       [:Term],
@@ -265,7 +268,7 @@ GRAMMAR = {
                   :ClassBodyDeclarations, :ClassBodyDeclaration, :InterfaceBody, :InterfaceBodyDeclarations, :InterfaceBodyDeclaration,
 
                   :MethodDeclaratorRest, :InterfaceMemberDeclRest, :QualifiedImportIdentifier,
-                  :ConstructorDeclaratorRest, :FormalParameters, :FormalParameter,
+                  :ConstructorDeclaratorRest, :FormalParameters, :FormalParameter, :ArrayType,
                   :FormalParameterList, :MethodBody, :AugmentedCompilationUnit],
 
   start_symbol: :AugmentedCompilationUnit
