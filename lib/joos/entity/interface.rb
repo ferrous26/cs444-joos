@@ -53,17 +53,22 @@ class Joos::Entity::Interface < Joos::Entity
     methods.each(&:validate)
   end
 
+
+  # @!group Assignment 2
+
   def link_declarations
     super
     # @todo methods.each(&:link_declarations)
   end
+
+  # @!endgroup
 
 
   private
 
   def set_superinterfaces
     @superinterfaces = @node.TypeDeclaration.InterfaceDeclaration.TypeList ||
-                       []
+                       [] # gotta set something
   end
 
   def set_methods
