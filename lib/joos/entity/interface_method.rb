@@ -25,7 +25,8 @@ class Joos::Entity::InterfaceMethod < Joos::Entity::Method
   end
 
   def ensure_body_presence_if_required
-    # interface methods will not have a body, or else they will fail to parse
+    # interface methods cannot have a body, or else they would fail to parse
+    # so we just ignore this check ;)
   end
 
 end

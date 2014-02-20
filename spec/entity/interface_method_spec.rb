@@ -3,20 +3,33 @@ require 'joos/entity/interface_method'
 
 describe Joos::Entity::InterfaceMethod do
 
+  it 'responds to #to_sym correctly' do
+    ast  = get_ast 'J1_interfaceMethod'
+    body = ast.TypeDeclaration
+              .InterfaceDeclaration
+              .InterfaceBody
+              .InterfaceBodyDeclarations
+    method_ast = body.find { |decl| decl.Modifiers }
+    method     = Joos::Entity::InterfaceMethod.new(method_ast, self)
+    expect(method.to_sym).to be == :InterfaceMethod
+  end
+
   it 'validates that protected, static, final, and native are not used' do
     [
-     :Protected,
-     [:Static, :Public],
-     [:Final, :Public],
-     [:Native, :Static, :Public]
-    ].each do |mod|
-      mods = make_mods(*mod)
-      name = Joos::Token::Identifier.new('hi', 'hi', 4, 0)
-      imethod = Joos::Entity::InterfaceMethod.new(name,
-                                                  modifiers: mods,
-                                                  body: nil)
+     'Je_protectedIMethod',
+     'Je_staticIMethod',
+     'Je_finalIMethod',
+     'Je_nativeIMethod'
+    ].each do |file|
+      ast = get_ast file
+      body = ast.TypeDeclaration
+                .InterfaceDeclaration
+                .InterfaceBody
+                .InterfaceBodyDeclarations
+      method_ast = body.find { |decl| decl.Modifiers }
+      method     = Joos::Entity::InterfaceMethod.new(method_ast, self)
       expect {
-        imethod.validate
+        method.validate
       }.to raise_error Joos::Entity::Modifiable::InvalidModifier
     end
   end
