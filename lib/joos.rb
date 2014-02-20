@@ -75,7 +75,8 @@ class Joos::Compiler
     $stderr.puts exception.backtrace if $DEBUG
   rescue Exception => exception
     @result = FATAL
-    $stderr.puts exception.inspect
+    $stderr.puts exception.message
+    $stderr.puts exception.backtrace
   end
 
 
