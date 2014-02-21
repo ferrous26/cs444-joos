@@ -109,7 +109,6 @@ GRAMMAR = {
       [:QualifiedIdentifier, :Arguments]
     ],
     ArrayCreator: [
-      [:OpenStaple, :CloseStaple],
       [:OpenStaple, :Expression, :CloseStaple]
     ],
     Block: [
