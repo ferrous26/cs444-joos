@@ -15,7 +15,7 @@ class Joos::AST::QualifiedImportIdentifier
   end
 
   ##
-  # Is the receiver a simple name (single identifier, no dot)?
+  # Is the receiver a simple name (single identifier, no dots)?
   #
   def simple?
     @nodes.size == 1

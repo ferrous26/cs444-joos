@@ -8,11 +8,8 @@ class Joos::AST::QualifiedIdentifier
   include ListCollapse
 
   def == other
-    unless other.nodes.size == @nodes.size
-      other.nodes.each_with_index do |id, index|
-        return unless id.to_s == @nodes[index].to_s
-      end
-    end
+    return unless other.respond_to? :nodes
+    @nodes == other.nodes
   end
 
   ##

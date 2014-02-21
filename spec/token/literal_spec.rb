@@ -146,8 +146,6 @@ describe Joos::Token::Literal do
       token = Joos::Token::True.new('', '', 3, 4)
       expect(token.to_sym).to be == :BooleanLiteral
     end
-
-    it 'returns the binary representation from #to_binary'
   end
 
   describe Joos::Token::False do
@@ -167,8 +165,6 @@ describe Joos::Token::Literal do
       token = Joos::Token::False.new('', '', 3, 4)
       expect(token.to_sym).to be == :BooleanLiteral
     end
-
-    it 'returns the binary representation from #to_binary'
   end
 
   describe Joos::Token::Null do
@@ -188,8 +184,6 @@ describe Joos::Token::Literal do
       token = Joos::Token::Null.new('', '', 3, 4)
       expect(token.to_sym).to be == :NullLiteral
     end
-
-    it 'returns the binary representation from #to_binary'
   end
 
   describe Joos::Token::Integer do
@@ -250,8 +244,6 @@ describe Joos::Token::Literal do
       token = Joos::Token::Integer.new('0', '', 3, 4)
       expect(token.to_sym).to be == :IntegerLiteral
     end
-
-    it 'returns a 32-bit binary representation from #to_binary'
   end
 
   describe Joos::Token::FloatingPoint do

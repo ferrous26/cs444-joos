@@ -3,6 +3,9 @@ require 'joos/ast/modifiers'
 
 describe Joos::AST::Modifiers do
 
-  it 'should have some passing tests'
+  it 'mixes in ListCollapse' do
+    ancestors = Joos::AST::Modifiers.ancestors
+    expect(ancestors).to include Joos::AST::ListCollapse
+  end
 
 end

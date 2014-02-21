@@ -3,6 +3,9 @@ require 'joos/ast/expressions'
 
 describe Joos::AST::Expressions do
 
-  it 'should have some passing tests'
+  it 'mixes in ListCollapse' do
+    ancestors = Joos::AST::Expressions.ancestors
+    expect(ancestors).to include Joos::AST::ListCollapse
+  end
 
 end
