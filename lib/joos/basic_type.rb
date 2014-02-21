@@ -45,6 +45,9 @@ class Joos::BasicType
     @token = token
   end
 
+  def to_sym
+    :AbstractBasicType
+  end
 
   # @!group Type API
 

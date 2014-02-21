@@ -15,6 +15,10 @@ class Joos::Array
     @length = length
   end
 
+  def to_sym
+    :AbstractArray
+  end
+
 
   # @!group Type API
 

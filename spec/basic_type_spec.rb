@@ -36,4 +36,8 @@ describe Joos::BasicType do
     expect(type.token).to be == mock
   end
 
+  it 'responds to #to_sym with :AbstractBasicType' do
+    expect(Joos::BasicType.new(:Int).to_sym).to be == :AbstractBasicType
+  end
+
 end

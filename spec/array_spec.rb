@@ -38,4 +38,9 @@ describe Joos::Array do
     expect(ary.length).to be == length
   end
 
+  it 'responds to #to_sym with AbstractArray' do
+    ary = Joos::Array.new :clown, 1
+    expect(ary.to_sym).to be == :AbstractArray
+  end
+
 end
