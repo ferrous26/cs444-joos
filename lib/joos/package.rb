@@ -36,6 +36,7 @@ class Joos::Package
     def initialize package, unit
       name = package.fully_qualified_name.join('.')
       # @todo show what is already defined
+      name = 'the top-level namespace' if name.blank?
       super "#{unit.name} already defined in #{name}"
     end
   end
