@@ -1,4 +1,5 @@
-require 'joos/version'
+
+require 'joos/source'
 
 ##
 # Base class for exceptions encountered while compiling.
@@ -7,21 +8,26 @@ require 'joos/version'
 # further up the call chain than where the exception is raised.
 #
 class Joos::CompilerException < RuntimeError
+  include Joos::SourceInfo
 
   # @return [string]
   attr_accessor :file
+  alias_method :file_name, :file
 
   # @return [fixnum]
   attr_accessor :line
+  alias_method :line_number, :line
 
   # @return [fixnum]
   attr_accessor :column
 
-  def initialize msg = nil, file: nil, line: nil, column: nil
+  def initialize msg = nil, source=nil
     super msg
-    @file   = file
-    @line   = line
-    @column = column
+    if source
+      @file   = source.file_name
+      @line   = source.line_number
+      @column = source.column
+    end
   end
 
 end

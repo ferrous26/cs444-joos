@@ -21,7 +21,8 @@ class Joos::DFA
   class UnexpectedCharacter < Joos::CompilerException
     attr_accessor :character
     def initialize character, column
-      super "Unexpected character '#{character}'", column: column
+      super "Unexpected character '#{character}'"
+      @column = column
       @character = character
     end
   end
