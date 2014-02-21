@@ -141,7 +141,7 @@ class Joos::AST
         @nodes = @nodes.last.nodes.unshift @nodes.first
       end
 
-      @nodes.each { |node| node.parent = self }
+      @nodes.each { |node| node.parent = self if node.kind_of? Joos::AST}
     end
   end
 
