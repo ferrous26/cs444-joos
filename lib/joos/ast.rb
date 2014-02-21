@@ -118,12 +118,18 @@ class Joos::AST
   def consume nodes
     return unless nodes
     nodes.each do |node|
-      node.nodes.each do |child|
+      nodes.each do |child|
         child.parent = self if child.respond_to? :parent
       end
       @nodes += node.nodes
       node.parent.nodes.delete(node)
     end
+  end
+
+  # Variant of consume that replaces all children
+  def consume! nodes
+    @nodes = []
+    consume nodes
   end
 
   ##
