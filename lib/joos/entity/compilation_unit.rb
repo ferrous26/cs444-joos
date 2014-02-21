@@ -163,6 +163,25 @@ module Joos::Entity::CompilationUnit
   end
 
 
+  # @!group Type API
+
+  def reference_type?
+    true
+  end
+
+  def basic_type?
+    false
+  end
+
+  def array_type?
+    false
+  end
+
+  def type_inspect
+    fully_qualified_name.cyan_join
+  end
+
+
   # @!group Assignment 2
 
   ##

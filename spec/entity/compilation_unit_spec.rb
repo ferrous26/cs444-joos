@@ -60,4 +60,24 @@ describe Joos::Entity::CompilationUnit do
     expect(unit.fully_qualified_name).to be == ['Foo', 'CUTest2']
   end
 
+  it 'claims to be a reference type' do
+    unit = CUTest2.new get_ast('J1_allthefixings')
+    expect(unit).to be_reference_type
+  end
+
+  it 'claims to not be a basic type' do
+    unit = CUTest2.new get_ast('J1_allthefixings')
+    expect(unit).to_not be_basic_type
+  end
+
+  it 'claims to not be an array type' do
+    unit = CUTest2.new get_ast('J1_allthefixings')
+    expect(unit).to_not be_array_type
+  end
+
+  it 'uses the colorourized FQDN for #type_inspect' do
+    unit = CUTest2.new get_ast('J1_allthefixings')
+    expect(unit.type_inspect).to be == unit.fully_qualified_name.cyan_join
+  end
+
 end

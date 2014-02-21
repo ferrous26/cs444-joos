@@ -1,5 +1,7 @@
 require 'erb'
 require 'joos/token'
+require 'joos/basic_type'
+require 'joos/array'
 require 'joos/freedom_patches'
 
 ##
