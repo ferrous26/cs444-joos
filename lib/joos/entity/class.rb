@@ -40,7 +40,9 @@ class Joos::Entity::Class < Joos::Entity
   class DuplicateFieldName < Joos::CompilerException
     # @todo better message
     def initialize field, dupe
-      super "#{field.name.source.red}: #{field.inspect} and #{dupe.name.source.red}: #{dupe.inspect}"
+      source1 = field.name.source.red
+      source2 = dupe.name.source.red
+      super "#{source1}: #{field.inspect} and #{source2}: #{dupe.inspect}"
     end
   end
 
