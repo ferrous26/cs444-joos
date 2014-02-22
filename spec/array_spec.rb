@@ -43,4 +43,16 @@ describe Joos::Array do
     expect(ary.to_sym).to be == :AbstractArray
   end
 
+  it 'checks equality based on what it wraps' do
+    ary1 = Joos::Array.new :clown, 1
+    ary2 = Joos::Array.new :frown, 1
+
+    expect(ary1).to be == Joos::Array.new(:clown, 1)
+    expect(ary2).to be == Joos::Array.new(:frown, 1)
+    expect(ary1).to_not be == ary2
+
+    ary3 = Joos::Array.new Joos::BasicType.new(:Int), 1
+    expect(ary3).to_not be == Joos::BasicType.new(:Int)
+  end
+
 end

@@ -49,6 +49,11 @@ class Joos::BasicType
     :AbstractBasicType
   end
 
+  def == other
+    self.class == other.class
+  end
+
+
   # @!group Type API
 
   def basic_type?

@@ -40,4 +40,10 @@ describe Joos::BasicType do
     expect(Joos::BasicType.new(:Int).to_sym).to be == :AbstractBasicType
   end
 
+  it 'checks equality of types based on class' do
+    expect(Joos::BasicType.new :Boolean).to be == Joos::BasicType.new(:Boolean)
+    expect(Joos::BasicType.new :Int).to be == Joos::BasicType.new(:Int)
+    expect(Joos::BasicType.new :Short).to_not be == Joos::BasicType.new(:Int)
+  end
+
 end

@@ -19,6 +19,10 @@ class Joos::Array
     :AbstractArray
   end
 
+  def == other
+    self.type == other.type if other.respond_to? :type
+  end
+
 
   # @!group Type API
 
