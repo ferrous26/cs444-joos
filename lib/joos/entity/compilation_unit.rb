@@ -119,6 +119,15 @@ module Joos::Entity::CompilationUnit
     end
   end
 
+  class DuplicateMethodName < Joos::CompilerException
+    def initialize dupes
+      first = dupes.first.name.cyan
+      src   = dupes.first.unit.fully_qualified_name.cyan_join
+      super "Method #{first} defined twice in #{src}"
+    end
+  end
+
+
   # @!endgroup
 
 
@@ -241,6 +250,7 @@ module Joos::Entity::CompilationUnit
 
   def check_hierarchy
     check_interface_circularity
+    check_methods_have_unique_names
   end
 
   def link_identifiers
@@ -340,6 +350,15 @@ module Joos::Entity::CompilationUnit
       if @superinterfaces.select { |x| unit.equal? x }.size > 1
         raise DuplicateSuperInterface.new(self, unit)
       end
+    end
+  end
+
+  def check_methods_have_unique_names
+    methods.each do |method1|
+      dupes = methods.select { |method2|
+        method1.signature == method2.signature
+      }
+      raise DuplicateMethodName.new(dupes) if dupes.size > 1
     end
   end
 
