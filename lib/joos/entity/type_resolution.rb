@@ -13,6 +13,9 @@ module Joos::Entity::TypeResolution
   attr_reader :unit
   alias_method :parent, :unit
 
+  # @return [Class, Interface, Joos::Token::Type]
+  attr_reader :type
+
 
   private
 

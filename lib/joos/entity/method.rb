@@ -48,10 +48,6 @@ class Joos::Entity::Method < Joos::Entity
   # @!endgroup
 
 
-  # @return [CompilationUnit, Joos::BasicType, Joos::Array, nil]
-  attr_reader :type
-  alias_method :return_type, :type
-
   # @return [Array<Entity::FormalParameter>]
   attr_reader :parameters
 

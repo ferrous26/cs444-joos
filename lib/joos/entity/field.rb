@@ -19,8 +19,6 @@ class Joos::Entity::Field < Joos::Entity
     end
   end
 
-  # @return [CompilationUnit, Joos::BasicType, Joos::Array]
-  attr_reader :type
 
   # @return [Joos::AST::Expression]
   attr_reader :initializer
