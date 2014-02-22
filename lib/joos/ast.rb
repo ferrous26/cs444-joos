@@ -107,7 +107,7 @@ class Joos::AST
     @nodes.each do |node|
       base << node.inspect(tab + 1) << "\n"
     end
-    base.chomp
+    base.chomp!
   end
 
   ##
