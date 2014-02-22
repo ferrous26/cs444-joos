@@ -75,6 +75,15 @@ class Joos::Entity::Class < Joos::Entity
     end
   end
 
+  class DuplicateConstructorName < Joos::CompilerException
+    def initialize dupes
+      first = dupes.first.name.cyan
+      src   = dupes.first.unit.fully_qualified_name.cyan_join
+      super "Constructor #{first} defined twice in #{src}"
+    end
+  end
+
+
   # @!endgroup
 
 
@@ -170,6 +179,7 @@ class Joos::Entity::Class < Joos::Entity
     check_fields_have_unique_names
     check_abstract_methods_only_if_class_is_abstract
     check_superclass_is_not_final
+    check_constructors_have_unique_names
     fields.each(&:check_hierarchy)
     methods.each(&:check_hierarchy)
     constructors.each(&:check_hierarchy)
@@ -265,6 +275,13 @@ class Joos::Entity::Class < Joos::Entity
 
   def check_superclass_is_not_final
     raise ExtendingFinalClass.new(self) if superclass && superclass.final?
+  end
+
+  def check_constructors_have_unique_names
+    constructors.each do |c1|
+      dupes = constructors.select { |c2| c1.signature == c2.signature }
+      raise DuplicateConstructorName.new(dupes) if dupes.size > 1
+    end
   end
 
 
