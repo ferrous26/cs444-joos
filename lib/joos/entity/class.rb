@@ -148,7 +148,7 @@ class Joos::Entity::Class < Joos::Entity
   def link_declarations
     super
     link_superclass
-    # @todo fields.each(&:link_declarations)
+    fields.each(&:link_declarations)
     # @todo methods.each(&:link_declarations)
     # @todo constructors.each(&:link_declarations)
   end

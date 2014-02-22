@@ -1,10 +1,12 @@
 require 'joos/entity'
 require 'joos/entity/modifiable'
+require 'joos/entity/type_resolution'
 
 ##
 # Entity representing the definition of an class/interface field.
 class Joos::Entity::Field < Joos::Entity
   include Modifiable
+  include TypeResolution
 
   ##
   # Exception raised when a field is declared to be final but does not
@@ -49,7 +51,7 @@ class Joos::Entity::Field < Joos::Entity
   # @!group Assignment 2
 
   def link_declarations
-    @type = parent.find_type(@type)
+    @type = resolve_type @type
     # @todo @initializer.link_declarations(self) if @initializer
   end
 
@@ -74,10 +76,12 @@ class Joos::Entity::Field < Joos::Entity
 
   # @todo Make this less of a hack
   def inspect_type node
-    if type.to_sym == :Void
+    if !type || type.to_sym == :Void
       '()'.blue
-    else
+    elsif type.kind_of? Joos::AST
       ''
+    else
+      type.type_inspect
     end
   end
 

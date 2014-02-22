@@ -1,4 +1,3 @@
-
 require 'joos/colour'
 
 module Joos::SourceInfo
@@ -11,7 +10,7 @@ module Joos::SourceInfo
   # Beginning line number. 0-indexed
   # @return [Fixnum]
   attr_reader :line_number
-  
+
   ##
   # Beginning column number. 0-indexed
   # @return [Fixnum]
