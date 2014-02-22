@@ -53,14 +53,15 @@ class Joos::Entity::Method < Joos::Entity
   attr_reader :body
 
   # @param node [Joos::AST::ClassBodyDeclaration]
+  # @param parent [Joos::AST::CompilationUnit]
   def initialize node, parent
     @node       = node
     super node.Identifier, node.Modifiers
-    @parent     = parent
     @type       = node.Void || node.Type
     decl        = node.last # MethodDeclRest, InterfaceMethodDeclRest, etc.
     @parameters = decl.FormalParameters.FormalParameterList || []
     parse_body decl
+    @unit = parent
   end
 
   def to_sym
@@ -99,16 +100,7 @@ class Joos::Entity::Method < Joos::Entity
 
   def inspect_params
     return '()'.blue if parameters.blank?
-    parameters.map { |p| inspect_type p }.join(' -> '.blue)
-  end
-
-  # @todo Make this less of a hack
-  def inspect_type type
-    if type.to_sym == :Void
-      '()'.blue
-    else
-      ''
-    end
+    parameters.map(&:type_inspect).join(' -> ')
   end
 
   # @!endgroup

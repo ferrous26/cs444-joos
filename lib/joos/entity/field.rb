@@ -19,23 +19,20 @@ class Joos::Entity::Field < Joos::Entity
     end
   end
 
-  # @return [Class, Interface]
-  attr_reader :parent
-
-  # @return [Class, Interface, Joos::Token::Type]
+  # @return [CompilationUnit, Joos::BasicType, Joos::Array]
   attr_reader :type
 
   # @return [Joos::AST::Expression]
   attr_reader :initializer
 
   # @param node [Joos::AST::ClassBodyDeclaration]
-  # @param parent [CompilationUnit]
+  # @param parent [Joos::Entity::Class]
   def initialize node, parent
     @node        = node
     super node.Identifier, node.Modifiers
-    @parent      = parent
     @type        = node.Type
     @initializer = node.Expression
+    @unit        = parent
   end
 
   def to_sym
@@ -65,26 +62,5 @@ class Joos::Entity::Field < Joos::Entity
       raise UninitializedFinalField.new(self) unless initializer
     end
   end
-
-  def resolve
-    # basic type? then put that in
-    # array type? that's a weird one, but we can look it up
-  end
-
-
-  # @!group Inspect
-
-  # @todo Make this less of a hack
-  def inspect_type node
-    if !type || type.to_sym == :Void
-      '()'.blue
-    elsif type.kind_of? Joos::AST
-      ''
-    else
-      type.type_inspect
-    end
-  end
-
-  # @!endgroup
 
 end

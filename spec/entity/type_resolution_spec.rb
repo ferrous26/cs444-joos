@@ -6,7 +6,7 @@ describe Joos::Entity::TypeResolution do
   class MockEntity
     include Joos::Entity::TypeResolution
 
-    def parent
+    def unit
       o = Object.new
       o.define_singleton_method(:get_type) { |name| name }
       o
@@ -14,6 +14,10 @@ describe Joos::Entity::TypeResolution do
 
     def self.resolve node
       new.send :resolve_type, node
+    end
+
+    def self.inspect_type type
+      new.send :inspect_type, type
     end
   end
 
@@ -58,6 +62,26 @@ describe Joos::Entity::TypeResolution do
     expect {
       MockEntity.resolve(Joos::AST::Type.new([]))
     }.to raise_error(/Unknown AST::Type type/)
+  end
+
+  it 'adds #unit to the class' do
+    expect(MockEntity.new).to respond_to :unit
+    expect(MockEntity.new).to respond_to :parent
+  end
+
+  it 'can inspect a type' do
+    str = MockEntity.inspect_type nil
+    expect(str).to be == '()'.blue
+
+    str = MockEntity.inspect_type :Void
+    expect(str).to be == '()'.blue
+
+    str = MockEntity.inspect_type Joos::BasicType.new(:Boolean)
+    expect(str).to be == 'boolean'.magenta
+
+    type = Joos::Array.new Joos::BasicType.new(:Int), 0
+    str  = MockEntity.inspect_type type
+    expect(str).to be == ('['.yellow << 'int'.magenta << ']'.yellow)
   end
 
 end

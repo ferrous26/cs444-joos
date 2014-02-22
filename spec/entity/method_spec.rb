@@ -23,10 +23,9 @@ describe Joos::Entity::Method do
                                           .MethodBody
                                           .Block)
     expect(method.parent).to be       == outer
-    expect(method.parameters).to be   == (ast
-                                          .MethodDeclaratorRest
-                                          .FormalParameters
-                                          .FormalParameterList).to_a
+
+    expect(method.parameters.size).to be == 1
+    expect(method.parameters.first).to be_kind_of Joos::Entity::FormalParameter
   end
 
   it 'sets the default modifiers to be empty' do

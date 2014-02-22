@@ -12,7 +12,7 @@ class Joos::Entity::Constructor < Joos::Entity::Method
   # @param node [Joos::AST::ClassBodyDeclaration]
   def initialize node, parent
     super
-    @type = @parent # yay, we don't have to resolve this one!
+    @type = parent # yay, we don't have to resolve this one!
   end
 
   def to_sym
