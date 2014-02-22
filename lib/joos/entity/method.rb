@@ -59,7 +59,7 @@ class Joos::Entity::Method < Joos::Entity
     @parent     = parent
     @type       = node.Void || node.Type
     decl        = node.last # MethodDeclRest, InterfaceMethodDeclRest, etc.
-    @parameters = Array(decl.FormalParameters.FormalParameterList)
+    @parameters = decl.FormalParameters.FormalParameterList || []
     parse_body decl
   end
 
