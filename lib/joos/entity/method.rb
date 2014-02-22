@@ -9,6 +9,8 @@ class Joos::Entity::Method < Joos::Entity
   include Modifiable
   include TypeResolution
 
+  # @!group Exceptions
+
   ##
   # Exception raised when a method body is not given for a non-abstract and
   # non-native method that requires a body.
@@ -33,6 +35,18 @@ class Joos::Entity::Method < Joos::Entity
       super "#{method} must be declared static if it is also declared native"
     end
   end
+
+  ##
+  # Exception raised when a native method is declared as an instance method.
+  class DuplicateParameterName < Joos::CompilerException
+    def initialize dupes
+      dupes = dupes.map(&:inspect)
+      super "Duplicate parameter names (#{dupes.first}) and (#{dupes.second})"
+    end
+  end
+
+  # @!endgroup
+
 
   # @return [CompilationUnit, Joos::BasicType, Joos::Array, nil]
   attr_reader :type
@@ -80,6 +94,10 @@ class Joos::Entity::Method < Joos::Entity
     @parameters.each(&:link_declarations)
   end
 
+  def check_hierarchy
+    check_no_duplicate_param_names
+  end
+
   # @!endgroup
 
 
@@ -100,6 +118,13 @@ class Joos::Entity::Method < Joos::Entity
 
   def ensure_native_method_is_static
     raise NonStaticNativeMethod.new(self) if native? && !static?
+  end
+
+  def check_no_duplicate_param_names
+    @parameters.each do |param1|
+      matches = @parameters.select { |param2| param1.name == param2.name }
+      raise DuplicateParameterName.new(matches) if matches.size > 1
+    end
   end
 
 

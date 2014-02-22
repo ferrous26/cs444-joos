@@ -52,6 +52,10 @@ class Joos::Entity::Field < Joos::Entity
     # @todo @initializer.link_declarations(self) if @initializer
   end
 
+  def check_hierarchy
+    # @todo what needs to be done here?
+  end
+
   # @!endgroup
 
 

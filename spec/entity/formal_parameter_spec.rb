@@ -6,9 +6,9 @@ describe Joos::Entity::FormalParameter do
   outer = self
 
   extract = lambda do |file|
-    ast   = get_ast file
-    body  = ast.TypeDeclaration.ClassDeclaration.ClassBody.ClassBodyDeclarations
-    meth  = body.find { |decl| decl.MethodDeclaratorRest }
+    ast  = get_ast file
+    body = ast.TypeDeclaration.ClassDeclaration.ClassBody.ClassBodyDeclarations
+    meth = body.find { |decl| decl.MethodDeclaratorRest }
     param = meth.last.FormalParameters.FormalParameterList.first
     [param, Joos::Entity::FormalParameter.new(param, self)]
   end

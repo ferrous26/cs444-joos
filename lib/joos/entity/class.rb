@@ -168,6 +168,9 @@ class Joos::Entity::Class < Joos::Entity
     check_fields_have_unique_names
     check_abstract_methods_only_if_class_is_abstract
     check_superclass_is_not_final
+    fields.each(&:check_hierarchy)
+    methods.each(&:check_hierarchy)
+    constructors.each(&:check_hierarchy)
   end
 
 
