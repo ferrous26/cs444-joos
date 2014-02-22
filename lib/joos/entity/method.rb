@@ -1,11 +1,13 @@
 require 'joos/entity'
 require 'joos/entity/modifiable'
+require 'joos/entity/type_resolution'
 
 ##
 # Entity representing the definition of an class/interface method.
 #
 class Joos::Entity::Method < Joos::Entity
   include Modifiable
+  include TypeResolution
 
   ##
   # Exception raised when a method body is not given for a non-abstract and
@@ -32,14 +34,7 @@ class Joos::Entity::Method < Joos::Entity
     end
   end
 
-  ##
-  # The class or interface to which the method definition belongs
-  #
-  # @return [Class, Interface]
-  attr_reader :parent
-  alias_method :owner, :parent
-
-  # @return [Class, Interface, Joos::BasicType]
+  # @return [CompilationUnit, Joos::BasicType, Joos::Array, nil]
   attr_reader :type
   alias_method :return_type, :type
 
@@ -59,7 +54,9 @@ class Joos::Entity::Method < Joos::Entity
     super node.Identifier, node.Modifiers
     @type       = node.Void || node.Type
     decl        = node.last # MethodDeclRest, InterfaceMethodDeclRest, etc.
-    @parameters = decl.FormalParameters.FormalParameterList || []
+    @parameters = (decl.FormalParameters.FormalParameterList || []).map do |p|
+      Joos::Entity::FormalParameter.new p, parent
+    end
     parse_body decl
     @unit = parent
   end
@@ -74,6 +71,16 @@ class Joos::Entity::Method < Joos::Entity
     ensure_native_method_is_static
     ensure_body_presence_if_required
   end
+
+
+  # @!group Assignment 2
+
+  def link_declarations
+    @type = resolve_type @type if @type.kind_of? Joos::AST
+    @parameters.each(&:link_declarations)
+  end
+
+  # @!endgroup
 
 
   private

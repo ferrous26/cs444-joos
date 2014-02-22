@@ -149,8 +149,8 @@ class Joos::Entity::Class < Joos::Entity
     super
     link_superclass
     fields.each(&:link_declarations)
-    # @todo methods.each(&:link_declarations)
-    # @todo constructors.each(&:link_declarations)
+    methods.each(&:link_declarations)
+    constructors.each(&:link_declarations)
   end
 
   def check_superclass_circularity chain = []

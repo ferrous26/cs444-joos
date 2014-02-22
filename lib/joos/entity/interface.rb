@@ -58,7 +58,7 @@ class Joos::Entity::Interface < Joos::Entity
 
   def link_declarations
     super
-    # @todo methods.each(&:link_declarations)
+    methods.each(&:link_declarations)
   end
 
   # @!endgroup
