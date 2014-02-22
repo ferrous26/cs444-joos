@@ -85,6 +85,21 @@ class Joos::Entity::Method < Joos::Entity
 
   # @!group Assignment 2
 
+  ##
+  # Return the effective signature of the method.
+  #
+  # This is defined as the name of the method followed by the types of each
+  # formal parameter of the method (order sensitive).
+  #
+  # @example
+  #
+  #   method.signature # => ['foo', [int, char, bar.baz]]
+  #
+  # @return [Array(Identifier, Array<BasicType, Joos::Array, CompilationUnit>)]
+  def signature
+    [name, @parameters.map(&:type)]
+  end
+
   def link_declarations
     @type = resolve_type @type if @type.kind_of? Joos::AST
     @parameters.each(&:link_declarations)
