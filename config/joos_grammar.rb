@@ -136,7 +136,7 @@ GRAMMAR = {
       [:Return, :Semicolon],
       [:Return, :Expression, :Semicolon],
       [:Expression, :Semicolon],
-      [:Semicolon],
+      [:Semicolon]
     ],
     ForInit: [
       [],
@@ -160,8 +160,7 @@ GRAMMAR = {
       [:Native]
     ],
     VariableDeclarator: [
-      [:Identifier, :Equals, :Expression],
-      [:Identifier, :OpenStaple, :CloseStaple, :Equals, :Expression]
+      [:Identifier, :Equals, :Expression]
     ],
     ImportDeclarations: [
       [:ImportDeclaration, :ImportDeclarations],
