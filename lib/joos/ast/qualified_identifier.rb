@@ -7,9 +7,17 @@ require 'joos/ast'
 class Joos::AST::QualifiedIdentifier
   include ListCollapse
 
+  ##
+  # Test for equality based on equality of the component identifiers
+  #
+  # In that way, we can check for equality between single identifiers
+  # without the need to explicitly wrap the object and also mock
+  # identifiers and qualified identifiers easily with literal arrays.
+  #
+  # @param other [AST::QualifiedIdentifier, Token::Identifier, Object]
   def == other
-    return unless other.respond_to? :nodes
-    @nodes == other.nodes
+    return unless other.respond_to? :to_a
+    @nodes == other.to_a
   end
 
   ##

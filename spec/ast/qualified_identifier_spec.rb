@@ -18,6 +18,18 @@ describe Joos::AST::QualifiedIdentifier do
     expect(qid1).to_not be == qid3
   end
 
+  it 'can check equality with identifiers' do
+    id1  = Joos::Token::Identifier.new('hello', '', 0, 0)
+    id2  = Joos::Token::Identifier.new('bye', '', 0, 0)
+    qid1 = Joos::AST::QualifiedIdentifier.new([id1])
+    qid2 = Joos::AST::QualifiedIdentifier.new([id1, id2])
+
+    expect(qid1).to     be == id1
+    expect(qid1).to_not be == id2
+    expect(qid2).to_not be == id1
+    expect(qid2).to_not be == id2
+  end
+
   it 'knows what a simple identifier is' do
     nodes = [:a, :b]
     qid   = Joos::AST::QualifiedIdentifier.new(nodes)

@@ -35,8 +35,29 @@ class Joos::Token::Identifier < Joos::Token
 
   alias_method :to_s, :value
 
+  ##
+  # Used internally for equality checking between
+  # {Joos::AST::QualifiedIdentifier}.
+  #
+  # @return [Array(self)]
+  def to_a
+    [value]
+  end
+
+  ##
+  # Test for equality based on string equality of the receiver and `other`
+  #
+  # In that way, we can check for equality between qualified identifiers
+  # without the need to explicitly unwrap the qualified identifier.
+  #
+  # @param other [AST::QualifiedIdentifier, Token::Identifier, Object]
   def == other
-    to_s == other.to_s
+    if other.is_a? Joos::AST::QualifiedIdentifier
+      other.simple? && other.simple == to_s
+    else
+      to_s == other.to_s
+    end
+  end
   end
 
   # @param tab [Fixnum]

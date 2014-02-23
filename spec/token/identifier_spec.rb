@@ -46,4 +46,16 @@ describe Joos::Token::Identifier do
     expect(id.to_sym).to be == :Identifier
   end
 
+  it 'can be checked for equality with QualifiedIdentifier' do
+    id1  = Joos::Token::Identifier.new('hello', '', 0, 0)
+    id2  = Joos::Token::Identifier.new('bye', '', 0, 0)
+    qid1 = Joos::AST::QualifiedIdentifier.new([id1])
+    qid2 = Joos::AST::QualifiedIdentifier.new([id1, id2])
+
+    expect(id1).to     be == qid1
+    expect(id1).to_not be == qid2
+    expect(id2).to_not be == qid1
+    expect(id2).to_not be == qid2
+  end
+
 end
