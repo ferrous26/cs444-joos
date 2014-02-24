@@ -58,4 +58,14 @@ describe Joos::Token::Identifier do
     expect(id2).to_not be == qid2
   end
 
+  it 'returns itself as the #simple name' do
+    id = Joos::Token::Identifier.new('hi', 'bye', 1, 0)
+    expect(id.simple).to be id
+  end
+
+  it 'returns true for #simple' do
+    id = Joos::Token::Identifier.new('hi', 'bye', 1, 0)
+    expect(id).to be_simple
+  end
+
 end

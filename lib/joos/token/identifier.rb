@@ -58,6 +58,23 @@ class Joos::Token::Identifier < Joos::Token
       to_s == other.to_s
     end
   end
+
+  ##
+  # Whether or not the receiver represents a simple name
+  #
+  # An identifier is always a simple name.
+  def simple?
+    true
+  end
+
+  ##
+  # The simple name of the receiver
+  #
+  # The receiver is a simple name, so it just returns itself. This API
+  # exists so that {Identifier} and {Joos::AST::QualifiedIdentifier}
+  # are more interchangable.
+  def simple
+    self
   end
 
   # @param tab [Fixnum]
