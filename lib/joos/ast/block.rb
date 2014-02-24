@@ -6,7 +6,7 @@ class Joos::AST::Block
 
   def initialize nodes
     super
-    @nodes = self.BlockStatements.nodes if self.BlockStatements
+    @nodes = self.BlockStatements.to_a
     rescopify
   end
 
@@ -14,11 +14,13 @@ class Joos::AST::Block
 
   def rescopify
     statement_seen = false
-    self.each_with_index do |node, index|
+    @nodes.each_with_index do |node, index|
       if node.LocalVariableDeclarationStatement && statement_seen
-        new_statement = Joos::AST::BlockStatement.new([
-          Joos::AST::Statement.new([
-            Joos::AST::Block.new(nodes[index..-1])
+        new_statement = Joos::AST::BlockStatements.new([
+          Joos::AST::BlockStatement.new([
+            Joos::AST::Statement.new([
+              Joos::AST::Block.new(nodes[index..-1])
+            ])
           ])
         ])
         @nodes = @nodes[0...index] << new_statement
