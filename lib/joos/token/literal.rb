@@ -23,10 +23,6 @@ class Joos::Token
   module Bool
     include Joos::Token::Literal
     include Joos::Token::ConstantToken
-
-    def to_sym
-      :BooleanLiteral
-    end
   end
 
   ##
@@ -191,6 +187,10 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
       'true'
     end
 
+    def to_sym
+      :True
+    end
+
     CLASSES['true'] = self
   end
 
@@ -203,6 +203,10 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     # @return [String]
     def self.token
       'false'
+    end
+
+    def to_sym
+      :False
     end
 
     CLASSES['false'] = self

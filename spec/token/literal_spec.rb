@@ -142,9 +142,9 @@ describe Joos::Token::Literal do
       expect(Joos::Token::CLASSES['true']).to be Joos::Token::True
     end
 
-    it 'returns :BooleanLiteral from #to_sym' do
+    it 'returns :True from #to_sym' do
       token = Joos::Token::True.new('', '', 3, 4)
-      expect(token.to_sym).to be == :BooleanLiteral
+      expect(token.to_sym).to be == :True
     end
   end
 
@@ -161,9 +161,9 @@ describe Joos::Token::Literal do
       expect(Joos::Token::CLASSES['false']).to be Joos::Token::False
     end
 
-    it 'returns :BooleanLiteral from #to_sym' do
+    it 'returns :False from #to_sym' do
       token = Joos::Token::False.new('', '', 3, 4)
-      expect(token.to_sym).to be == :BooleanLiteral
+      expect(token.to_sym).to be == :False
     end
   end
 

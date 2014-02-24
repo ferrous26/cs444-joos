@@ -20,6 +20,10 @@ GRAMMAR = {
       [:BooleanLiteral],
       [:NullLiteral]
     ],
+    BooleanLiteral: [
+      [:True],
+      [:False]
+    ],
     Expression: [
       [:Assignment],
       [:SubExpression]
@@ -249,14 +253,14 @@ GRAMMAR = {
     ]
   },
 
-  terminals: [:Package, :Semicolon, :Identifier, :Dot, :IntegerLiteral, :CharacterLiteral, :StringLiteral,
-              :BooleanLiteral, :NullLiteral, :Equals, :Instanceof, :LazyOr, :LazyAnd, :EagerOr, :EagerAnd, :Equality, :NotEqual,
+  terminals: [:Package, :Semicolon, :Identifier, :Dot, :IntegerLiteral, :CharacterLiteral, :StringLiteral, :True, :False,
+              :NullLiteral, :Equals, :Instanceof, :LazyOr, :LazyAnd, :EagerOr, :EagerAnd, :Equality, :NotEqual,
               :LessThan, :GreaterThan, :LessOrEqual, :GreaterOrEqual, :Plus, :Minus, :Multiply, :Divide, :Modulo, :OpenParen,
               :CloseParen, :OpenBrace, :CloseBrace, :OpenStaple, :CloseStaple, :Byte, :Char, :Int, :Boolean, :Not, :This, :Void,
               :Class, :New, :Super, :Comma, :If, :Else, :For, :While, :Return, :Public, :Protected, :Static, :Abstract, :Final,
               :Native, :Import, :Implements, :Extends, :Interface, :Short, :EndProgram],
 
-  non_terminals: [:CompilationUnit, :QualifiedIdentifier, :Literal, :Expression, :Type,
+  non_terminals: [:CompilationUnit, :QualifiedIdentifier, :Literal, :Expression, :Type, :BooleanLiteral,
                   :SubExpression, :Infixop, :Term, :Selectors, :Primary, :Assignment,
                   :TermModifier, :Selector, :BasicType, :Arguments, :Expressions,
                   :Creator, :ArrayCreator,
