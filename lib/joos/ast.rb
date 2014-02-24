@@ -103,7 +103,7 @@ class Joos::AST
   # @param tab [Fixnum]
   # @return [String]
   def inspect tab = 0
-    base = "#{'  ' * tab}#{to_sym}\n"
+    base = "#{taby tab}#{to_sym}\n"
     @nodes.each do |node|
       base << node.inspect(tab + 1) << "\n"
     end
