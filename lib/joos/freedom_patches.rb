@@ -10,7 +10,7 @@ class Object
   # @param tab [Fixnum]
   # @return [String]
   def taby tab
-    '  ' * tab
+    '| ' * tab
   end
 
   # An object is blank if it's false, empty, or a whitespace string.

@@ -165,7 +165,7 @@ Bad input token found at #{token.source}
     #
     # @return [String]
     def inspect tab = 0
-      ('  ' * tab) + @token
+      (taby tab) + @token
     end
   end
 
