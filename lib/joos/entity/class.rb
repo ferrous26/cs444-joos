@@ -196,10 +196,10 @@ class Joos::Entity::Class < Joos::Entity
   # The default base class for any class that does not specify
   #
   # @return [Joos::AST::QualifiedIdentifier]
-  BASE_CLASS = Joos::AST::QualifiedIdentifier.new(
-   OBJECT.map do |id|
-     Joos::Token::Identifier.new(id, 'internal', 0, 0)
-   end)
+  BASE_CLASS =
+    Joos::AST::QualifiedIdentifier.new(OBJECT.map { |id|
+                                         Joos::Token.make(:Identifier, id)
+                                       })
 
   def set_superclass
     if fully_qualified_name == OBJECT

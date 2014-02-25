@@ -12,15 +12,15 @@ class Joos::Token
   include Joos::SourceInfo
 
   ##
-  # Shortcut for making new AST nodes internally
+  # Shortcut for making new Token objects internally
   #
   # @example
   #
-  #    statements = [make(:Statement, if_stmt), make(:Statement, for_loop)]
-  #    make :Block, :BlockStatements, *statements
+  #    token = Joos::Token.make :While, 'while'
+  #    token = Joos::Token.make :Identifier, 'hi'
   #
   # @param type [Symbol]
-  # @param nodes [Joos::AST, Joos::Token, Joos::Entity]
+  # @param value [String]
   def self.make type, value
     const_get(type, false).new value, 'internal', 0, 0
   end
