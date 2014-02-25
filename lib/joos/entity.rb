@@ -39,11 +39,49 @@ class Joos::Entity
     :Entity
   end
 
+
+  # @!group Source Info compatability
+
+  ##
+  # The source file where the entity originated.
+  # @return [String]
+  def file_name
+    name.file_name
+  end
+
+  ##
+  # The line where the entity begins in {#file_name}.
+  # @return [Fixnum]
+  def line_number
+    name.line_number
+  end
+
+  ##
+  # The column of the {#line_number} where the entity begins.
+  # @return [Fixnum]
+  def column
+    name.column
+  end
+
+  ##
+  # The formatted source information for the source code location of
+  # the entity.
+  # @return [String]
+  def source
+    name.source
+  end
+
+  # @!endgroup
+
+
   # @param tab [Fixnum]
   # @return [String]
   def inspect tab = 0
     taby(tab) << to_s
   end
+
+
+  private
 
   # @param sub [Joos::Entity]
   def self.inherited sub

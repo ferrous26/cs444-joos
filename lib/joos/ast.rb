@@ -130,6 +130,49 @@ class Joos::AST
   end
 
 
+  # @!group Source Info compatability
+
+  ##
+  # The source file where the tokens originated for the AST.
+  # @return [String]
+  def file_name
+    leftmost_terminal.file_name
+  end
+
+  ##
+  # The line where the tokens contained by this AST begin.
+  # @return [Fixnum]
+  def line_number
+    leftmost_terminal.line_number
+  end
+
+  ##
+  # The column of the line where the tokens contained by this AST
+  # begin.
+  # @return [Fixnum]
+  def column
+    leftmost_terminal.column
+  end
+
+  ##
+  # The formatted source information for the source code location of
+  # where the AST node begins.
+  # @return [String]
+  def source
+    leftmost_terminal.source
+  end
+
+  ##
+  # The left most leaf node of the AST, if it exists.
+  # @return [Joos::Token]
+  def leftmost_terminal
+    f = first
+    f.kind_of?(Joos::Token) ? f :  f.leftmost_terminal
+  end
+
+
+  private
+
   # @!group HERE BE DRAGONS
 
   # load the grammar so that we can determine what clasess to allocate

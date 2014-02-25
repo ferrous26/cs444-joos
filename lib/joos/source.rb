@@ -1,5 +1,8 @@
-require 'joos/colour'
+require 'joos/version'
 
+##
+# Mixin used in order to track source code location of various token
+# and AST nodes.
 module Joos::SourceInfo
   ##
   # File name, relative to current directory
@@ -26,10 +29,10 @@ module Joos::SourceInfo
   ##
   # Set source info to be the same as s
   # @param s [SourceInfo]
-  def set_source! s
-    @file_name = s.file_name
+  def set_source s
+    @file_name   = s.file_name
     @line_number = s.line_number
-    @column = s.column
+    @column      = s.column
   end
 end
 
@@ -39,7 +42,7 @@ end
 class Joos::Source
   include Joos::SourceInfo
 
-  def initialize file=nil, line=nil, column=nil
+  def initialize file = nil, line = nil, column = nil
     @file_name = file
     @line_number = line
     @column = column
