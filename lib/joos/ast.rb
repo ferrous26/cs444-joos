@@ -129,6 +129,15 @@ class Joos::AST
     end
   end
 
+  ##
+  # Recursively tell all children to build their scope environment
+  #
+  # @param parent [Joos::Scope, Joos::Entity::Method]
+  # @param type_enivornment [Joos::Entity::CompilationUnit]
+  def build parent, type_environment
+    @nodes.each { |node| node.build(parent, type_environment) }
+    self
+  end
 
   # @!group Source Info compatability
 

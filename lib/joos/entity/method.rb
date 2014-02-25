@@ -50,6 +50,7 @@ class Joos::Entity::Method < Joos::Entity
 
   # @return [Array<Entity::FormalParameter>]
   attr_reader :parameters
+  alias_method :variables, :parameters
 
   ##
   # This should only be `nil` for abstract methods.
@@ -103,10 +104,30 @@ class Joos::Entity::Method < Joos::Entity
   def link_declarations
     @type = resolve_type @type if @type.kind_of? Joos::AST
     @parameters.each(&:link_declarations)
+    @body.build(self, @unit) if @body # body building (tee hee)
   end
 
   def check_hierarchy
-    check_no_duplicate_param_names
+    check_no_overlapping_variables
+  end
+
+  ##
+  # Called recursively from {Joos::Scope#find_declaration} if a name
+  # does not match a local variable name.
+  #
+  # This method will need to check formal parameters for the correct linkage,
+  # and failing that will have to defer to its parent (class or interface) to
+  # try and resolve the name.
+  #
+  # @param qid [Joos::AST::QualifiedIdentifier, Joos::Token::Identifier]
+  def find_declaration qid
+    @parameters.find { |param| param.name == qid } || find_type(qid)
+  end
+
+  ##
+  # Dummy method
+  def children_scopes
+    []
   end
 
   # @!endgroup
@@ -131,11 +152,13 @@ class Joos::Entity::Method < Joos::Entity
     raise NonStaticNativeMethod.new(self) if native? && !static?
   end
 
-  def check_no_duplicate_param_names
-    @parameters.each do |param1|
-      matches = @parameters.select { |param2| param1.name == param2.name }
-      raise DuplicateParameterName.new(matches) if matches.size > 1
+  def check_no_overlapping_variables
+    @parameters.each do |p1|
+      dupes = @parameters.select { |p2| p1.name == p2.name }
+      raise DuplicateParameterName.new(dupes) if dupes.size > 1
     end
+
+    @body.check_no_overlapping_variables @parameters if @body
   end
 
 

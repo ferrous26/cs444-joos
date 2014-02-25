@@ -1,8 +1,10 @@
 require 'joos/ast'
+require 'joos/scope'
 
 ##
 # @todo Documentation
 class Joos::AST::Block
+  include Joos::Scope
 
   def initialize nodes
     super
