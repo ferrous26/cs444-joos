@@ -1,63 +1,52 @@
-require 'joos/version'
 require 'joos/ast'
 
 ##
-# @todo Documentation
+# AST node representing a Joos method statement.
 class Joos::AST::Statement
 
   def initialize nodes
     super
-    if self.For
-      new_block = Joos::AST::Block.new([
-        Joos::AST::BlockStatements.new([init_statement, while_block_statements])
-      ])
-      @nodes = [new_block]
-      new_block.parent = self
-    end
+    transform_for_loop if self.For
   end
+
 
   private
 
-  def condition
+  def transform_for_loop
+    @nodes = [make(:Block,
+                   make(:BlockStatements,
+                        while_init_statement, while_loop))]
+    @nodes.first.parent = self
+  end
+
+  def while_init_statement
+    make(:BlockStatement,
+         if self.ForInit.Type
+           make :LocalVariableDeclarationStatement, *self.ForInit.to_a
+         else
+           make :Statement, *self.ForInit.to_a
+         end)
+  end
+
+  def while_loop
+    make(:BlockStatement,
+         make(:Statement,
+              Joos::Token.make(:While, 'while'), while_condition, while_body))
+  end
+
+  def while_condition
     self.Expression ||
-      Joos::AST::BooleanLiteral.new([
-        Joos::Token::True.new("true", "internal", 0, 0)
-      ])
+      make(:BooleanLiteral, Joos::Token.make(:True, 'true'))
   end
 
-  def statement
-    Joos::AST::Block.new([
-      Joos::AST::BlockStatements.new(
-        if self.ForUpdate.Expression
-          [Joos::AST::BlockStatement.new([self.Statement]),
-          Joos::AST::BlockStatement.new([
-            Joos::AST::Statement.new([self.ForUpdate.Expression])
-          ])]
-        else
-          [Joos::AST::BlockStatement.new([self.Statement])]
-        end
-      )
-    ])
-  end
-
-  def while_block_statements
-    Joos::AST::BlockStatement.new([
-      Joos::AST::Statement.new([
-        Joos::Token::While.new("while", "internal", 0, 0),
-        condition,
-        statement
-      ])
-    ])
-  end
-
-  def init_statement
-    Joos::AST::BlockStatement.new([
-      if self.ForInit.Type
-        Joos::AST::LocalVariableDeclarationStatement.new(self.ForInit.nodes)
-      else
-        Joos::AST::Statement.new(self.ForInit.nodes)
-      end
-    ])
+  def while_body
+    make(:Block,
+         make(:BlockStatements,
+              make(:BlockStatement, self.Statement),
+              *if self.ForUpdate.Expression
+                 [make(:BlockStatement,
+                       make(:Statement, self.ForUpdate.Expression))]
+               end))
   end
 
 end

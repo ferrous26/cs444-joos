@@ -7,11 +7,26 @@ require 'joos/freedom_patches'
 class Joos::AST
   include Enumerable
 
-  # @return [Joos::AST]
-  attr_accessor :parent
+  ##
+  # Shortcut for making new AST nodes internally
+  #
+  # @example
+  #
+  #    statements = [make(:Statement, if_stmt), make(:Statement, for_loop)]
+  #    make :Block, :BlockStatements, *statements
+  #
+  # @param type [Symbol]
+  # @param nodes [Joos::AST, Joos::Token, Joos::Entity]
+  def self.make type, *nodes
+    Joos::AST.const_get(type, false).new nodes
+  end
+
 
   # @return [Array<Joos::AST, Joos::Token, Joos::Entity>]
   attr_reader :nodes
+
+  # @return [Joos::AST]
+  attr_accessor :parent
 
   # @param nodes [Array<Joos::AST, Joos::Token, Joos::Entity>]
   def initialize nodes
@@ -80,7 +95,7 @@ class Joos::AST
   ##
   # Optimized version of `Enumerable#to_a`
   #
-  # @return [Array<Joos::AST, Joos::Token>]
+  # @return [Array<Joos::AST, Joos::Token, Joos::Entity>]
   def to_a
     @nodes
   end
@@ -139,6 +154,7 @@ class Joos::AST
     self
   end
 
+
   # @!group Source Info compatability
 
   ##
@@ -181,6 +197,10 @@ class Joos::AST
 
 
   private
+
+  def make type, *nodes
+    self.class.make type, *nodes
+  end
 
   # @!group HERE BE DRAGONS
 

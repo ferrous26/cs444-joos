@@ -12,6 +12,21 @@ class Joos::Token
   include Joos::SourceInfo
 
   ##
+  # Shortcut for making new AST nodes internally
+  #
+  # @example
+  #
+  #    statements = [make(:Statement, if_stmt), make(:Statement, for_loop)]
+  #    make :Block, :BlockStatements, *statements
+  #
+  # @param type [Symbol]
+  # @param nodes [Joos::AST, Joos::Token, Joos::Entity]
+  def self.make type, value
+    const_get(type, false).new value, 'internal', 0, 0
+  end
+
+
+  ##
   # A mapping of strings to their corresponding class
   #
   # If you have a token and are not sure what the token class should be, use
