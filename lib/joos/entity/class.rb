@@ -24,6 +24,14 @@ class Joos::Entity::Class < Joos::Entity
     end
   end
 
+  class ConstructorNameMismatch < Joos::CompilerException
+    def initialize constructor
+      klass  = constructor.parent.name.cyan
+      source = constructor.source.red
+      super "Incorrect constructor name for class #{klass} on line #{source}"
+    end
+  end
+
   ##
   # Exception raised when a class claims a package/interface as its superclass
   #
@@ -151,6 +159,7 @@ class Joos::Entity::Class < Joos::Entity
     ensure_modifiers_not_present(:Protected, :Native, :Static)
     ensure_mutually_exclusive_modifiers(:Final, :Abstract)
     ensure_at_least_one_constructor
+    ensure_constructor_names_match
     constructors.each(&:validate)
     fields.each(&:validate)
     methods.each(&:validate)
@@ -248,6 +257,14 @@ class Joos::Entity::Class < Joos::Entity
 
   def ensure_at_least_one_constructor
     raise NoConstructorError.new(self) if @constructors.empty?
+  end
+
+  def ensure_constructor_names_match
+    constructors.each do |constructor|
+      unless constructor.name == name
+        raise ConstructorNameMismatch.new(constructor)
+      end
+    end
   end
 
   def link_superclass
