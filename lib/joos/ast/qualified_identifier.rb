@@ -33,7 +33,10 @@ class Joos::AST::QualifiedIdentifier
   # @return [Joos::Token::Identifier]
   alias_method :simple, :last
 
+  alias_method :first_prefix, :first
+
   def inspect tab = 0
     taby(tab) << (@nodes.map { |x| x.to_s.cyan }.join('.'))
   end
+
 end

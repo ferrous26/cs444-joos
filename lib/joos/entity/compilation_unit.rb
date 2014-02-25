@@ -127,6 +127,17 @@ module Joos::Entity::CompilationUnit
     end
   end
 
+  ##
+  # Exception raised during type resolution if a qualified identifiers simple
+  # prefix also resolves to a type.
+  class TypeMatchesPrefix < Joos::CompilerException
+    # @param qid [Joos::AST::QualifiedIdentifier]
+    def initialize qid
+      p = qid.first_prefix
+      s = qid.source.red
+      super "Prefix #{p.cyan} of #{qid.inspect} resolves a type [#{s}]"
+    end
+  end
 
   # @!endgroup
 
@@ -202,7 +213,18 @@ module Joos::Entity::CompilationUnit
   # @param qid [AST::QualifiedIdentifier]
   # @return [Joos::Entity::CompilationUnit, nil]
   def find_type qid
-    qid.simple? ? find_simple_type(qid.simple) : Joos::Package.find(qid)
+    if qid.simple?
+      find_simple_type qid.simple
+
+    else
+      # we must check the proper prefixes of a qualified id first...
+      internal = find_simple_type qid.first_prefix
+      if internal.kind_of? Joos::Entity::CompilationUnit
+        raise TypeMatchesPrefix.new(qid)
+      end
+
+      Joos::Package.find qid
+    end
   end
 
   ##
