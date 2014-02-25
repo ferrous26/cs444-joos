@@ -48,7 +48,7 @@ describe Joos::Entity do
   it 'provides a default impl of #inspect' do
     token = Joos::Token::Identifier.new('canopy', 'roof.java', 1, 3)
     e = Joos::Entity.new token
-    expect(e.inspect 1).to match(/^  Entity:/)
+    expect(e.inspect 1).to match(/ Entity:/)
   end
 
 end
