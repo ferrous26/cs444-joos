@@ -1,6 +1,8 @@
 require 'joos/entity'
 require 'joos/entity/compilation_unit'
 require 'joos/entity/modifiable'
+require 'joos/entity/implementor'
+require 'joos/entity/callable'
 
 ##
 # Entity representing the definition of a interface.
@@ -13,22 +15,8 @@ require 'joos/entity/modifiable'
 class Joos::Entity::Interface < Joos::Entity
   include CompilationUnit
   include Modifiable
-
-  ##
-  # The superinterfaces of the receiver.
-  #
-  # @return [Array<Interface>]
-  attr_reader :superinterfaces
-  alias_method :interfaces, :superinterfaces
-
-  ##
-  # All fields and methods defined on the class.
-  #
-  # Not including fields and methods defined in ancestor classes or
-  # interfaces.
-  #
-  # @return [Array<Method>]
-  attr_reader :methods
+  include Implementor
+  include Callable
 
   # @param compilation_unit [Joos::AST::CompilationUnit]
   def initialize compilation_unit

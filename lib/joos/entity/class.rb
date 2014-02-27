@@ -1,6 +1,8 @@
 require 'joos/entity'
 require 'joos/entity/compilation_unit'
 require 'joos/entity/modifiable'
+require 'joos/entity/implementor'
+require 'joos/entity/callable'
 require 'joos/exceptions'
 
 ##
@@ -11,6 +13,8 @@ require 'joos/exceptions'
 class Joos::Entity::Class < Joos::Entity
   include CompilationUnit
   include Modifiable
+  include Implementor
+  include Callable
 
 
   # @!group Exceptions
@@ -91,7 +95,6 @@ class Joos::Entity::Class < Joos::Entity
     end
   end
 
-
   # @!endgroup
 
 
@@ -102,13 +105,6 @@ class Joos::Entity::Class < Joos::Entity
   #
   # @return [Class, nil]
   attr_reader :superclass
-
-  ##
-  # Interfaces that the receiver conforms to.
-  #
-  # @return [Array<Interface>]
-  attr_reader :superinterfaces
-  alias_method :interfaces, :superinterfaces
 
   ##
   # Constructors implemented on the class.
@@ -125,16 +121,6 @@ class Joos::Entity::Class < Joos::Entity
   #
   # @return [Array<Field>]
   attr_reader :fields
-
-  ##
-  # All methods defined on the class.
-  #
-  # Not including fields and methods defined in ancestor classes. If
-  # an interface method is defined in this class then you can find the
-  # definition here.
-  #
-  # @return [Array<Method>]
-  attr_reader :methods
 
   # @param compilation_unit [Joos::AST::CompilationUnit]
   def initialize compilation_unit
@@ -190,7 +176,6 @@ class Joos::Entity::Class < Joos::Entity
     check_superclass_is_not_final
     check_constructors_have_unique_names
     fields.each(&:check_hierarchy)
-    methods.each(&:check_hierarchy)
     constructors.each(&:check_hierarchy)
   end
 
@@ -225,7 +210,8 @@ class Joos::Entity::Class < Joos::Entity
   end
 
   def set_interfaces
-    @superinterfaces = @node.TypeDeclaration.ClassDeclaration.TypeList || []
+    @superinterfaces = @node.TypeDeclaration.ClassDeclaration.TypeList ||
+    []
   end
 
   def set_members
