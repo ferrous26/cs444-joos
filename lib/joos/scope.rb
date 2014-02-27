@@ -76,4 +76,15 @@ module Joos::Scope
     end
   end
 
+  ##
+  # Find the closest enclosing scope of the AST node.
+  #
+  # In the case of a {Joos::Scope}, the closest enclosing scope is
+  # `self`.
+  #
+  # @return [Joos::Scope]
+  def scope
+    self
+  end
+
 end

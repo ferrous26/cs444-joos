@@ -130,6 +130,17 @@ class Joos::AST
   end
 
   ##
+  # Find the closest enclosing scope of the AST node.
+  #
+  # That is, travel up the AST until you find a parent which is a
+  # {Joos::Scope}.
+  #
+  # @return [Joos::Scope]
+  def scope
+    parent.scope
+  end
+
+  ##
   # Mixin used for AST nodes which represent a list of nodes but have
   # been modeled as a tree due to the way the parser works.
   module ListCollapse

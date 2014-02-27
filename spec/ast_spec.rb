@@ -3,6 +3,8 @@ require 'joos/ast'
 
 describe Joos::AST do
 
+  ast = Joos::AST
+
   it 'should generate a class for each non-terminal' do
     # we will just poke at some of the class
     expect(Joos::AST.constants).to include :QualifiedIdentifier
@@ -45,6 +47,18 @@ describe Joos::AST do
     node.nodes.clear
     expect(node.last).to be_nil
     expect(node).to be_empty
+  end
+
+  it 'finds the closest enclosing #scope' do
+    bottom = ast.make :Block
+    top    = ast.make(:Block,
+                      ast.make(:BlockStatements,
+                               ast.make(:BlockStatement,
+                                        ast.make(:Statement,
+                                                 bottom))))
+    expect(bottom.parent.scope).to be top
+    expect(bottom.parent.parent.scope).to be top
+    expect(bottom.parent.parent.parent.scope).to be top
   end
 
 end
