@@ -1,5 +1,5 @@
 public class J1_ForLoopTransformation {
-  public J1_ForLoopTransformion() {
+  public J1_ForLoopTransformation() {
     for (;;) {}
     for (;;) puts(i);
     for (int i = 0;;) {}
