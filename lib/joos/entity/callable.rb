@@ -26,6 +26,7 @@ module Joos::Entity::Callable
   def check_hierarchy
     super
     check_methods_have_unique_names
+    methods.each(&:check_hierarchy)
   end
 
   def link_identifiers
