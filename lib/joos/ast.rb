@@ -36,12 +36,15 @@ class Joos::AST
     end
   end
 
-  ##
-  # This implementation of `#each` does not support returning
-  # an enumerator.
-  #
-  def each
-    @nodes.each { |node| yield node }
+  # @yield Each node in the tree will be yield in depth first order
+  # @yieldparam parent [Joos::AST, Joos::Token, Joos::Entity]
+  # @yieldparam node [Joos::AST, Joos::Token, Joos::Entity]
+  def visit &block
+    nodes.each do |node|
+      block.call self, node
+      node.visit(&block) if node.respond_to? :visit
+    end
+    self
   end
 
   ##
@@ -55,16 +58,16 @@ class Joos::AST
     @nodes.find { |node| node.to_sym == type }
   end
 
-  # @yield Each node in the tree will be yield in depth first order
-  # @yieldparam parent [Joos::AST, Joos::Token, Joos::Entity]
-  # @yieldparam node [Joos::AST, Joos::Token, Joos::Entity]
-  def visit &block
-    nodes.each do |node|
-      block.call self, node
-      node.visit(&block) if node.respond_to? :visit
-    end
-    self
+  # @!group Enumerable
+
+  ##
+  # This implementation of `#each` does not support returning
+  # an enumerator.
+  #
+  def each
+    @nodes.each { |node| yield node }
   end
+
   ##
   # Whether or not the node has any children
   #
@@ -88,6 +91,8 @@ class Joos::AST
   def to_a
     @nodes
   end
+
+  # @!endgroup
 
   ##
   # Generic validation for the AST node.
@@ -115,6 +120,16 @@ class Joos::AST
   end
 
   ##
+  # Recursively tell all children to build their scope environment
+  #
+  # @param parent [Joos::Scope, Joos::Entity::Method]
+  # @param type_enivornment [Joos::Entity::CompilationUnit]
+  def build parent, type_environment
+    @nodes.each { |node| node.build(parent, type_environment) }
+    self
+  end
+
+  ##
   # Mixin used for AST nodes which represent a list of nodes but have
   # been modeled as a tree due to the way the parser works.
   module ListCollapse
@@ -132,17 +147,6 @@ class Joos::AST
       @nodes.each { |node| node.parent = self if node.kind_of? Joos::AST }
     end
   end
-
-  ##
-  # Recursively tell all children to build their scope environment
-  #
-  # @param parent [Joos::Scope, Joos::Entity::Method]
-  # @param type_enivornment [Joos::Entity::CompilationUnit]
-  def build parent, type_environment
-    @nodes.each { |node| node.build(parent, type_environment) }
-    self
-  end
-
 
   # @!group Source Info compatability
 
