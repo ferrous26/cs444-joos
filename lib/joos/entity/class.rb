@@ -184,19 +184,16 @@ class Joos::Entity::Class < Joos::Entity
   private
 
   # @private
-  OBJECT = ['java', 'lang', 'Object']
+  root = ['java', 'lang', 'Object'].map { |s| Joos::Token.make :Identifier, s }
 
   ##
   # The default base class for any class that does not specify
   #
   # @return [Joos::AST::QualifiedIdentifier]
-  BASE_CLASS =
-    Joos::AST::QualifiedIdentifier.new(OBJECT.map { |id|
-                                         Joos::Token.make(:Identifier, id)
-                                       })
+  BASE_CLASS = Joos::AST.make :QualifiedIdentifier, *root
 
   def set_superclass
-    if fully_qualified_name == OBJECT
+    if BASE_CLASS == fully_qualified_name
       if @node.TypeDeclaration.ClassDeclaration.QualifiedIdentifier
         # @todo proper exception
         raise 'you tried to give java.lang.Object a superclass'
@@ -254,7 +251,7 @@ class Joos::Entity::Class < Joos::Entity
   end
 
   def link_superclass
-    return unless superclass
+    return unless superclass # handle the root class :(
     @superclass = get_type superclass
     unless @superclass.is_a? Joos::Entity::Class
       raise NonClassSuperclass.new(self)
