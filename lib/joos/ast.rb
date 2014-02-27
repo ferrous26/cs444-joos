@@ -65,17 +65,6 @@ class Joos::AST
     end
     self
   end
-
-  ##
-  # Swap the node with the given type with the given new node
-  #
-  # @param old_node_type [Symbol]
-  # @param new_node [Joos::AST, Joos::Entity, Joos::Token]
-  def transform old_node_type, new_node
-    idx = @nodes.find_index { |old_node| old_node.type == old_node_type }
-    @nodes[idx] = new_node
-  end
-
   ##
   # Whether or not the node has any children
   #
