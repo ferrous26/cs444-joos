@@ -129,7 +129,7 @@ class Joos::Entity::Method < Joos::Entity
   end
 
   ##
-  # Dummy method
+  # Dummy method to be consistent with the {Joos::Block} API.
   def children_scopes
     []
   end
