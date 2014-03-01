@@ -10,7 +10,8 @@ class Joos::AST::Term
   class BadCast < Joos::CompilerException
     # @todo Report file and line information
     def initialize node
-      super 'Type casts must be basic or reference types only'
+      header = "Illegal cast detected at #{node.source.red}"
+      super "#{header}. Type casts must be basic or reference types only"
     end
   end
 
@@ -52,6 +53,10 @@ class Joos::AST::Term
     fix_qualified_identifiers
   end
 
+  def ArrayType
+    search :ArrayType
+  end
+
   ##
   # Validate Joos type casting
   def validate _
@@ -64,18 +69,30 @@ class Joos::AST::Term
   private
 
   def fix_qualified_identifiers
-    return unless self.QualifiedIdentifier && @nodes.size > 1
+    if self.QualifiedIdentifier
+      if self.Arguments || self.Expression
+        fix_qualified_identifier_selectors
+      elsif self.OpenStaple
+        fix_qualified_identifier_type
+      end
+    end
+  end
 
+  def fix_qualified_identifier_selectors
     selector = if self.Arguments
                  suffix = self.QualifiedIdentifier.suffix!
                  make(:Selector,
                       Joos::Token.make(:Dot, '.') , suffix, self.Arguments)
-               elsif self.OpenStaple
+               else
                  make(:Selector, *@nodes[1..3])
                end
 
     self.Selectors.prepend selector
     @nodes = [@nodes.first, @nodes.last]
+  end
+
+  def fix_qualified_identifier_type
+    reparent make(:ArrayType, *@nodes), at_index: 0
   end
 
   def validate_against_multi_dimensional_arrays

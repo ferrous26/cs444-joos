@@ -49,6 +49,8 @@ GRAMMAR = {
     ],
     SubExpression: [
       [:Term],
+      # this case is subsumed by the next case during run time
+      [:Term, :Instanceof, :ArrayType],
       [:Term, :Infixop, :SubExpression]
     ],
     Infixop: [
@@ -71,14 +73,18 @@ GRAMMAR = {
     ],
     Term: [
       [:TermModifier, :Term],
-      [:OpenParen, :Expression, :CloseParen, :Term],
+      [:OpenParen, :Expression,                            :CloseParen, :Term],
       [:OpenParen, :Expression, :OpenStaple, :CloseStaple, :CloseParen, :Term],
-      [:OpenParen, :BasicType, :CloseParen, :Term],
-      [:OpenParen, :BasicType, :OpenStaple, :CloseStaple, :CloseParen, :Term],
-      [:Primary, :Selectors],
+      [:OpenParen, :BasicType,                             :CloseParen, :Term],
+      [:OpenParen, :BasicType,  :OpenStaple, :CloseStaple, :CloseParen, :Term],
+
+      [:Primary,                                                      :Selectors],
+
+      # [:ArrayType]
       [:QualifiedIdentifier],
-      [:QualifiedIdentifier, :OpenStaple, :Expression, :CloseStaple, :Selectors],
-      [:QualifiedIdentifier, :Arguments, :Selectors]
+      [:QualifiedIdentifier, :OpenStaple,               :CloseStaple],
+      [:QualifiedIdentifier, :OpenStaple, :Expression,  :CloseStaple, :Selectors],
+      [:QualifiedIdentifier,              :Arguments,                 :Selectors]
     ],
     TermModifier: [
       [:Not],
