@@ -46,6 +46,12 @@ class Joos::AST::Term
     end
   end
 
+
+  def initialize nodes
+    super
+    fix_qualified_identifiers
+  end
+
   ##
   # Validate Joos type casting
   def validate _
@@ -57,6 +63,21 @@ class Joos::AST::Term
 
   private
 
+  def fix_qualified_identifiers
+    return unless self.QualifiedIdentifier && @nodes.size > 1
+
+    selector = if self.Arguments
+                 suffix = self.QualifiedIdentifier.suffix!
+                 make(:Selector,
+                      Joos::Token.make(:Dot, '.') , suffix, self.Arguments)
+               elsif self.OpenStaple
+                 make(:Selector, *@nodes[1..3])
+               end
+
+    self.Selectors.prepend selector
+    @nodes = [@nodes.first, @nodes.last]
+  end
+
   def validate_against_multi_dimensional_arrays
     if self.Primary.Creator && self.Selectors.Selector.OpenStaple
       raise MultiDimensionalArray.new(self)
@@ -67,18 +88,20 @@ class Joos::AST::Term
     # pretty sure we only cast if these are present, but
     # if BasicType is inside the parens then we're done because
     #   this is an ok cast (as far as parsing is concerned)
-    return unless self.OpenParen && self.Term && !(self.BasicType)
-    exception = BadCast.new(self)
+    return unless self.OpenParen && self.Term && !self.BasicType
+    exception = BadCast.new self
+
     # otherwise, look at the expression and see if it is just
     # a qualified identifier with no selectors or arguments, and
     # no more terms after it
     expr = self.Expression.SubExpression
     raise exception unless expr
     raise exception unless expr.SubExpression.blank?
-    raise exception unless expr.Term
+
     expr = expr.Term
+    raise exception unless expr
     raise exception unless expr.Selectors.blank?
-    raise exception if expr.Arguments
+    raise exception unless expr.Arguments.blank?
     raise exception unless expr.QualifiedIdentifier
   end
 
