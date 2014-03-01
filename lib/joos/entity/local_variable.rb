@@ -25,7 +25,8 @@ class Joos::Entity::LocalVariable < Joos::Entity
   end
 
   def inspect tab = 0
-    "#{name.cyan}: #{inspect_type @type} =\n#{initializer.inspect(tab + 1)}"
+    "#{taby tab}#{name.cyan}: #{inspect_type @type} =\n" <<
+      "#{initializer.inspect(tab + 1)}"
   end
 
 
