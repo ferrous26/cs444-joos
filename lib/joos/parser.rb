@@ -7,7 +7,45 @@ require 'joos/exceptions'
 class Joos::Parser
   require 'parser_rules'
 
+  TRANSITIONS = PARSER_RULES[:transitions]
+  REDUCTIONS  = PARSER_RULES[:reductions]
+
+  ##
+  # Exception raised when a parsing failure occurs due to an unexpected token
+  # being processed.
+  class UnexpectedToken < Joos::CompilerException
+
+    # @return [Joos::Parser]
+    attr_reader :parser
+
+    ##
+    # The offending token
+    #
+    # @return [Joos::Token]
+    attr_reader :token
+
+    def initialize parser, token
+      @parser = parser
+      @token  = token
+      syms    = all_symbols.inspect
+      source  = token.source.red
+      super "Expected one of #{syms}, but got #{token.inspect} from #{source}"
+    end
+
+
+    private
+
+    def all_symbols
+      s = REDUCTIONS[parser.current_state].keys.reduce { |a, e| a.concat e }
+      s.concat TRANSITIONS[parser.current_state].keys
+      s.uniq!
+      s
+    end
+  end
+
+  # @return [Array<Joos::Token>]
   attr_reader :token_stream
+
   attr_reader :state_stack
   attr_reader :ast_stack
 
@@ -15,8 +53,6 @@ class Joos::Parser
     @token_stream = [:EndProgram] + Array(token_stream).reverse
     @state_stack  = [0]
     @ast_stack    = []
-    @transitions  = PARSER_RULES[:transitions]
-    @reductions   = PARSER_RULES[:reductions]
   end
 
   ##
@@ -48,18 +84,22 @@ class Joos::Parser
   def parse
     until @token_stream.empty?
       token = @token_stream.last
-      $stderr.safe_puts "Parsing #{token} from state #{current_state}" if $DEBUG
+      parser_debug token if $DEBUG
       oracle(token).process(self, token)
     end
     @ast_stack.pop
     @ast_stack.pop
   end
 
+  def current_state
+    @state_stack.last
+  end
+
 
   private
 
-  def current_state
-    @state_stack.last
+  def parser_debug token
+    $stderr.safe_puts "Parsing #{token} from state #{current_state}"
   end
 
   def oracle token
@@ -69,27 +109,16 @@ class Joos::Parser
       get_transition(:Else) || get_reduction(:Else)
     else
       get_reduction(token_sym) || get_transition(token_sym)
-    end || raise_parse_error(token)
+    end || (raise UnexpectedToken.new(self, token))
   end
 
   def get_reduction token_sym
     # to_a is called to take care of the nil case
-    @reductions[current_state].find { |arr,_| arr.include? token_sym }.to_a.last
+    REDUCTIONS[current_state].find { |arr, _| arr.include? token_sym }.to_a.last
   end
 
   def get_transition token_sym
-    @transitions[current_state].fetch token_sym, nil
-  end
-
-  def raise_parse_error token
-    all_symbols = []
-    @reductions[current_state].keys.each do |symbols|
-      all_symbols +=symbols
-    end
-    all_symbols += @transitions[current_state].keys
-    all_symbols.uniq!
-
-    raise Joos::CompilerException, "Expected one of #{all_symbols.inspect}, but got #{token.inspect}"
+    TRANSITIONS[current_state].fetch token_sym, nil
   end
 
 end
