@@ -215,7 +215,7 @@ GRAMMAR = {
       [:Semicolon],
       # Field
       [:Modifiers, :Type, :Identifier, :Semicolon],
-      [:Modifiers, :Type, :Identifier, :Equals, :Expression, :Semicolon],
+      [:Modifiers, :Type, :Identifier, :Equals, :SubExpression, :Semicolon],
       # Methods
       [:Modifiers, :Void, :Identifier, :MethodDeclaratorRest],
       [:Modifiers, :Type, :Identifier, :MethodDeclaratorRest],
