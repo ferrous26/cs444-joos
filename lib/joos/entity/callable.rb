@@ -30,7 +30,7 @@ module Joos::Entity::Callable
   end
 
   def link_identifiers
-    # methods.each(&:link_identifiers)
+    methods.each(&:link_identifiers)
   end
 
 

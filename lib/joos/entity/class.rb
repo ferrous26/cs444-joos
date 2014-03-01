@@ -179,6 +179,11 @@ class Joos::Entity::Class < Joos::Entity
     constructors.each(&:check_hierarchy)
   end
 
+  def link_identifiers
+    super
+    constructors.each(&:link_identifiers)
+    fields.each(&:link_identifiers)
+  end
 
 
   private

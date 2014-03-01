@@ -140,6 +140,10 @@ class Joos::AST
     parent.scope
   end
 
+  def link_identifiers
+    @nodes.each(&:link_identifiers)
+  end
+
   ##
   # Mixin used for AST nodes which represent a list of nodes but have
   # been modeled as a tree due to the way the parser works.

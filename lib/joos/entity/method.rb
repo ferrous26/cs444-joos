@@ -111,6 +111,10 @@ class Joos::Entity::Method < Joos::Entity
     check_no_overlapping_variables
   end
 
+  def link_identifiers
+    @body.link_identifiers if @body
+  end
+
   ##
   # Called recursively from {Joos::Scope#find_declaration} if a name
   # does not match a local variable name.

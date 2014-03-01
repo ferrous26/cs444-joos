@@ -128,6 +128,10 @@ class Joos::Token
     # nop
   end
 
+  def link_identifiers
+    # nop
+  end
+
   # @!endgroup
 
 
