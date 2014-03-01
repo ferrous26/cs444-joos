@@ -96,7 +96,7 @@ class Joos::Token
     # type for the right hand operand.
     class InvalidReferenceType < Joos::CompilerException
       def initialize op
-        l = op.source
+        l = op.source.red
         super "#{l} | instanceof expects a reference type as the right operand"
       end
     end
