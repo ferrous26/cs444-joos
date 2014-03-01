@@ -202,6 +202,10 @@ Bad input token found at #{token.source}
     def inspect tab = 0
       (taby tab) + @token
     end
+
+    def to_s
+      @token.to_s
+    end
   end
 
   require 'joos/token/keyword'

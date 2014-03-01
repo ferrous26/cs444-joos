@@ -130,6 +130,19 @@ class Joos::AST
     base.chomp!
   end
 
+  def to_s
+    head = "AST::#{to_sym}"
+
+    node_syms = @nodes.map(&:to_sym)
+    tail      = node_syms.join(', ')
+    while head.length + tail.length > 90
+      node_syms.pop
+      tail = node_syms.join(', ') << ', ...'
+    end
+
+    "#{head} [#{tail}]"
+  end
+
   ##
   # Recursively tell all children to build their scope environment
   #
