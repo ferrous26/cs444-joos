@@ -33,7 +33,26 @@ class Joos::AST::QualifiedIdentifier
   # @return [Joos::Token::Identifier]
   alias_method :simple, :last
 
-  alias_method :first_prefix, :first
+  ##
+  # Return the first component of the qualified identifier.
+  #
+  # @return [Joos::Token::Identifier]
+  alias_method :prefix, :first
+
+  ##
+  # Return the last component of the qualified identifier.
+  #
+  # @return [Joos::Token::Identifier]
+  alias_method :suffix, :last
+
+  ##
+  # Break off the last identifier in the qualified identifier
+  # and return it.
+  #
+  # @return [Joos::Token::Identifier]
+  def suffix!
+    @nodes.pop
+  end
 
   def inspect tab = 0
     taby(tab) << (@nodes.map { |x| x.to_s.cyan }.join('.'))

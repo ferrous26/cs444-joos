@@ -77,7 +77,7 @@ module Joos::Entity::CompilationUnit
   class TypeMatchesPrefix < Joos::CompilerException
     # @param qid [Joos::AST::QualifiedIdentifier]
     def initialize qid
-      p = qid.first_prefix
+      p = qid.prefix
       s = qid.source.red
       super "Prefix #{p.cyan} of #{qid.inspect} resolves a type [#{s}]"
     end
@@ -162,7 +162,7 @@ module Joos::Entity::CompilationUnit
 
     else
       # we must check the proper prefixes of a qualified id first...
-      internal = find_simple_type qid.first_prefix
+      internal = find_simple_type qid.prefix
       if internal.kind_of? Joos::Entity::CompilationUnit
         raise TypeMatchesPrefix.new(qid)
       end

@@ -45,4 +45,26 @@ describe Joos::AST::QualifiedIdentifier do
     expect(qid.simple).to be == :b
   end
 
+  it 'responds to #prefix with the first identifier' do
+    nodes = [:a, :b]
+    qid   = Joos::AST::QualifiedIdentifier.new(nodes)
+    expect(qid.prefix).to be :a
+    expect(qid.prefix).to be :a
+  end
+
+  it 'responds to #suffix with the last identifier' do
+    nodes = [:a, :b]
+    qid   = Joos::AST::QualifiedIdentifier.new(nodes)
+    expect(qid.suffix).to be :b
+    expect(qid.suffix).to be :b
+  end
+
+  it 'responds to #suffix! destructively' do
+    nodes = [:a, :b]
+    qid   = Joos::AST::QualifiedIdentifier.new(nodes)
+    expect(qid.suffix!).to be :b
+    expect(qid.suffix!).to be :a
+    expect(qid.suffix!).to be nil
+  end
+
 end
