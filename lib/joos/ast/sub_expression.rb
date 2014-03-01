@@ -1,7 +1,7 @@
 require 'joos/ast'
 
 ##
-# @todo Documentation
+# A sub-expression is any expression that is not an assignment.
 class Joos::AST::SubExpression
 
   def initialize nodes
