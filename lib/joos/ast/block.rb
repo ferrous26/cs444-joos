@@ -24,7 +24,8 @@ class Joos::AST::Block
                      make(:Statement,
                           make(:Block,
                                make(:BlockStatements, *@nodes[index..-1]))))
-        @nodes = (@nodes.take(index) << block)
+        @nodes = @nodes.take index
+        reparent block, at_index: @nodes.size
         return # we just fucked with the array we are enumerating, so bail!
       elsif node.Statement
         statement_seen = true

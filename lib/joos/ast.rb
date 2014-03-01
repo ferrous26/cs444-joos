@@ -58,6 +58,17 @@ class Joos::AST
     @nodes.find { |node| node.to_sym == type }
   end
 
+  ##
+  # Destructively replace
+  #
+  # @param node [Joos::AST, Joos::Token, Joos::Entity]
+  # @param at_index [Fixnum]
+  def reparent node, at_index: nil
+    @nodes[at_index] = node
+    node.parent      = self
+  end
+
+
   # @!group Enumerable
 
   ##

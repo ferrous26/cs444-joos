@@ -6,6 +6,7 @@ class Joos::AST::Selectors
   include ListCollapse
 
   def prepend selector
+    selector.parent = self
     @nodes.unshift selector
   end
 end
