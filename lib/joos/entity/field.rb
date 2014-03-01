@@ -20,7 +20,7 @@ class Joos::Entity::Field < Joos::Entity
   end
 
 
-  # @return [Joos::AST::Expression]
+  # @return [Joos::AST::Block]
   attr_reader :initializer
 
   # @param node [Joos::AST::ClassBodyDeclaration]
@@ -29,7 +29,7 @@ class Joos::Entity::Field < Joos::Entity
     @node        = node
     super node.Identifier, node.Modifiers
     @type        = node.Type
-    @initializer = node.Expression
+    @initializer = wrap_initializer node.SubExpression
     @unit        = parent
   end
 
@@ -47,21 +47,48 @@ class Joos::Entity::Field < Joos::Entity
 
   def link_declarations
     @type = resolve_type @type
-    # @todo @initializer.link_declarations(self) if @initializer
+    @initializer.build(self, @unit) if @initializer
   end
 
   def check_hierarchy
-    # nop
+    # @todo check_static_fields_do_not_use_this
   end
 
   def link_identifiers
     @initializer.link_identifiers if @initializer
   end
 
+  ##
+  # Called recursively from {Joos::Scope#find_declaration} if a name
+  # does not match a local variable name.
+  #
+  # This method will need to just pass the search along to the next level
+  # of abstraction.
+  #
+  # @param qid [Joos::AST::QualifiedIdentifier, Joos::Token::Identifier]
+  def find_declaration qid
+    find_type qid
+  end
+
+  ##
+  # Dummy method to be consistent with the {Joos::Block} API.
+  def children_scopes
+    []
+  end
+
   # @!endgroup
 
 
   private
+
+  def wrap_initializer expr
+    return unless expr
+    ast = Joos::AST
+    ast.make(:Block,
+             ast.make(:BlockStatements,
+                      ast.make(:BlockStatement,
+                               ast.make(:Statement, expr))))
+  end
 
   def ensure_final_field_is_initialized
     if modifiers.include? :Final
