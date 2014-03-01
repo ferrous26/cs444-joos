@@ -42,6 +42,9 @@ class Joos::Array
     '['.yellow << @type.type_inspect << ']'.yellow
   end
 
-  # @!endgroup
+
+  # @!group Inspect
+
+  alias_method :to_s, :type_inspect
 
 end
