@@ -22,8 +22,8 @@ class Joos::Token
   require 'joos/token/literal/boolean'
   require 'joos/token/literal/null'
   require 'joos/token/literal/integer'
-  require 'joos/token/literal/float'
-  require 'joos/token/literal/char'
+  require 'joos/token/literal/floating_point'
+  require 'joos/token/literal/character'
   require 'joos/token/literal/string'
 
 end
