@@ -37,6 +37,13 @@ INPUT
 =====
 #{files.map { |f| f + ":\n" + File.read(f) }.join("\n\n")}
        EOM
+      else
+        short_list = files.flatten.reject { |file| file.match(/stdlib/) }
+        message << <<-EOM
+FILES
+=======
+#{short_list.join(' ')}
+        EOM
       end
 
       message
