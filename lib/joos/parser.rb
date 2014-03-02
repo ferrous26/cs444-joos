@@ -28,15 +28,16 @@ class Joos::Parser
       @parser = parser
       @token  = token
       syms    = all_symbols.inspect
+      inspect = "`#{token.inspect}'"
       source  = token.source.red
-      super "Expected one of #{syms}, but got #{token.inspect} from #{source}"
+      super "Expected one of #{syms}, but got #{inspect} from #{source}"
     end
 
 
     private
 
     def all_symbols
-      s = REDUCTIONS[parser.current_state].keys.reduce { |a, e| a.concat e }
+      s = REDUCTIONS[parser.current_state].keys.reduce([], :concat)
       s.concat TRANSITIONS[parser.current_state].keys
       s.uniq!
       s
