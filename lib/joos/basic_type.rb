@@ -8,9 +8,10 @@ class Joos::BasicType
 
   class << self
     # @private
-    def inherited klass
-      name = klass.name.split('::').last.to_sym # lame
-      TYPES[name] = klass
+    def register klass, *names
+      names.each do |name|
+        TYPES[name] = klass
+      end
     end
 
     # @param token [Joos::Token]
