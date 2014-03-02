@@ -32,10 +32,6 @@ class Joos::Entity::LocalVariable < Joos::Entity
 
   # @!group Assignment 2
 
-  def check_hierarchy
-    # nop
-  end
-
   def link_identifiers
     @initializer.link_identifiers
   end
