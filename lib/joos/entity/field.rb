@@ -29,7 +29,7 @@ class Joos::Entity::Field < Joos::Entity
     @node        = node
     super node.Identifier, node.Modifiers
     @type        = node.Type
-    @initializer = wrap_initializer node.SubExpression
+    @initializer = wrap_initializer node.Expression
     @unit        = parent
   end
 
