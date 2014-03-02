@@ -3,6 +3,8 @@ require 'joos/entity/compilation_unit'
 require 'joos/entity/modifiable'
 require 'joos/entity/implementor'
 require 'joos/entity/callable'
+require 'joos/token/identifier'
+require 'joos/ast'
 require 'joos/exceptions'
 
 ##
