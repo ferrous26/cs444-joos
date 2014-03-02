@@ -80,14 +80,14 @@ GRAMMAR = {
       [:OpenParen, :BasicType,                             :CloseParen, :Term],
       [:OpenParen, :BasicType,  :OpenStaple, :CloseStaple, :CloseParen, :Term],
 
-      [:Primary, :Selectors],
+      [:Primary,             :Selectors],
+      [:QualifiedIdentifier, :Selectors],
 
       # [:ArrayType]
       # this case arises from naming a type which is an array (e.g. String[])
       # and will be transformed into an ArrayType node at runtime
       [:QualifiedIdentifier, :OpenStaple, :CloseStaple],
 
-      [:QualifiedIdentifier,              :Selectors],
       # this case arises from method calls to "this", and will be transformed
       # into Primary-Selectors at runtime
       [:QualifiedIdentifier, :Arguments,  :Selectors]
