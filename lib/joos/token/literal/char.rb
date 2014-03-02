@@ -40,6 +40,10 @@ class Joos::Token::Character < Joos::Token
     :CharacterLiteral
   end
 
+  def type
+    Joos::BasicType::Char.new self
+  end
+
   def inspect tab = 0
     "#{taby tab}#{QUOTE}#{value.magenta}#{QUOTE} from #{source.red}"
   end

@@ -90,6 +90,9 @@ class Joos::Token::Integer < Joos::Token
     :IntegerLiteral
   end
 
+  def type
+    Joos::BasicType::Int.new self
+  end
 
   # @!group Validation
 

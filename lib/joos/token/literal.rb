@@ -1,5 +1,7 @@
 require 'joos/token'
 require 'joos/exceptions'
+require 'joos/basic_type'
+
 
 # Extensions to the Token class
 class Joos::Token

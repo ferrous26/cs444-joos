@@ -8,6 +8,10 @@ class Joos::Token
   module Bool
     include Joos::Token::Literal
     include Joos::Token::ConstantToken
+
+    def type
+      Joos::BasicType::Boolean.new self
+    end
   end
 
   ##

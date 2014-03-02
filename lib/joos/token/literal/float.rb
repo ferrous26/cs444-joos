@@ -33,6 +33,10 @@ class Joos::Token::FloatingPoint < Joos::Token
     super
   end
 
+  def type
+    raise 'floats do not exist in Joos'
+  end
+
   ##
   # Message given for IllegalToken::Exception instances
   def msg

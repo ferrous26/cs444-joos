@@ -1,5 +1,6 @@
 require 'joos/token/literal'
 require 'joos/token/literal/string_helpers'
+require 'joos/package'
 
 ##
 # Token representing a literal `String` value in code.
@@ -70,9 +71,14 @@ class Joos::Token::String < Joos::Token
     :StringLiteral
   end
 
+  def type
+    Joos::Package.get ['java', 'lang', 'String']
+  end
+
   def inspect tab = 0
     "#{taby tab}#{QUOTE}#{value.magenta}#{QUOTE} from #{source.red}"
   end
+
 
   private
 

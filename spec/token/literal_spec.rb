@@ -428,6 +428,19 @@ describe Joos::Token::Literal do
       thrd.each(&:join)
       expect(strs.uniq).to be == [strs.first]
     end
+
+    context 'type resolution' do
+      before :each do
+        # reset the global namespace between tests
+        Joos::Package::ROOT.instance_variable_get(:@members).clear
+        Joos::Package::ROOT.declare nil
+      end
+
+      it 'resolves its type as java.lang.String' do
+        p = Joos::Package.declare ['java', 'lang', 'String']
+        expect(Joos::Token.make(:String, 'hi').type).to be == p
+      end
+    end
   end
 
 end
