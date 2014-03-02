@@ -21,11 +21,11 @@ describe Joos::Entity::TypeResolution do
     end
   end
 
-  it 'resolves :Void to nil' do
-    expect(MockEntity.resolve :Void).to be_nil
+  it 'resolves :Void to itself' do
+    expect(MockEntity.resolve :Void).to be :Void
 
     void = Joos::Token::Void.new('void', 'internal', 0, 0)
-    expect(MockEntity.resolve void).to be_nil
+    expect(MockEntity.resolve void).to be void
   end
 
   it 'resolves basic types' do
@@ -70,10 +70,8 @@ describe Joos::Entity::TypeResolution do
   end
 
   it 'can inspect a type' do
-    str = MockEntity.inspect_type nil
-    expect(str).to be == '()'.blue
-
-    str = MockEntity.inspect_type :Void
+    void = Joos::Token::Void.new('void', 'internal', 0, 0)
+    str  = MockEntity.inspect_type void
     expect(str).to be == '()'.blue
 
     str = MockEntity.inspect_type Joos::BasicType.new(:Boolean)

@@ -114,4 +114,34 @@ class Joos::Token
     end
   end
 
+  ##
+  # The keyword `void` is used for the return type of methods which do not
+  # actually return anything.
+  class Void
+
+    # @!group Type API
+
+    alias_method :type, :to_sym
+
+    def reference_type?
+      false
+    end
+
+    def array_type?
+      false
+    end
+
+    def basic_type?
+      false
+    end
+
+    def type_inspect
+      '()'.blue
+    end
+
+    def == other
+      self.class == other.class
+    end
+  end
+
 end

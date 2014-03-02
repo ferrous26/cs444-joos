@@ -40,6 +40,12 @@ describe Joos::NullReference do
         expect(null).to_not be == t
       end
     end
+
+    it 'is false for void' do
+      void = Joos::Token.make :Void, 'void'
+      null = Joos::NullReference.new :a
+      expect(null).to_not be == void
+    end
   end
 
 end

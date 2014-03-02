@@ -55,4 +55,10 @@ describe Joos::Array do
     expect(ary3).to_not be == Joos::BasicType.new(:Int)
   end
 
+  it 'is not type equal to void' do
+    void = Joos::Token.make :Void, 'void'
+    arry = Joos::Array.new Joos::BasicType.new(:Int), 1
+    expect(arry).to_not be == void
+  end
+
 end

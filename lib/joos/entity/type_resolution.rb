@@ -15,6 +15,7 @@ module Joos::Entity::TypeResolution
 
   # @return [Class, Interface, Joos::Token::Type]
   attr_reader :type
+  alias_method :return_type, :type
 
 
   private
@@ -23,7 +24,7 @@ module Joos::Entity::TypeResolution
   # @return [Joos::BasicType, Joos::Entity::CompilationUnit, Joos::Array, nil]
   def resolve_type node
     if node.to_sym == :Void
-      nil
+      node
 
     elsif node.BasicType
       Joos::BasicType.new node.BasicType.first
@@ -44,12 +45,11 @@ module Joos::Entity::TypeResolution
   # @!group Inspect
 
   def inspect_type type
-    if !type || type.to_sym == :Void
-      '()'.blue
-    elsif type.kind_of? Joos::AST
-      '' # @todo fix this one day
-    else
+    if type.respond_to? :type_inspect
       type.type_inspect
+    else # type.kind_of? Joos::AST
+      # @todo hmmm
+      ''
     end
   end
 
