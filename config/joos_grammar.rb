@@ -49,9 +49,11 @@ GRAMMAR = {
     ],
     SubExpression: [
       [:Term],
-      # this case is subsumed by the next case during run time
+      [:Term, :Infixop, :SubExpression],
+      # these cases are transformed into the regular Term-Infixop-SubExpr
+      # form during runtime
       [:Term, :Instanceof, :ArrayType],
-      [:Term, :Infixop, :SubExpression]
+      [:Term, :Instanceof, :ArrayType, :Infixop, :SubExpression],
     ],
     Infixop: [
       [:LazyOr],
@@ -78,13 +80,17 @@ GRAMMAR = {
       [:OpenParen, :BasicType,                             :CloseParen, :Term],
       [:OpenParen, :BasicType,  :OpenStaple, :CloseStaple, :CloseParen, :Term],
 
-      [:Primary,                                                      :Selectors],
+      [:Primary, :Selectors],
 
       # [:ArrayType]
-      [:QualifiedIdentifier],
-      [:QualifiedIdentifier, :OpenStaple,               :CloseStaple],
-      [:QualifiedIdentifier, :OpenStaple, :Expression,  :CloseStaple, :Selectors],
-      [:QualifiedIdentifier,              :Arguments,                 :Selectors]
+      # this case arises from naming a type which is an array (e.g. String[])
+      # and will be transformed into an ArrayType node at runtime
+      [:QualifiedIdentifier, :OpenStaple, :CloseStaple],
+
+      [:QualifiedIdentifier,              :Selectors],
+      # this case arises from method calls to "this", and will be transformed
+      # into Primary-Selectors at runtime
+      [:QualifiedIdentifier, :Arguments,  :Selectors]
     ],
     TermModifier: [
       [:Not],

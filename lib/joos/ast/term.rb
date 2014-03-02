@@ -70,25 +70,24 @@ class Joos::AST::Term
   private
 
   def fix_qualified_identifiers
-    if self.QualifiedIdentifier
-      if self.Arguments || self.Expression
-        fix_qualified_identifier_selectors
-      elsif self.OpenStaple
-        fix_qualified_identifier_type
-      end
+    return unless self.QualifiedIdentifier
+    if self.Arguments
+      fix_qualified_identifier_selectors
+
+    elsif self.OpenStaple
+      fix_qualified_identifier_type
     end
   end
 
   def fix_qualified_identifier_selectors
-    selector = if self.Arguments
-                 suffix = self.QualifiedIdentifier.suffix!
-                 make(:Selector,
-                      Joos::Token.make(:Dot, '.') , suffix, self.Arguments)
-               else
-                 make(:Selector, *@nodes[1..3])
-               end
-
+    suffix   = self.QualifiedIdentifier.suffix!
+    selector = make(:Selector,
+                    Joos::Token.make(:Dot, '.') , suffix, self.Arguments)
     self.Selectors.prepend selector
+
+    primary = make(:Primary, Joos::Token.make(:This, 'this'))
+    reparent primary, at_index: 0
+
     @nodes = [@nodes.first, @nodes.last]
   end
 
