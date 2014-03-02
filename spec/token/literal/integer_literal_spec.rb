@@ -61,4 +61,11 @@ describe Joos::Token::Integer do
     expect(token.to_sym).to be == :IntegerLiteral
   end
 
+  context 'type checking' do
+    it 'claims to be an int' do
+      int = Joos::Token.make :Integer,'42'
+      expect(int.type).to be_a Joos::BasicType::Int
+    end
+  end
+
 end

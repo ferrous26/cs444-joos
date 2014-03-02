@@ -20,4 +20,11 @@ describe Joos::Token::Null do
     expect(token.to_sym).to be == :NullLiteral
   end
 
+  context 'type checking' do
+    it 'claims to be a null reference' do
+      type = Joos::Token::Null.new('null', 'hi', 0, 0).type
+      expect(type).to be_a Joos::NullReference
+    end
+  end
+
 end

@@ -17,6 +17,15 @@ describe Joos::Token::Literal do
         Joos::Token::Bool.token
       }.to raise_error NoMethodError
     end
+
+    context 'type checking' do
+      it 'claims to be a boolean' do
+        [:True, :False].each do |bool|
+          type = Joos::Token.make bool, ''
+          expect(type.type).to be_a Joos::BasicType::Boolean
+        end
+      end
+    end
   end
 
   describe Joos::Token::True do

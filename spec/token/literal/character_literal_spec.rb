@@ -57,4 +57,11 @@ describe Joos::Token::Character do
     expect(token.to_sym).to be == :CharacterLiteral
   end
 
+  context 'type checking' do
+    it 'claims to be an char' do
+      char = Joos::Token.make :Character, "'e'"
+      expect(char.type).to be_a Joos::BasicType::Char
+    end
+  end
+
 end
