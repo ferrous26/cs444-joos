@@ -34,10 +34,22 @@ class Joos::AST::QualifiedIdentifier
   alias_method :simple, :last
 
   ##
-  # Return the first component of the qualified identifier.
+  # Return the first `n` components of the qualified identifier.
   #
+  # @param n [Fixnum]
   # @return [Joos::Token::Identifier]
-  alias_method :prefix, :first
+  def prefix n = nil
+    n ? take(n) : first
+  end
+
+  ##
+  # Destructively take the first `n` components of the qualified identifier.
+  #
+  # @param n [Fixnum]
+  # @return [Joos::Token::Identifier]
+  def prefix! n = nil
+    n ? @nodes.shift(n) : @nodes.shift
+  end
 
   ##
   # Return the last component of the qualified identifier.
