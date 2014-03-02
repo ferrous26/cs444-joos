@@ -121,9 +121,6 @@ class Joos::Token
   ##
   # A terminating case for the recursive method {Joos::Scope#build} which
   # builds the scope environment for blocks.
-  #
-  # @param parent [Joos::Scope, Joos::Entity::Method]
-  # @param type_enivornment [Joos::Entity::Method]
   def build _, _
     # nop
   end

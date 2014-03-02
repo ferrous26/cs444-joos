@@ -18,9 +18,10 @@ class Joos::AST::Term
   ##
   # Exception raised when multi-dimensional array use is detected.
   class MultiDimensionalArray < Joos::CompilerException
-    # @param staple [Joos::Token::CloseStaple]
+    # @param node [Joos::Token::CloseStaple]
     def initialize node
-      super 'Illegal multi-dimensional array'
+      src = node.source.red
+      super "Illegal multi-dimensional array detected around #{src}"
     end
   end
 

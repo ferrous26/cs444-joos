@@ -44,7 +44,7 @@ module Joos::Scope
   # and recursively for all nested scopes.
   #
   # @param parent [Joos::Scope, Joos::Entity::Method]
-  # @param type_enivornment [Joos::Entity::CompilationUnit]
+  # @param type_environment [Joos::Entity::CompilationUnit]
   def build parent, type_environment
     @parent_scopes   = parent
     @children_scopes = []
