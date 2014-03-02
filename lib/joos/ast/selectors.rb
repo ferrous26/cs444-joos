@@ -6,7 +6,7 @@ class Joos::AST::Selectors
   include ListCollapse
 
   def prepend selector
-    selector.parent = self
+    selector.parent = self if selector.respond_to? :parent
     @nodes.unshift selector
   end
 end
