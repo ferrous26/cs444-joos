@@ -28,6 +28,10 @@ module Joos::Scope
   # @return [Array<Joos::Scope>]
   attr_reader :children_scopes
 
+  # @return [Joos::Entity::CompilationUnit]
+  attr_reader :type_environment
+  alias_method :this, :type_environment
+
   ##
   # Given a qualified identifier, this method will search up the hierarchy
   # for a declaration whose name matches.
