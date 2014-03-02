@@ -75,7 +75,7 @@ class Joos::AST::Term
       fix_qualified_identifier_selectors
 
     elsif self.OpenStaple
-      fix_qualified_identifier_type
+      fix_qualified_identifier_array_type
     end
   end
 
@@ -87,11 +87,10 @@ class Joos::AST::Term
 
     primary = make(:Primary, Joos::Token.make(:This, 'this'))
     reparent primary, at_index: 0
-
-    @nodes = [@nodes.first, @nodes.last]
+    @nodes.delete self.Arguments
   end
 
-  def fix_qualified_identifier_type
+  def fix_qualified_identifier_array_type
     reparent make(:ArrayType, *@nodes), at_index: 0
   end
 

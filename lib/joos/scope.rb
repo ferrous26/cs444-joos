@@ -40,19 +40,23 @@ module Joos::Scope
   end
 
   ##
+  # @note This is like `#initialize` for the mixin: call it first
+  #
   # Instruct the scope to construct itself from the receiving scope
   # and recursively for all nested scopes.
   #
-  # @param parent [Joos::Scope, Joos::Entity::Method]
+  # @param parent_scope [Joos::Scope, Joos::Entity::Method]
   # @param type_environment [Joos::Entity::CompilationUnit]
-  def build parent, type_environment
-    @parent_scopes   = parent
-    @children_scopes = []
-    @members         = []
+  def build parent_scope, type_environment
+    @parent_scopes    = parent_scope
+    @type_environment = type_environment
+    @children_scopes  = []
+    @members          = []
 
-    parent.children_scopes << self
+    parent_scope.children_scopes << self
 
-    @nodes.each_with_index do |node, index|
+    return if @nodes.empty?
+    self.BlockStatements.each_with_index do |node, index|
       child = node.first
       if child.to_sym == :LocalVariableDeclarationStatement
         variable  = Joos::Entity::LocalVariable.new child, type_environment
