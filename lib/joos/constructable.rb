@@ -8,18 +8,19 @@ module Joos::Constructable
 
   def build parent_scope, type_environment
     super
-    @unit = type_environment
-    @type = resolve_type self # Creator nodes behave enough like a Type node
+    @type = resolve_type type_environment
   end
 
 
   private
 
-  # @param node [Joos::AST::Type]
-  # @return [Joos::BasicType, Joos::Entity::CompilationUnit, Joos::Array, nil]
-  def resolve_type node
-    scalar = super
-    if node.ArrayCreator
+  # @param env [Joos::AST::Type]
+  # @return [Joos::BasicType, Joos::Entity::CompilationUnit, Joos::Array]
+  def resolve_type env
+    scalar = make(:Type, self.first).resolve env
+    self.first.parent = self
+
+    if self.ArrayCreator
       Joos::Array.new scalar, 0
     else
       scalar

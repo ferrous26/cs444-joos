@@ -20,24 +20,13 @@ module Joos::Entity::TypeResolution
 
   private
 
-  # @param node [Joos::AST::Type]
-  # @return [Joos::BasicType, Joos::Entity::CompilationUnit, Joos::Array, nil]
+  # @param node [Joos::AST::Type, Joos::Token::Void]
+  # @return [Joos::BasicType, Joos::Entity::CompilationUnit, Joos::Array, Joos::Token::Void]
   def resolve_type node
     if node.to_sym == :Void
       node
-
-    elsif node.BasicType
-      Joos::BasicType.new node.BasicType.first
-
-    elsif node.QualifiedIdentifier
-      unit.get_type(node.QualifiedIdentifier)
-
-    elsif node.ArrayType
-      Joos::Array.new resolve_type(node.ArrayType), 0
-
     else
-      raise "Unknown AST::Type type: #{node.inspect}"
-
+      node.resolve unit
     end
   end
 
