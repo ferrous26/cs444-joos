@@ -52,6 +52,8 @@ GRAMMAR = {
       [:Term, :Infixop, :SubExpression],
       # these cases are transformed into the regular Term-Infixop-SubExpr
       # form during runtime and ArrayType is wrapped in Type
+      [:Term, :Instanceof, :QualifiedIdentifier],
+      [:Term, :Instanceof, :QualifiedIdentifier, :Infixop, :SubExpression],
       [:Term, :Instanceof, :ArrayType],
       [:Term, :Instanceof, :ArrayType, :Infixop, :SubExpression],
     ],
@@ -70,26 +72,22 @@ GRAMMAR = {
       [:Minus],
       [:Multiply],
       [:Divide],
-      [:Modulo],
-      [:Instanceof]
+      [:Modulo]
     ],
     Term: [
       [:TermModifier, :Term],
 
-      # @todo Try changing Expression to QualifiedIdentifier
-      # These 4 cases all handle casting, so the Expression on the inside really
+      # These 3 cases all handle casting, so the Expression on the inside really
       # has to be a single type
-      [:OpenParen, :Expression,                            :CloseParen, :Term],
-      [:OpenParen, :Expression, :OpenStaple, :CloseStaple, :CloseParen, :Term],
-      [:OpenParen, :BasicType,                             :CloseParen, :Term],
-      [:OpenParen, :BasicType,  :OpenStaple, :CloseStaple, :CloseParen, :Term],
+      [:OpenParen, :Expression, :CloseParen, :Term],
+      [:OpenParen, :ArrayType,  :CloseParen, :Term],
+      [:OpenParen, :BasicType,  :CloseParen, :Term],
 
-      [:Primary,             :Selectors],
+      [:Primary, :Selectors],
 
       # [:Type]
       # this case arises from naming a type which is an array (e.g. String[])
       # and will be transformed into a Type node at runtime
-      [:QualifiedIdentifier, :OpenStaple, :CloseStaple],
 
       [:QualifiedIdentifier],
 
