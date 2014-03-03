@@ -43,6 +43,10 @@ module Joos::Scope
       parent_scopes.find_declaration(qid)
   end
 
+  def return_type
+    parent_scope.return_type
+  end
+
   ##
   # @note This is like `#initialize` for the mixin: call it first
   #
