@@ -66,7 +66,7 @@ describe Joos::Entity::TypeResolution do
 
   it 'adds #unit to the class' do
     expect(MockEntity.new).to respond_to :unit
-    expect(MockEntity.new).to respond_to :parent
+    expect(MockEntity.new).to respond_to :type_environment
   end
 
   it 'can inspect a type' do

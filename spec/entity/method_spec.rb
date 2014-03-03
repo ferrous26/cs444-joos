@@ -22,7 +22,7 @@ describe Joos::Entity::Method do
                                           .MethodDeclaratorRest
                                           .MethodBody
                                           .Block)
-    expect(method.parent).to be       == outer
+    expect(method.unit).to be         == outer
 
     expect(method.parameters.size).to be == 1
     expect(method.parameters.first).to be_kind_of Joos::Entity::FormalParameter
