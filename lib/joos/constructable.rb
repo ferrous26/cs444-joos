@@ -6,7 +6,7 @@ require 'joos/version'
 module Joos::Constructable
   include Joos::Entity::TypeResolution
 
-  def build parent, type_environment
+  def build parent_scope, type_environment
     super
     @unit = type_environment
     @type = resolve_type self # Creator nodes behave enough like a Type node

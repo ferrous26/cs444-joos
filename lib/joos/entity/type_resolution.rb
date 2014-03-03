@@ -11,7 +11,7 @@ module Joos::Entity::TypeResolution
   #
   # @return [Joos::Entity::CompilationUnit]
   attr_reader :unit
-  alias_method :parent, :unit
+  alias_method :type_environment, :unit
 
   # @return [Class, Interface, Joos::Token::Type]
   attr_reader :type

@@ -32,7 +32,7 @@ class Joos::Entity::Class < Joos::Entity
 
   class ConstructorNameMismatch < Joos::CompilerException
     def initialize constructor
-      klass  = constructor.parent.name.cyan
+      klass  = constructor.unit.name.cyan
       source = constructor.source.red
       super "Incorrect constructor name for class #{klass} on line #{source}"
     end

@@ -59,17 +59,17 @@ class Joos::Entity::Method < Joos::Entity
   attr_reader :body
 
   # @param node [Joos::AST::ClassBodyDeclaration]
-  # @param parent [Joos::AST::CompilationUnit]
-  def initialize node, parent
+  # @param unit [Joos::AST::CompilationUnit]
+  def initialize node, unit
     @node       = node
     super node.Identifier, node.Modifiers
     @type       = node.Void || node.Type
     decl        = node.last # MethodDeclRest, InterfaceMethodDeclRest, etc.
     @parameters = (decl.FormalParameters.FormalParameterList || []).map do |p|
-      Joos::Entity::FormalParameter.new p, parent
+      Joos::Entity::FormalParameter.new p, unit
     end
     parse_body decl
-    @unit = parent
+    @unit = unit
   end
 
   def to_sym

@@ -10,9 +10,10 @@ class Joos::Entity::Constructor < Joos::Entity::Method
   include Modifiable
 
   # @param node [Joos::AST::ClassBodyDeclaration]
-  def initialize node, parent
+  # @param klass [Joos::AST::Class]
+  def initialize node, klass
     super
-    @type = parent # yay, we don't have to resolve this one!
+    @type = klass # yay, we don't have to resolve this one!
   end
 
   def to_sym

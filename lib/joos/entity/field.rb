@@ -24,13 +24,13 @@ class Joos::Entity::Field < Joos::Entity
   attr_reader :initializer
 
   # @param node [Joos::AST::ClassBodyDeclaration]
-  # @param parent [Joos::Entity::Class]
-  def initialize node, parent
+  # @param klass [Joos::Entity::Class]
+  def initialize node, klass
     @node        = node
     super node.Identifier, node.Modifiers
     @type        = node.Type
     @initializer = wrap_initializer node.Expression
-    @unit        = parent
+    @unit        = klass
   end
 
   def to_sym
