@@ -72,14 +72,15 @@ class Joos::AST::Term
   def fix_qualified_identifiers
     return unless self.QualifiedIdentifier
     if self.Arguments
-      fix_qualified_identifier_selectors
-
+      fix_qualified_identifier_selectors_this
+    elsif self.Expression
+      fix_qualified_identifier_selectors_local_staple
     elsif self.OpenStaple
       fix_qualified_identifier_array_type
     end
   end
 
-  def fix_qualified_identifier_selectors
+  def fix_qualified_identifier_selectors_this
     suffix   = self.QualifiedIdentifier.suffix!
     selector = make(:Selector,
                     Joos::Token.make(:Dot, '.') , suffix, self.Arguments)
@@ -90,6 +91,11 @@ class Joos::AST::Term
     @nodes.delete self.Arguments
   end
 
+  def fix_qualified_identifier_selectors_local_staple
+    selector = make(:Selector, *@nodes[1..3])
+    self.Selectors.prepend selector
+    @nodes = [@nodes.first, @nodes.last]
+  end
 
   def fix_qualified_identifier_array_type
     reparent make(:Type, make(:ArrayType, *@nodes)), at_index: 0

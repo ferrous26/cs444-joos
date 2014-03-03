@@ -75,22 +75,29 @@ GRAMMAR = {
     ],
     Term: [
       [:TermModifier, :Term],
+
+      # @todo Try changing Expression to QualifiedIdentifier
+      # These 4 cases all handle casting, so the Expression on the inside really
+      # has to be a single type
       [:OpenParen, :Expression,                            :CloseParen, :Term],
       [:OpenParen, :Expression, :OpenStaple, :CloseStaple, :CloseParen, :Term],
       [:OpenParen, :BasicType,                             :CloseParen, :Term],
       [:OpenParen, :BasicType,  :OpenStaple, :CloseStaple, :CloseParen, :Term],
 
       [:Primary,             :Selectors],
-      [:QualifiedIdentifier, :Selectors],
 
       # [:Type]
       # this case arises from naming a type which is an array (e.g. String[])
       # and will be transformed into a Type node at runtime
       [:QualifiedIdentifier, :OpenStaple, :CloseStaple],
 
-      # this case arises from method calls to "this", and will be transformed
-      # into Primary-Selectors at runtime
-      [:QualifiedIdentifier, :Arguments,  :Selectors]
+      [:QualifiedIdentifier],
+
+      # these cases arises from method calls to "this" or local variable
+      # array access, and will be transformed into Primary-Selectors and
+      # QualifiedIdentifier-Selectors at runtime
+      [:QualifiedIdentifier, :Arguments,  :Selectors],
+      [:QualifiedIdentifier, :OpenStaple, :Expression,  :CloseStaple, :Selectors],
     ],
     TermModifier: [
       [:Not],
