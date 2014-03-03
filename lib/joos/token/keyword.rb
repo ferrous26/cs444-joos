@@ -107,7 +107,7 @@ class Joos::Token
     # @param parent [Joos::AST::Infixop]
     def validate parent
       term = parent.parent.SubExpression.Term
-      raise InvalidReferenceType.new(self) unless (term.ArrayType ||
+      raise InvalidReferenceType.new(self) unless (term.Type ||
                                                    (term.QualifiedIdentifier &&
                                                     term.Arguments.blank?    &&
                                                     term.Selectors.blank?))

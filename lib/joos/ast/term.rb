@@ -54,8 +54,8 @@ class Joos::AST::Term
     fix_qualified_identifiers
   end
 
-  def ArrayType
-    search :ArrayType
+  def Type
+    search :Type
   end
 
   ##
@@ -90,8 +90,9 @@ class Joos::AST::Term
     @nodes.delete self.Arguments
   end
 
+
   def fix_qualified_identifier_array_type
-    reparent make(:ArrayType, *@nodes), at_index: 0
+    reparent make(:Type, make(:ArrayType, *@nodes)), at_index: 0
   end
 
   def validate_against_multi_dimensional_arrays

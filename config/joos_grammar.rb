@@ -51,7 +51,7 @@ GRAMMAR = {
       [:Term],
       [:Term, :Infixop, :SubExpression],
       # these cases are transformed into the regular Term-Infixop-SubExpr
-      # form during runtime
+      # form during runtime and ArrayType is wrapped in Type
       [:Term, :Instanceof, :ArrayType],
       [:Term, :Instanceof, :ArrayType, :Infixop, :SubExpression],
     ],
@@ -83,9 +83,9 @@ GRAMMAR = {
       [:Primary,             :Selectors],
       [:QualifiedIdentifier, :Selectors],
 
-      # [:ArrayType]
+      # [:Type]
       # this case arises from naming a type which is an array (e.g. String[])
-      # and will be transformed into an ArrayType node at runtime
+      # and will be transformed into a Type node at runtime
       [:QualifiedIdentifier, :OpenStaple, :CloseStaple],
 
       # this case arises from method calls to "this", and will be transformed
