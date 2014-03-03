@@ -21,12 +21,12 @@ class Joos::AST::SubExpression
     # wrap the 'ArrayType' with a 'Term', wrapped with a 'SubExpression'
     subexpr = if self.SubExpression
                 make(:SubExpression,
-                     make(:Term, make(:Type, self.ArrayType)),
+                     make(:Term, make(:Type, @nodes[2])),
                      @nodes.third,
                      @nodes.fourth)
               else
                 make(:SubExpression,
-                     make(:Term, make(:Type, self.ArrayType)))
+                     make(:Term, make(:Type, @nodes[2])))
               end
     reparent subexpr, at_index: 2
   end
