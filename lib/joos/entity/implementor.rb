@@ -26,8 +26,8 @@ module Joos::Entity::Implementor
     #       actually resolved
     def initialize unit, qid
       name = "#{unit.unit_type} #{unit.name.cyan}"
-      qid  = qid.inspect
-      super "#{name} cannot claim non-interface #{qid} as a superinterface",
+      id   = qid.inspect
+      super "#{name} cannot claim non-interface #{id} as a superinterface",
         qid
     end
   end

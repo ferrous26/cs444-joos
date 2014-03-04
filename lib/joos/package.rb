@@ -24,7 +24,8 @@ class Joos::Package
   class DoesNotExist < Joos::CompilerException
     # @param qid [Joos::AST::QualifiedIdentifier]
     def initialize qid
-      super "No package or type specified by #{qid.inspect}", qid
+      src = qid.kind_of?(Array) ? Joos::Source.new('internal', 0, 0) : qid
+      super "No package or type specified by #{qid.inspect}", src
     end
   end
 

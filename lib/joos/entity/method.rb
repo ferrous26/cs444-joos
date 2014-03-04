@@ -43,8 +43,8 @@ class Joos::Entity::Method < Joos::Entity
   # Exception raised when a native method is declared as an instance method.
   class DuplicateParameterName < Joos::CompilerException
     def initialize dupes
-      dupes = dupes.map(&:inspect)
-      super "Duplicate parameter names (#{dupes.first}) and (#{dupes.second})",
+      dup_s = dupes.map(&:inspect)
+      super "Duplicate parameter names (#{dup_s.first}) and (#{dup_s.second})",
         dupes.first
     end
   end
