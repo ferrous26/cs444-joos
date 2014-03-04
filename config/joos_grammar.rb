@@ -51,11 +51,11 @@ GRAMMAR = {
       [:Term],
       [:Term, :Infixop, :SubExpression],
       # these cases are transformed into the regular Term-Infixop-SubExpr
-      # form during runtime and ArrayType is wrapped in Type
+      # form during runtime and ArrayType/QualifiedIdentifier are Type wrapped
       [:Term, :Instanceof, :QualifiedIdentifier],
       [:Term, :Instanceof, :QualifiedIdentifier, :Infixop, :SubExpression],
       [:Term, :Instanceof, :ArrayType],
-      [:Term, :Instanceof, :ArrayType, :Infixop, :SubExpression],
+      [:Term, :Instanceof, :ArrayType, :Infixop, :SubExpression]
     ],
     Infixop: [
       [:LazyOr],
@@ -77,25 +77,26 @@ GRAMMAR = {
     Term: [
       [:TermModifier, :Term],
 
-      # These 3 cases all handle casting, so the Expression on the inside really
-      # has to be a single type
+      # These 3 cases all handle casting, so the Expression on the inside
+      # has to be a single QualifiedIdentifier
       [:OpenParen, :Expression, :CloseParen, :Term],
       [:OpenParen, :ArrayType,  :CloseParen, :Term],
       [:OpenParen, :BasicType,  :CloseParen, :Term],
 
       [:Primary, :Selectors],
 
+      # Type does not normall belong here, but in the case of an instanceof
+      # call, the right hand operator of instance (which is a Type) will be
+      # pushed down into here
       # [:Type]
-      # this case arises from naming a type which is an array (e.g. String[])
-      # and will be transformed into a Type node at runtime
 
       [:QualifiedIdentifier],
 
-      # these cases arises from method calls to "this" or local variable
+      # These cases arises from method calls to "this" or local variable
       # array access, and will be transformed into Primary-Selectors and
       # QualifiedIdentifier-Selectors at runtime
       [:QualifiedIdentifier, :Arguments,  :Selectors],
-      [:QualifiedIdentifier, :OpenStaple, :Expression,  :CloseStaple, :Selectors],
+      [:QualifiedIdentifier, :OpenStaple, :Expression,  :CloseStaple, :Selectors]
     ],
     TermModifier: [
       [:Not],

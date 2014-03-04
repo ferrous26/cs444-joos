@@ -4,9 +4,9 @@ require 'joos/ast'
 # A sub-expression is any expression that is not an assignment.
 class Joos::AST::SubExpression
 
-  def initialize nodes
-    super
+  def validate parent
     fix_instanceof
+    super
   end
 
 
