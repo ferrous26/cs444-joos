@@ -10,8 +10,7 @@ class Joos::AST::Term
   class BadCast < Joos::CompilerException
     # @todo Report file and line information
     def initialize node
-      header = "Illegal cast detected at #{node.source.red}"
-      super "#{header}. Type casts must be basic or reference types only"
+      super "Illegal cast. Type casts must name a type.", node
     end
   end
 
@@ -20,8 +19,7 @@ class Joos::AST::Term
   class MultiDimensionalArray < Joos::CompilerException
     # @param node [Joos::Token::CloseStaple]
     def initialize node
-      src = node.source.red
-      super "Illegal multi-dimensional array detected around #{src}"
+      super 'Illegal multi-dimensional array detected', node
     end
   end
 

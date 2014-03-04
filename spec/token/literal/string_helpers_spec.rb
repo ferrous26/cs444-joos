@@ -19,9 +19,9 @@ describe Joos::Token::StringHelpers do
       @token, @disallowed_char = token, disallowed_char
     end
     alias_method :value, :token
-    define_method(:file) { '' }
-    define_method(:line) { 1 }
-    define_method(:line) { 2 }
+    define_method(:file_name) { '' }
+    define_method(:line_number) { 2 }
+    define_method(:column) { 2 }
     define_method(:source) { 'cake' }
   end
 
@@ -67,9 +67,8 @@ describe Joos::Token::StringHelpers do
 
   describe Joos::Token::StringHelpers::InvalidEscapeSequence do
     it 'takes a token-ish instance and index into the token value' do
-      mock = Object.new
+      mock = Joos::Source.new 'bye', 1, 44
       mock.define_singleton_method(:value) { 'hi' }
-      mock.define_singleton_method(:source) { 'bye' }
       err = Joos::Token::StringHelpers::InvalidEscapeSequence.new(mock, 1)
       expect(err.message).to match(/Invalid escape sequence/)
       expect(err.message).to match(/hi/)
@@ -78,10 +77,9 @@ describe Joos::Token::StringHelpers do
   end
 
   describe Joos::Token::StringHelpers::InvalidOctalEscapeSequence do
-    it 'takes a token-ish instance and index into the token value' do
-      mock = Object.new
+    it 'token-ish instance and index into the token value' do
+      mock = Joos::Source.new 'pie', 1, 3
       mock.define_singleton_method(:value) { 'cake' }
-      mock.define_singleton_method(:source) { 'pie' }
       e = Joos::Token::StringHelpers::InvalidOctalEscapeSequence.new(mock, 1)
       expect(e.message).to match(/Octal escape out of ASCII range/)
       expect(e.message).to match(/cake/)

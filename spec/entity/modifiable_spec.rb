@@ -36,9 +36,10 @@ describe Joos::Entity::Modifiable do
 
 
   it 'raises an exception if any modifier has been duplicated' do
+    re = Regexp.new 'elephant is being declared with duplicate modifiers'
     expect {
       MTest.new('elephant', extract['Je_duplicateMods']).validate
-    }.to raise_error 'elephant is being declared with duplicate modifiers'
+    }.to raise_error re
   end
 
   it 'does not raise an exception if there are no duplicate modifiers' do
@@ -48,7 +49,7 @@ describe Joos::Entity::Modifiable do
   end
 
   it 'raises an error when disallowed modifiers are used' do
-    str = "A #{'MTest'.green} cannot use the #{'Public'.yellow} modifier"
+    str = Regexp.new Regexp.escape "A #{'MTest'.green} cannot use the #{'Public'.yellow} modifier"
     expect {
       test = MTest.new('rhino', extract['J1_minusminusminus'])
       test.disallowed :Public
@@ -65,7 +66,7 @@ describe Joos::Entity::Modifiable do
     expect {
       test = MTest.new('tiger', extract['Je_publicProtectedClass'])
       test.exclusive :Public, :Protected
-    }.to raise_error 'tiger can only be one of Public or Protected'
+    }.to raise_error(/tiger can only be one of Public or Protected/)
   end
 
   it 'adds a check to make sure exactly one visibility modifier is used' do

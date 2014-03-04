@@ -25,6 +25,7 @@ module Joos::SourceInfo
   def source
     "#{file_name}:#{line_number}:#{column}"
   end
+  alias_method :inspect, :source
 
   ##
   # Set source info to be the same as s

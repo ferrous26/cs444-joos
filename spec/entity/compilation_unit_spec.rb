@@ -22,7 +22,7 @@ describe Joos::Entity::CompilationUnit do
 
   it 'raises an exception when ensure_unit_name_matches_file_name fails' do
     expect {
-      CUTest.new('notTest', 'test.java').validate
+      CUTest.new(Joos::Token.make(:Identifier, 'notTest'), 'test.java').validate
     }.to raise_error Joos::Entity::CompilationUnit::NameDoesNotMatchFileError
   end
 

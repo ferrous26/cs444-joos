@@ -15,7 +15,7 @@ module Joos::Utilities
   # @example
   #
   #   Joos::Utilities.number_of_cpu_cores # => 8  # my laptop
-  #   Joos::Utilities.number_of_cpu_cores # => 48 # abeast machine
+  #   Joos::Utilities.number_of_cpu_cores # => 48 # a beast machine
   #
   # @return [Fixnum]
   def number_of_cpu_cores

@@ -14,7 +14,7 @@ module Joos::Entity::Implementor
       chain = (chain + [interface]).map { |unit|
         unit.fully_qualified_name.cyan_join
       }.join(' -> '.red)
-      super "Superinterface circularity detected by cycle: #{chain}"
+      super "Superinterface circularity detected by cycle: #{chain}", interface
     end
   end
 
@@ -27,7 +27,8 @@ module Joos::Entity::Implementor
     def initialize unit, qid
       name = "#{unit.unit_type} #{unit.name.cyan}"
       qid  = qid.inspect
-      super "#{name} cannot claim non-interface #{qid} as a superinterface"
+      super "#{name} cannot claim non-interface #{qid} as a superinterface",
+        qid
     end
   end
 
@@ -39,7 +40,7 @@ module Joos::Entity::Implementor
     def initialize unit, qid
       name = "#{unit.unit_type} #{unit.name.cyan}"
       qid  = qid.inspect
-      super "Could not find superinterface #{qid} for #{name}"
+      super "Could not find superinterface #{qid} for #{name}", qid
     end
   end
 
@@ -48,7 +49,8 @@ module Joos::Entity::Implementor
     # @param other_super [Joos::Entity::Interface]
     def initialize unit, other_super
       unit = "#{unit.unit_type} #{unit.name.cyan}"
-      super "#{unit} claims superinterface #{other_super.name.cyan} twice"
+      super "#{unit} claims superinterface #{other_super.name.cyan} twice",
+        other_super
     end
   end
 

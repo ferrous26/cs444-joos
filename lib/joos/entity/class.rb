@@ -26,15 +26,14 @@ class Joos::Entity::Class < Joos::Entity
   class NoConstructorError < Joos::CompilerException
     # @param klass [Joos::Entity::Class]
     def initialize klass
-      super "#{klass} must include at least one explicit constructor"
+      super "#{klass} must include at least one explicit constructor", klass
     end
   end
 
   class ConstructorNameMismatch < Joos::CompilerException
     def initialize constructor
       klass  = constructor.unit.name.cyan
-      source = constructor.source.red
-      super "Incorrect constructor name for class #{klass} on line #{source}"
+      super "Incorrect constructor name for class #{klass}", constructor
     end
   end
 
@@ -45,9 +44,9 @@ class Joos::Entity::Class < Joos::Entity
     # @todo should pass the found unit so we can give more details on what we
     #       actually resolved
     def initialize klass
-      name = klass.fully_qualified_name.map(&:cyan).join('.')
-      supa = klass.superclass.fully_qualified_name.map(&:cyan).join('.')
-      super "#{name} cannot claim non-class #{supa} as a superclass"
+      name = klass.fully_qualified_name.cyan_join
+      supa = klass.superclass.fully_qualified_name.cyan_join
+      super "#{name} cannot claim non-class #{supa} as a superclass", klass
     end
   end
 
@@ -56,14 +55,15 @@ class Joos::Entity::Class < Joos::Entity
     def initialize field, dupe
       source1 = field.name.source.red
       source2 = dupe.name.source.red
-      super "#{source1}: #{field.inspect} and #{source2}: #{dupe.inspect}"
+      super "#{source1}: #{field.inspect} and #{source2}: #{dupe.inspect}",
+        field
     end
   end
 
   class AbstractMethodNonAbsractClass < Joos::CompilerException
     def initialize klass
       name = klass.name.cyan
-      super "#{name} has abstract methods but is not abstract itself"
+      super "#{name} has abstract methods but is not abstract itself", klass
     end
   end
 
@@ -71,7 +71,7 @@ class Joos::Entity::Class < Joos::Entity
     def initialize klass
       name = klass.name.cyan
       super_name = klass.superclass.fully_qualified_name.cyan_join
-      super "#{name} is trying to extend final class #{super_name}"
+      super "#{name} is trying to extend final class #{super_name}", klass
     end
   end
 
@@ -85,7 +85,7 @@ class Joos::Entity::Class < Joos::Entity
       chain = (chain + [superk]).map { |unit|
         unit.fully_qualified_name.cyan_join
       }.join(' -> '.red)
-      super "Superclass circularity detected by cycle: #{chain}"
+      super "Superclass circularity detected by cycle: #{chain}", superk
     end
   end
 
@@ -93,7 +93,7 @@ class Joos::Entity::Class < Joos::Entity
     def initialize dupes
       first = dupes.first.name.cyan
       src   = dupes.first.unit.fully_qualified_name.cyan_join
-      super "Constructor #{first} defined twice in #{src}"
+      super "Constructor #{first} defined twice in #{src}", dupes.first
     end
   end
 

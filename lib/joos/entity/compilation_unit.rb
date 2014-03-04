@@ -18,7 +18,8 @@ module Joos::Entity::CompilationUnit
   class NameDoesNotMatchFileError < Joos::CompilerException
     # @param unit [CompilationUnit]
     def initialize unit
-      super "#{unit.name.cyan} does not match file name #{unit.name.file.red}"
+      super "#{unit.name.cyan} does not match file name #{unit.name.file.red}",
+        unit
     end
   end
 
@@ -31,7 +32,8 @@ module Joos::Entity::CompilationUnit
     # @param unit [Joos::Entity::CompilationUnit]
     def initialize qid, unit
       source = unit.name.source.red
-      super "Single import of #{qid.inspect} from #{source} names a package"
+      super "Single import of #{qid.inspect} from #{source} names a package",
+        qid
     end
   end
 
@@ -79,7 +81,7 @@ module Joos::Entity::CompilationUnit
     def initialize qid
       p = qid.prefix
       s = qid.source.red
-      super "Prefix #{p.cyan} of #{qid.inspect} resolves a type [#{s}]"
+      super "Prefix #{p.cyan} of #{qid.inspect} resolves a type [#{s}]", qid
     end
   end
 

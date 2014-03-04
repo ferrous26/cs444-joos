@@ -37,11 +37,12 @@ module Joos::Token::StringHelpers
     # @param string [Joos::Token]
     # @param index [Fixnum]
     def initialize string, index
-      super <<-EOM
-Invalid escape sequence detected in string/character literal: #{string.source}
+      msg = <<-EOM
+Invalid escape sequence detected in string/character literal
 "#{string.value}"
 #{' ' * index}^^
       EOM
+      super msg, string
     end
   end
 
@@ -51,11 +52,12 @@ Invalid escape sequence detected in string/character literal: #{string.source}
     # @param string [Joos::Token]
     # @param index [Fixnum]
     def initialize string, index
-      super <<-EOM
-Octal escape out of ASCII range in string/character literal: #{string.source}
+      msg = <<-EOM
+Octal escape out of ASCII range in string/character literal
 "#{string.value}"
 #{' ' * index}^^^^
       EOM
+      super msg, string
     end
   end
 
@@ -67,13 +69,13 @@ Octal escape out of ASCII range in string/character literal: #{string.source}
     # @param index [Fixnum]
     def initialize string, index
       klass = string.class.to_s.split('::').last
-      sauce = string.source
       char  = string.disallowed_char
-      super <<-EOM
-#{char} not allowed in #{klass} literal without escaping: #{sauce}
+      msg   = <<-EOM
+#{char} not allowed in #{klass} literal without escaping:
 "#{string.value}"
 #{' ' * (index + 1)}^
       EOM
+      super msg, string
     end
   end
 

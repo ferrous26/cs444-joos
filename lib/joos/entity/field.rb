@@ -15,7 +15,8 @@ class Joos::Entity::Field < Joos::Entity
   class UninitializedFinalField < Joos::CompilerException
     # @param field [Joos::Entity::Field]
     def initialize field
-      super "#{field} MUST include an initializer if it is declared final"
+      super "#{field} MUST include an initializer if it is declared final",
+        field
     end
   end
 

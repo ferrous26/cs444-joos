@@ -33,7 +33,7 @@ class Joos::Scanner
     raise FileError.new(path, e)
   rescue Joos::CompilerException => e
     # Add file name to compiler exceptions
-    e.file = path
+    e.file_name = path
     raise e
   end
 
@@ -58,14 +58,14 @@ class Joos::Scanner
       tokens += scanner_tokens
       line_number += 1
     end
-    
+
     # Raise if we have a partial token at the end of input
     dfa.raise_if_illegal_eof! state
 
     tokens
   rescue Joos::CompilerException => e
     # Fill in line number
-    e.line = line_number
+    e.line_number = line_number
     raise e
   end
 

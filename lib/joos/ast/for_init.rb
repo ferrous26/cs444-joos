@@ -9,9 +9,8 @@ class Joos::AST::ForInit
   # Exception raised when a for loop update contains a
   # non assignment expression.
   class InvalidForInit < Joos::CompilerException
-    # @todo Report file and line information
     def initialize node
-      super 'for-loop initializer must initialize a variable'
+      super 'for-loop initializer must initialize a variable', node
     end
   end
 
@@ -19,7 +18,7 @@ class Joos::AST::ForInit
     super
     chain = self.Expression.SubExpression.Term
     if chain.Primary && !(chain.Selectors.Selector.Dot)
-      raise InvalidForInit.new(self)
+      raise InvalidForInit.new self
     end
   end
 

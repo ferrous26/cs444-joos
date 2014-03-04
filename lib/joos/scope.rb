@@ -11,7 +11,8 @@ module Joos::Scope
     def initialize dupes
       first  = "#{dupes.first.name.cyan} from #{dupes.first.name.source.red}"
       second = "#{dupes.second.name.cyan} from #{dupes.second.source.red}"
-      super "Duplicate local variable names (#{first}) and (#{second})"
+      super "Duplicate local variable names (#{first}) and (#{second})",
+        dupes.first
     end
   end
 

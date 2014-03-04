@@ -26,3 +26,11 @@ def get_ast name
   job = "test/a1/#{name}.java"
   Joos::Parser.new(Joos::Scanner.scan_file job).parse
 end
+
+class String
+  include Joos::SourceInfo
+end
+
+class Array
+  include Joos::SourceInfo
+end

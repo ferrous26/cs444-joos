@@ -11,7 +11,7 @@ module Joos::Entity::Callable
     def initialize dupes
       first = dupes.first.name.cyan
       src   = dupes.first.unit.fully_qualified_name.cyan_join
-      super "Method #{first} defined twice in #{src}"
+      super "Method #{first} defined twice in #{src}", dupes.first
     end
   end
 

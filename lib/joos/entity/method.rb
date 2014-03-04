@@ -16,7 +16,8 @@ class Joos::Entity::Method < Joos::Entity
   # non-native method that requires a body.
   class ExpectedBody < Joos::CompilerException
     def initialize method
-      super "#{method} does not include a method body, but must have one"
+      super "#{method} does not include a method body, but must have one",
+        method
     end
   end
 
@@ -24,7 +25,8 @@ class Joos::Entity::Method < Joos::Entity
   # Exception raised when method body is given for native or abstract methods.
   class UnexpectedBody < Joos::CompilerException
     def initialize method
-      super "#{method} must NOT include a method body, but has one"
+      super "#{method} must NOT include a method body, but has one",
+        method
     end
   end
 
@@ -32,7 +34,8 @@ class Joos::Entity::Method < Joos::Entity
   # Exception raised when a native method is declared as an instance method.
   class NonStaticNativeMethod < Joos::CompilerException
     def initialize method
-      super "#{method} must be declared static if it is also declared native"
+      super "#{method} must be declared static if it is also declared native",
+        method
     end
   end
 
@@ -41,7 +44,8 @@ class Joos::Entity::Method < Joos::Entity
   class DuplicateParameterName < Joos::CompilerException
     def initialize dupes
       dupes = dupes.map(&:inspect)
-      super "Duplicate parameter names (#{dupes.first}) and (#{dupes.second})"
+      super "Duplicate parameter names (#{dupes.first}) and (#{dupes.second})",
+        dupes.first
     end
   end
 
