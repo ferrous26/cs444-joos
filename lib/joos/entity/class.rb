@@ -115,6 +115,14 @@ class Joos::Entity::Class < Joos::Entity
     end
   end
 
+  class StaticOverridesInstance < Joos::CompilerException
+    def initialize method
+      m = method.name.cyan
+      a = method.ancestor.name.cyan
+      super "Static method #{m} overrides instance method #{a}", method
+    end
+  end
+
   class ProtectedOverridesPublic < Joos::CompilerException
     def initialize method
       m = method.name.cyan
@@ -232,8 +240,12 @@ class Joos::Entity::Class < Joos::Entity
   # Does not populate #all_methods or do any hierarchy checks
   def link_declarations
     # Resolve superclass
-    super_id = superclass_identifier || BASE_CLASS
-    @superclass = get_type super_id unless top_class?
+    super_id = superclass_identifier
+    if super_id
+      @superclass = get_type super_id
+    else
+      @superclass = get_top_class unless top_class?
+    end
 
     # Resolve interfaces (implemented in HasInterfaces)
     link_superinterfaces interface_identifiers
@@ -292,8 +304,8 @@ class Joos::Entity::Class < Joos::Entity
   def link_inherits
     # java.lang.Object doesn't inherit anything
     if top_class?
-      @all_methods = []
-      @all_fields = []
+      @all_methods = @methods
+      @all_fields = @fields
       return
     end
 
@@ -421,11 +433,15 @@ class Joos::Entity::Class < Joos::Entity
     check_ambiguous_methods constructors, DuplicateConstructorName
   end
 
-  # Check that an instance method doesn't override a static method
+  # Check that an instance method doesn't override a static method, or vice-versa
   def check_instance_overrides_static
     methods.each do |method|
-      if method.ancestor && method.ancestor.static?
-        raise InstanceOverridesStatic.new(method) unless method.static?
+      if method.ancestor
+        if method.ancestor.static?
+          raise InstanceOverridesStatic.new(method) unless method.static?
+        else
+          raise StaticOverridesInstance.new(method) if method.static?
+        end
       end
     end
   end
