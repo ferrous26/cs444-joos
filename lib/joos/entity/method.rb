@@ -94,6 +94,18 @@ class Joos::Entity::Method < Joos::Entity
 
 
   # @!group Assignment 2
+  
+  # Types of parameters
+  # @return [Array<BasicType, Joos::Array, CompilationUnit>)]
+  def parameter_types
+    @parameters.map(&:type)
+  end
+
+  # Return type of the method. `nil` for constructors.
+  # @return [BasicType, Joos::Array, CompilationUnit, Void, nil]
+  def return_type
+    # TODO
+  end
 
   ##
   # Return the effective signature of the method.
@@ -107,7 +119,12 @@ class Joos::Entity::Method < Joos::Entity
   #
   # @return [Array(Identifier, Array<BasicType, Joos::Array, CompilationUnit>)]
   def signature
-    [name, @parameters.map(&:type)]
+    [name, parameter_types]
+  end
+
+  # (name, return type, parameter types)
+  def full_signature
+    [name, return_type, parameter_types]
   end
 
   def link_declarations

@@ -18,6 +18,10 @@ class Joos::Entity::Interface < Joos::Entity
   include HasInterfaces
   include HasMethods
 
+  # Methods of the interface, including inherited ones.
+  # @return [Array<InterfaceMethod>]
+  alias_method :all_methods, :interface_methods
+
   # @param compilation_unit [Joos::AST::CompilationUnit]
   def initialize compilation_unit
     @node = compilation_unit

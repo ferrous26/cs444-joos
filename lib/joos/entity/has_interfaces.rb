@@ -113,7 +113,7 @@ module Joos::Entity::HasInterfaces
     @interface_methods = @superinterfaces.reduce [] do |methods, interface|
       methods.concat interface.interface_methods
     end
-    @interface_methods.uniq!(&:signature)
+    @interface_methods.uniq!(&:full_signature)
 
     @interface_methods
   end
