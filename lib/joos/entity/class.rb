@@ -107,6 +107,22 @@ class Joos::Entity::Class < Joos::Entity
     end
   end
 
+  class InstanceOverridesStatic < Joos::CompilerException
+    def initialize method
+      m = method.name.cyan
+      a = method.ancestor.name.cyan
+      super "Instance method #{m} overrides static method #{a}", method
+    end
+  end
+
+  class ProtectedOverridesPublic < Joos::CompilerException
+    def initialize method
+      m = method.name.cyan
+      a = method.ancestor.name.cyan
+      super "Protected method #{m} overrides public method, #{a}", method
+    end
+  end
+
   ##
   # Exception raised when an class has a circular superclass hierarchy.
   #
@@ -281,18 +297,33 @@ class Joos::Entity::Class < Joos::Entity
       return
     end
 
+    # Link inherited methods
+    inherited_methods = @superclass.all_methods.map do |supermethod|
+      sig = supermethod.full_signature
+      submethod = @methods.detect {|method| method.full_signature == sig}
+      if submethod
+        submethod.ancestor = supermethod
+        nil
+      else
+        supermethod
+      end
+    end
+    @all_methods = methods + inherited_methods.compact
+
   end
 
   # Checks performed on inherited members
   def check_inherits
-    return # pending
     # Check that inheriting methods doesn't make anything ambiguous
     check_ambiguous_methods all_methods
+
+    check_instance_overrides_static
+    check_protected_overrides_public
   end
 
   # Check that the Class has implemented all of its interfaces
   def check_implements
-    # interface_methods comes from HasInterfaces
+    # #interface_methods comes from HasInterfaces
     interface_methods.each do |interface_method|
       # TODO
     end
@@ -387,12 +418,26 @@ class Joos::Entity::Class < Joos::Entity
   end
 
   def check_constructors_have_unique_names
-    constructors.each do |c1|
-      dupes = constructors.select { |c2| c1.signature == c2.signature }
-      raise DuplicateConstructorName.new(dupes) if dupes.size > 1
+    check_ambiguous_methods constructors, DuplicateConstructorName
+  end
+
+  # Check that an instance method doesn't override a static method
+  def check_instance_overrides_static
+    methods.each do |method|
+      if method.ancestor && method.ancestor.static?
+        raise InstanceOverridesStatic.new(method) unless method.static?
+      end
     end
   end
 
+  # Check that a protected method doesn't override a public method
+  def check_protected_overrides_public
+    methods.each do |method|
+      if method.ancestor && method.ancestor.public?
+        raise ProtectedOverridesPublic.new(method) unless method.public?
+      end
+    end
+  end
 
   # @!group Inspect
 

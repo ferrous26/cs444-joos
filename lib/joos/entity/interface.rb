@@ -93,6 +93,10 @@ class Joos::Entity::Interface < Joos::Entity
     top = get_top_class
     top_merged_methods = methods.concat(top.methods).uniq(&:full_signature)
     check_ambiguous_methods top_merged_methods
+
+    # Check that methods do not differ only by return type
+    # (interface_methods may contain duplicates if they differ only by return type)
+    check_ambiguous_methods interface_methods
   end
 
   def link_identifiers
