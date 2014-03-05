@@ -13,17 +13,56 @@ while implementing these phases.
 
 \section{Design}
 
-We designed shit.
+Various components of the class were designed by augmenting or
+replacing the ASTs that were generated from parsing. We have one AST
+for each compilation unit that we are compiling. For the first
+assignment there was only ever one AST, but as of the second
+assignment the compiler handles an arbitrary number of ASTs being
+created and processed.
 
 \subsection{Name Resolution}
 
-Environment building\ldots
+The first step in name resolution was to parse each AST and create
+entity objects for each type of declared entity. We define an entity
+in the same way that the JLS does:
+
+\quote{A declared entity is a \tbf{package}, \tbf{class} type,
+\tbf{interface} type, member (class,interface, \tbf{field}, or
+\tbf{method}) of a reference type, \tbf{parameter} (to a method,
+constructor, or exception handler), or \tbf{local variable}.}
+
+For the entities that Joos supports; \ttt{Package}, \ttt{Class},
+\ttt{Interface}, \ttt{Field}, \ttt{Method}, \ttt{Parameter}, and
+\ttt{LocalVariable}; we have created classes that make accessing the
+metadata of the entity easier and more efficient than repeatedly
+navigating an AST.
+
+
+\subsubsection{Type Environment}
+
+After initially parsing the AST into the entity models, we can build
+the type environment by building the package hierarchy and linking
+imported types and packages into the compilation units that request
+them.
+
+Creating the package hierarchy\ldots
+
+Importing\ldots
+
+Resolving type names
+
+
+
+
+\subsubsection{Hierarchy Checking}
 
 Linking declarations\ldots
 
+Environment building\ldots
+
+
 Linking identifiers\ldots
 
-Checking the hierarchy\ldots
 
 
 \section{Challenges}
@@ -31,9 +70,14 @@ Checking the hierarchy\ldots
 This phase of the compiler implementation presented many
 challenges, some of which led to interesting solutions.
 
+AST transformations
+
+
 \subsection{Hacks}
 
 Lots and lots of hacks\ldots
+
+AST transformations
 
 
 \end{document}
