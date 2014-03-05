@@ -29,8 +29,10 @@ class Joos::Parser
       @token  = token
       syms    = all_symbols.inspect
       inspect = "`#{token.inspect}'"
-      source  = token.source.red
-      super "Expected one of #{syms}, but got #{inspect} from #{source}"
+      unless token.respond_to? :source
+        token = Joos::Source.new('end of program')
+      end
+      super "Expected one of #{syms}, but got #{inspect}", token
     end
 
 

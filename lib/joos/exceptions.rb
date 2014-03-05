@@ -9,24 +9,34 @@ require 'joos/source'
 class Joos::CompilerException < RuntimeError
   include Joos::SourceInfo
 
-  # @return [string]
-  attr_accessor :file
-  alias_method :file_name, :file
-
-  # @return [fixnum]
-  attr_accessor :line
-  alias_method :line_number, :line
-
-  # @return [fixnum]
-  attr_accessor :column
-
-  def initialize msg = nil, source=nil
-    super msg
-    if source
-      @file   = source.file_name
-      @line   = source.line_number
-      @column = source.column
-    end
+  def initialize msg = nil, source = nil
+    set_source source if source
+    super format(msg)
   end
 
+  # @return [Fixnum]
+  attr_writer :column
+
+  # @return [Fixnum]
+  attr_writer :line_number
+
+  # @return [String]
+  attr_writer :file_name
+
+  private
+
+  def format msg
+    <<-EOS
+#{formatted_source}: ERROR
+#{msg}
+    EOS
+  end
+
+  def formatted_source
+    if self.file_name
+      source
+    else
+      'unknown location'
+    end.red
+  end
 end

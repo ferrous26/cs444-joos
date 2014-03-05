@@ -109,7 +109,7 @@ class Joos::DFA
   ##
   # Add a state and transitions to the DFA's transition table
   # @param s [Symbol]
-  # @yield 
+  # @yield
   def state s, &block
     @transitions[s] ||= []
     builder = StateBuilder.new self, s

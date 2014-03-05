@@ -107,4 +107,44 @@ describe Joos::Token::Keyword do
     end
   end
 
+
+  context 'type checking' do
+    context 'Void' do
+
+      it 'is not a reference type' do
+        expect(Joos::Token.make(:Void, 'void')).to_not be_reference_type
+      end
+
+      it 'is not an array type' do
+        expect(Joos::Token.make(:Void, 'void')).to_not be_array_type
+      end
+
+      it 'is not a basic type' do
+        expect(Joos::Token.make(:Void, 'void')).to_not be_basic_type
+      end
+
+      it 'provides a very obvious #type_inspect value' do
+        expect(Joos::Token.make(:Void, 'void').type_inspect).to be == '()'.blue
+      end
+
+      it 'is not equal in type to a reference type' do
+        arry = Joos::Array.new :a, 900
+        void = Joos::Token.make :Void, 'void'
+        expect(void).to_not be == arry
+      end
+
+      it 'is not equal in type to a basic type' do
+        basic = Joos::BasicType.new :Int
+        void  = Joos::Token.make :Void, 'void'
+        expect(void).to_not be == basic
+      end
+
+      it 'is equal in type to another void type' do
+        void1 = Joos::Token.make :Void, 'void'
+        void2 = Joos::Token.make :Void, 'void'
+        expect(void1).to be == void2
+      end
+    end
+  end
+
 end

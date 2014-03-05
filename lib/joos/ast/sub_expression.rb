@@ -4,9 +4,9 @@ require 'joos/ast'
 # A sub-expression is any expression that is not an assignment.
 class Joos::AST::SubExpression
 
-  def initialize nodes
-    super
+  def validate parent
     fix_instanceof
+    super
   end
 
 
@@ -14,10 +14,21 @@ class Joos::AST::SubExpression
 
   def fix_instanceof
     return unless self.Instanceof
+
     # wrap the raw 'instanceof' with an 'Infixop'
     reparent make(:Infixop, @nodes.second), at_index: 1
+
     # wrap the 'ArrayType' with a 'Term', wrapped with a 'SubExpression'
-    reparent make(:SubExpression, make(:Term, @nodes.last)), at_index: 2
+    subexpr = if self.SubExpression
+                make(:SubExpression,
+                     make(:Term, make(:Type, @nodes[2])),
+                     @nodes.third,
+                     @nodes.fourth)
+              else
+                make(:SubExpression,
+                     make(:Term, make(:Type, @nodes[2])))
+              end
+    reparent subexpr, at_index: 2
   end
 
 end

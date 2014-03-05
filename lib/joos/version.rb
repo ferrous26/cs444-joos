@@ -1,18 +1,19 @@
 ##
 # Joos Compiler Framework
 module Joos
-  ##
-  # Version information for Joos
-  module Version
-    ##
-    # Version information formatted as a string
-    #
-    # @return [String]
-    def self.to_s
-      VERSION.to_s
-    end
 
-    # @return [Fixnum]
-    VERSION = 1
+  ##
+  # Version information formatted as a string
+  #
+  # @return [String]
+  VERSION = '1'
+
+  ##
+  # Version information formatted as a fixnum
+  #
+  # @return [Fixnum]
+  def version
+    VERSION.to_i
   end
+
 end

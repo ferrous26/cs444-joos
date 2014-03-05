@@ -8,8 +8,14 @@ class Joos::AST::Block
 
   def initialize nodes
     super
-    @nodes = self.BlockStatements.to_a # trim braces
-    rescopify
+
+    # trim braces
+    if self.BlockStatements
+      @nodes = [self.BlockStatements]
+      rescopify
+    else
+      @nodes.clear
+    end
   end
 
 
@@ -18,14 +24,16 @@ class Joos::AST::Block
   def rescopify
     statement_seen = false
 
-    @nodes.each_with_index do |node, index|
+    statements = self.BlockStatements.to_a
+    statements.each_with_index do |node, index|
       if node.LocalVariableDeclarationStatement && statement_seen
-        block = make(:BlockStatement,
-                     make(:Statement,
-                          make(:Block,
-                               make(:BlockStatements, *@nodes[index..-1]))))
-        @nodes = @nodes.take index
-        reparent block, at_index: @nodes.size
+        bs = make(:BlockStatement,
+                  make(:Statement,
+                       make(:Block,
+                            make(:BlockStatements, *statements[index..-1]))))
+
+        statements.pop(statements.size - index)
+        statements[index] = make(:BlockStatements, bs)
         return # we just fucked with the array we are enumerating, so bail!
       elsif node.Statement
         statement_seen = true

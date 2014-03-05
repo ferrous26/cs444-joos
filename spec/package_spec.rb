@@ -46,7 +46,7 @@ describe Joos::Package do
   end
 
   it 'raises an exception if you try to add an existing key' do
-    mock = Object.new
+    mock = Joos::Source.new 'a', 1, 4
     mock.define_singleton_method(:name) { 'b' }
     Joos::Package.declare ['a', 'b']
     expect {

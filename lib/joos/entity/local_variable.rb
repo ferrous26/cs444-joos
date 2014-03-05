@@ -10,13 +10,13 @@ class Joos::Entity::LocalVariable < Joos::Entity
   # @return [Joos::AST::Expression]
   attr_reader :initializer
 
-  # @param node   [Joos::AST::LocalVariableDeclaration]
-  # @param parent [Joos::Entity::CompilationUnit]
-  def initialize node, parent
+  # @param node  [Joos::AST::LocalVariableDeclaration]
+  # @param klass [Joos::Entity::Class]
+  def initialize node, klass
     @node = node
     super node.VariableDeclarator.Identifier
     @initializer = node.VariableDeclarator.Expression
-    @unit = parent
+    @unit = klass
     @type = resolve_type node.Type
   end
 
@@ -31,10 +31,6 @@ class Joos::Entity::LocalVariable < Joos::Entity
 
 
   # @!group Assignment 2
-
-  def check_hierarchy
-    # nop
-  end
 
   def link_identifiers
     @initializer.link_identifiers

@@ -107,10 +107,40 @@ class Joos::Token
     # @param parent [Joos::AST::Infixop]
     def validate parent
       term = parent.parent.SubExpression.Term
-      raise InvalidReferenceType.new(self) unless (term.ArrayType ||
+      raise InvalidReferenceType.new(self) unless (term.Type ||
                                                    (term.QualifiedIdentifier &&
                                                     term.Arguments.blank?    &&
                                                     term.Selectors.blank?))
+    end
+  end
+
+  ##
+  # The keyword `void` is used for the return type of methods which do not
+  # actually return anything.
+  class Void
+
+    # @!group Type API
+
+    alias_method :type, :to_sym
+
+    def reference_type?
+      false
+    end
+
+    def array_type?
+      false
+    end
+
+    def basic_type?
+      false
+    end
+
+    def type_inspect
+      '()'.blue
+    end
+
+    def == other
+      self.class == other.class
     end
   end
 

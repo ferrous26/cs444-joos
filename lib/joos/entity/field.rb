@@ -15,7 +15,8 @@ class Joos::Entity::Field < Joos::Entity
   class UninitializedFinalField < Joos::CompilerException
     # @param field [Joos::Entity::Field]
     def initialize field
-      super "#{field} MUST include an initializer if it is declared final"
+      super "#{field} MUST include an initializer if it is declared final",
+        field
     end
   end
 
@@ -24,13 +25,13 @@ class Joos::Entity::Field < Joos::Entity
   attr_reader :initializer
 
   # @param node [Joos::AST::ClassBodyDeclaration]
-  # @param parent [Joos::Entity::Class]
-  def initialize node, parent
+  # @param klass [Joos::Entity::Class]
+  def initialize node, klass
     @node        = node
     super node.Identifier, node.Modifiers
     @type        = node.Type
-    @initializer = wrap_initializer node.SubExpression
-    @unit        = parent
+    @initializer = wrap_initializer node.Expression
+    @unit        = klass
   end
 
   def to_sym

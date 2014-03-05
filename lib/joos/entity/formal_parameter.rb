@@ -11,12 +11,12 @@ class Joos::Entity::FormalParameter < Joos::Entity
   attr_reader :type
 
   # @param node [Joos::AST::FormalParameter]
-  # @param parent [Joos::Entity::CompilationUnit]
-  def initialize node, parent
+  # @param unit [Joos::Entity::CompilationUnit]
+  def initialize node, unit
     @node = node
     super node.Identifier
     @type = node.Type
-    @unit = parent
+    @unit = unit
   end
 
   def to_sym

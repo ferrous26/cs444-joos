@@ -9,9 +9,8 @@ class Joos::AST::ForUpdate
   # Exception raised when a for loop update contains a
   # non assignment expression.
   class InvalidForUpdate < Joos::CompilerException
-    # @todo Report file and line information
-    def initialize
-      super 'for-loop updates must be full expressions'
+    def initialize node
+      super 'for-loop updates must be full expressions', node
     end
   end
 
@@ -20,7 +19,7 @@ class Joos::AST::ForUpdate
     chain = self.Expression.SubExpression.Term
     if chain.Primary && !(chain.Selectors.Selector.Dot ||
                           chain.Primary.New)
-      raise InvalidForUpdate.new
+      raise InvalidForUpdate.new self
     end
   end
 

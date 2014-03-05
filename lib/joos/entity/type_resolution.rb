@@ -11,32 +11,22 @@ module Joos::Entity::TypeResolution
   #
   # @return [Joos::Entity::CompilationUnit]
   attr_reader :unit
-  alias_method :parent, :unit
+  alias_method :type_environment, :unit
 
   # @return [Class, Interface, Joos::Token::Type]
   attr_reader :type
+  alias_method :return_type, :type
 
 
   private
 
-  # @param node [Joos::AST::Type]
-  # @return [Joos::BasicType, Joos::Entity::CompilationUnit, Joos::Array, nil]
+  # @param node [Joos::AST::Type, Joos::Token::Void]
+  # @return [Joos::BasicType, Joos::Entity::CompilationUnit, Joos::Array, Joos::Token::Void]
   def resolve_type node
     if node.to_sym == :Void
-      nil
-
-    elsif node.BasicType
-      Joos::BasicType.new node.BasicType.first
-
-    elsif node.QualifiedIdentifier
-      unit.get_type(node.QualifiedIdentifier)
-
-    elsif node.ArrayType
-      Joos::Array.new resolve_type(node.ArrayType), 0
-
+      node
     else
-      raise "Unknown AST::Type type: #{node.inspect}"
-
+      node.resolve unit
     end
   end
 
@@ -44,12 +34,11 @@ module Joos::Entity::TypeResolution
   # @!group Inspect
 
   def inspect_type type
-    if !type || type.to_sym == :Void
-      '()'.blue
-    elsif type.kind_of? Joos::AST
-      '' # @todo fix this one day
-    else
+    if type.respond_to? :type_inspect
       type.type_inspect
+    else # type.kind_of? Joos::AST
+      # @todo hmmm
+      ''
     end
   end
 

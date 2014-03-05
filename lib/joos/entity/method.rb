@@ -31,7 +31,8 @@ class Joos::Entity::Method < Joos::Entity
   # non-native method that requires a body.
   class ExpectedBody < Joos::CompilerException
     def initialize method
-      super "#{method} does not include a method body, but must have one"
+      super "#{method} does not include a method body, but must have one",
+        method
     end
   end
 
@@ -39,7 +40,8 @@ class Joos::Entity::Method < Joos::Entity
   # Exception raised when method body is given for native or abstract methods.
   class UnexpectedBody < Joos::CompilerException
     def initialize method
-      super "#{method} must NOT include a method body, but has one"
+      super "#{method} must NOT include a method body, but has one",
+        method
     end
   end
 
@@ -47,7 +49,8 @@ class Joos::Entity::Method < Joos::Entity
   # Exception raised when a native method is declared as an instance method.
   class NonStaticNativeMethod < Joos::CompilerException
     def initialize method
-      super "#{method} must be declared static if it is also declared native"
+      super "#{method} must be declared static if it is also declared native",
+        method
     end
   end
 
@@ -55,8 +58,9 @@ class Joos::Entity::Method < Joos::Entity
   # Exception raised when a native method is declared as an instance method.
   class DuplicateParameterName < Joos::CompilerException
     def initialize dupes
-      dupes = dupes.map(&:inspect)
-      super "Duplicate parameter names (#{dupes.first}) and (#{dupes.second})"
+      dup_s = dupes.map(&:inspect)
+      super "Duplicate parameter names (#{dup_s.first}) and (#{dup_s.second})",
+        dupes.first
     end
   end
 
@@ -64,17 +68,17 @@ class Joos::Entity::Method < Joos::Entity
 
 
   # @param node [Joos::AST::ClassBodyDeclaration]
-  # @param parent [Joos::AST::CompilationUnit]
-  def initialize node, parent
+  # @param unit [Joos::AST::CompilationUnit]
+  def initialize node, unit
     @node       = node
     super node.Identifier, node.Modifiers
     @type       = node.Void || node.Type
     decl        = node.last # MethodDeclRest, InterfaceMethodDeclRest, etc.
     @parameters = (decl.FormalParameters.FormalParameterList || []).map do |p|
-      Joos::Entity::FormalParameter.new p, parent
+      Joos::Entity::FormalParameter.new p, unit
     end
     parse_body decl
-    @unit = parent
+    @unit = unit
   end
 
   def to_sym

@@ -29,6 +29,14 @@ namespace :test do
     # do not bother with main tests if stdlib fails
     task "a#{assignment}" => :stdlib if assignment > 1
   end
+
+  Rake::TestTask.new do |t|
+    t.libs = ['lib', 'config', 'test']
+    t.name = 'parsing'
+    # t.warning = true
+    t.verbose = true
+    t.test_files = FileList["test/parsing_test.rb"]
+  end
 end
 
 desc 'Run a test with the given name'

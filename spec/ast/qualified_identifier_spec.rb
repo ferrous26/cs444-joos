@@ -52,6 +52,28 @@ describe Joos::AST::QualifiedIdentifier do
     expect(qid.prefix).to be :a
   end
 
+  it 'responds to #prefix(n) with the first n identifiers' do
+    nodes = [:a, :b]
+    qid   = Joos::AST::QualifiedIdentifier.new(nodes)
+    expect(qid.prefix 1).to be == [:a]
+    expect(qid.prefix 2).to be == [:a, :b]
+  end
+
+  it 'responds to #prefix! by consuming the first identifier' do
+    nodes = [:a, :b]
+    qid   = Joos::AST::QualifiedIdentifier.new(nodes)
+    expect(qid.prefix!).to be == :a
+    expect(qid.prefix!).to be == :b
+    expect(qid.prefix!).to be_nil
+  end
+
+  it 'responds to #prefix!(n) by consuming the first n identifiers' do
+    nodes = [:a, :b, :c, :d, :e, :f]
+    qid   = Joos::AST::QualifiedIdentifier.new(nodes)
+    expect(qid.prefix! 1).to be == [:a]
+    expect(qid.prefix! 2).to be == [:b, :c]
+  end
+
   it 'responds to #suffix with the last identifier' do
     nodes = [:a, :b]
     qid   = Joos::AST::QualifiedIdentifier.new(nodes)

@@ -11,7 +11,8 @@ module Joos::Scope
     def initialize dupes
       first  = "#{dupes.first.name.cyan} from #{dupes.first.name.source.red}"
       second = "#{dupes.second.name.cyan} from #{dupes.second.source.red}"
-      super "Duplicate local variable names (#{first}) and (#{second})"
+      super "Duplicate local variable names (#{first}) and (#{second})",
+        dupes.first
     end
   end
 
@@ -28,6 +29,10 @@ module Joos::Scope
   # @return [Array<Joos::Scope>]
   attr_reader :children_scopes
 
+  # @return [Joos::Entity::CompilationUnit]
+  attr_reader :type_environment
+  alias_method :this, :type_environment
+
   ##
   # Given a qualified identifier, this method will search up the hierarchy
   # for a declaration whose name matches.
@@ -39,20 +44,28 @@ module Joos::Scope
       parent_scopes.find_declaration(qid)
   end
 
+  def return_type
+    parent_scope.return_type
+  end
+
   ##
+  # @note This is like `#initialize` for the mixin: call it first
+  #
   # Instruct the scope to construct itself from the receiving scope
   # and recursively for all nested scopes.
   #
-  # @param parent [Joos::Scope, Joos::Entity::Method]
+  # @param parent_scope [Joos::Scope, Joos::Entity::Method]
   # @param type_environment [Joos::Entity::CompilationUnit]
-  def build parent, type_environment
-    @parent_scopes   = parent
-    @children_scopes = []
-    @members         = []
+  def build parent_scope, type_environment
+    @parent_scopes    = parent_scope
+    @type_environment = type_environment
+    @children_scopes  = []
+    @members          = []
 
-    parent.children_scopes << self
+    parent_scope.children_scopes << self
 
-    @nodes.each_with_index do |node, index|
+    return if @nodes.empty?
+    self.BlockStatements.each_with_index do |node, index|
       child = node.first
       if child.to_sym == :LocalVariableDeclarationStatement
         variable  = Joos::Entity::LocalVariable.new child, type_environment

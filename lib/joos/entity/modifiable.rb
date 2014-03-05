@@ -13,7 +13,7 @@ module Joos::Entity::Modifiable
   class DuplicateModifier < Joos::CompilerException
     # @param entity [Joos::Entity]
     def initialize entity
-      super "#{entity} is being declared with duplicate modifiers"
+      super "#{entity} is being declared with duplicate modifiers", entity
     end
   end
 
@@ -25,7 +25,7 @@ module Joos::Entity::Modifiable
     # @param modifier [Joos::Token::Modifier]
     def initialize entity, modifier
       klass = entity.to_sym.to_s.green
-      super "A #{klass} cannot use the #{modifier.yellow} modifier"
+      super "A #{klass} cannot use the #{modifier.yellow} modifier", entity
     end
   end
 
@@ -38,7 +38,7 @@ module Joos::Entity::Modifiable
     # @param mods [Array(Joos::Token::Modifier, Joos::Token::Modifier)]
     def initialize entity, mods
       mods_list = mods.map(&:to_s).join(' or ')
-      super "#{entity} can only be one of #{mods_list}"
+      super "#{entity} can only be one of #{mods_list}", entity
     end
   end
 
@@ -49,7 +49,8 @@ module Joos::Entity::Modifiable
   class MissingVisibilityModifier < Joos::CompilerException
     # @param entity [Joos::Entity]
     def initialize entity
-      super "#{entity} must have exactly one visibility modifier (i.e. public)"
+      msg = "#{entity} must have exactly one visibility modifier (e.g. public)"
+      super msg, entity
     end
   end
 

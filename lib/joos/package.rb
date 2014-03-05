@@ -12,9 +12,10 @@ class Joos::Package
     # @param qualified_id [Joos::AST::QualifiedIdentifier]
     # @param bad_id       [Joos::Token::Identifier]
     def initialize qualified_id, bad_id
-      id  = bad_id.to_s.cyan
+      id  = bad_id.cyan
       qid = qualified_id.inspect
-      super "Package path component #{id} in #{qid} names a compilation unit"
+      super "Package path component #{id} in #{qid} names a compilation unit",
+        bad_id
     end
   end
 
@@ -23,7 +24,8 @@ class Joos::Package
   class DoesNotExist < Joos::CompilerException
     # @param qid [Joos::AST::QualifiedIdentifier]
     def initialize qid
-      super "No package or type specified by #{qid.inspect}"
+      src = qid.kind_of?(Array) ? Joos::Source.new('internal', 0, 0) : qid
+      super "No package or type specified by #{qid.inspect}", src
     end
   end
 
@@ -34,10 +36,10 @@ class Joos::Package
     # @param package [Joos::Package]
     # @param unit [Joos::Entity::CompilationUnit]
     def initialize package, unit
-      name = package.fully_qualified_name.join('.')
+      name = package.fully_qualified_name.cyan_join
       # @todo show what is already defined
       name = 'the top-level namespace' if name.blank?
-      super "#{unit.name} already defined in #{name}"
+      super "#{unit.name} already defined in #{name}", unit
     end
   end
 

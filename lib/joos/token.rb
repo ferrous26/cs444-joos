@@ -149,11 +149,11 @@ class Joos::Token
     class Exception < Joos::CompilerException
       # @param token [Joos::Token]
       def initialize token
-        super <<-EOM
-Bad input token found at #{token.source}
-#{token.value}
+        msg = <<-EOM
+Bad input token: `#{token.value}'
 #{token.msg}
         EOM
+        super msg, token
       end
     end
 

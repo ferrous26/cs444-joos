@@ -49,9 +49,13 @@ GRAMMAR = {
     ],
     SubExpression: [
       [:Term],
-      # this case is subsumed by the next case during run time
+      [:Term, :Infixop, :SubExpression],
+      # these cases are transformed into the regular Term-Infixop-SubExpr
+      # form during runtime and ArrayType/QualifiedIdentifier are Type wrapped
+      [:Term, :Instanceof, :QualifiedIdentifier],
+      [:Term, :Instanceof, :QualifiedIdentifier, :Infixop, :SubExpression],
       [:Term, :Instanceof, :ArrayType],
-      [:Term, :Infixop, :SubExpression]
+      [:Term, :Instanceof, :ArrayType, :Infixop, :SubExpression]
     ],
     Infixop: [
       [:LazyOr],
@@ -68,23 +72,31 @@ GRAMMAR = {
       [:Minus],
       [:Multiply],
       [:Divide],
-      [:Modulo],
-      [:Instanceof]
+      [:Modulo]
     ],
     Term: [
       [:TermModifier, :Term],
-      [:OpenParen, :Expression,                            :CloseParen, :Term],
-      [:OpenParen, :Expression, :OpenStaple, :CloseStaple, :CloseParen, :Term],
-      [:OpenParen, :BasicType,                             :CloseParen, :Term],
-      [:OpenParen, :BasicType,  :OpenStaple, :CloseStaple, :CloseParen, :Term],
 
-      [:Primary,                                                      :Selectors],
+      # These 3 cases all handle casting, so the Expression on the inside
+      # has to be a single QualifiedIdentifier
+      [:OpenParen, :Expression, :CloseParen, :Term],
+      [:OpenParen, :ArrayType,  :CloseParen, :Term],
+      [:OpenParen, :BasicType,  :CloseParen, :Term],
 
-      # [:ArrayType]
+      [:Primary, :Selectors],
+
+      # Type does not normall belong here, but in the case of an instanceof
+      # call, the right hand operator of instance (which is a Type) will be
+      # pushed down into here
+      # [:Type]
+
       [:QualifiedIdentifier],
-      [:QualifiedIdentifier, :OpenStaple,               :CloseStaple],
-      [:QualifiedIdentifier, :OpenStaple, :Expression,  :CloseStaple, :Selectors],
-      [:QualifiedIdentifier,              :Arguments,                 :Selectors]
+
+      # These cases arises from method calls to "this" or local variable
+      # array access, and will be transformed into Primary-Selectors and
+      # QualifiedIdentifier-Selectors at runtime
+      [:QualifiedIdentifier, :Arguments,  :Selectors],
+      [:QualifiedIdentifier, :OpenStaple, :Expression,  :CloseStaple, :Selectors]
     ],
     TermModifier: [
       [:Not],
@@ -221,7 +233,7 @@ GRAMMAR = {
       [:Semicolon],
       # Field
       [:Modifiers, :Type, :Identifier, :Semicolon],
-      [:Modifiers, :Type, :Identifier, :Equals, :SubExpression, :Semicolon],
+      [:Modifiers, :Type, :Identifier, :Equals, :Expression, :Semicolon],
       # Methods
       [:Modifiers, :Void, :Identifier, :MethodDeclaratorRest],
       [:Modifiers, :Type, :Identifier, :MethodDeclaratorRest],
