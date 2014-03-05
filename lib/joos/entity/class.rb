@@ -312,17 +312,16 @@ class Joos::Entity::Class < Joos::Entity
     end
   end
 
-
-  private
-
-  # @private
-  root = ['java', 'lang', 'Object'].map { |s| Joos::Token.make :Identifier, s }
-
   ##
   # The default base class for any class that does not specify
   #
   # @return [Joos::AST::QualifiedIdentifier]
-  BASE_CLASS = Joos::AST.make :QualifiedIdentifier, *root
+  BASE_CLASS = Joos::AST.make :QualifiedIdentifier,
+    *['java', 'lang', 'Object'].map { |s| Joos::Token.make :Identifier, s }
+
+
+  private
+
 
   # A tuple containing (constructor, field, method) AST nodes.
   def member_nodes
@@ -355,7 +354,6 @@ class Joos::Entity::Class < Joos::Entity
     @member_nodes = [constructors, fields, methods]
     @member_nodes
   end
-
 
   def check_at_least_one_constructor
     raise NoConstructorError.new(self) if constructors.empty?

@@ -186,6 +186,12 @@ module Joos::Entity::CompilationUnit
     unit
   end
 
+  # Get java.lang.Object
+  # @return [Joos::Entity::Class]
+  def get_top_class
+    get_type Joos::Entity::Class::BASE_CLASS
+  end
+
   def link_imports
     @imported_packages << default_package # this must come first
 

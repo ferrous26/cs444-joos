@@ -16,6 +16,10 @@ class Joos::Entity::Constructor < Joos::Entity::Method
     @type = klass # yay, we don't have to resolve this one!
   end
 
+  def return_type
+    nil
+  end
+
   def to_sym
     :Constructor
   end

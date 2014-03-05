@@ -110,6 +110,9 @@ module Joos::Entity::HasInterfaces
   # @return [Array<InterfaceMethod>]
   def interface_methods
     return @interface_methods if @interface_methods
+
+    # Methods whose full signature match are merged
+    # Methods whose signature differs only in return type are checked later.
     @interface_methods = @superinterfaces.reduce [] do |methods, interface|
       methods.concat interface.interface_methods
     end

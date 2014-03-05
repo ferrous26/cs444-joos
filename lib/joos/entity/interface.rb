@@ -88,6 +88,11 @@ class Joos::Entity::Interface < Joos::Entity
   end
 
   def check_inherits
+    # Check that we are not ambiguous with java.lang.Object
+    # TODO: Add a more specific exception (defaults to DuplicateMethodName)
+    top = get_top_class
+    top_merged_methods = methods.concat(top.methods).uniq(&:full_signature)
+    check_ambiguous_methods top_merged_methods
   end
 
   def link_identifiers

@@ -101,10 +101,17 @@ class Joos::Entity::Method < Joos::Entity
     @parameters.map(&:type)
   end
 
-  # Return type of the method. `nil` for constructors.
-  # @return [BasicType, Joos::Array, CompilationUnit, Void, nil]
+  # Return type of the method.
+  # Returns `nil` for `void` and constructors.
+  # FIXME Probably want to change this for the former case.
+  #
+  # @return [BasicType, Joos::Array, CompilationUnit, nil]
   def return_type
-    # TODO
+    if @node.Void
+      nil
+    else
+      @node.Type.resolve @unit
+    end
   end
 
   ##
