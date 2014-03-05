@@ -26,10 +26,12 @@ The first step in name resolution was to parse each AST and create
 entity objects for each type of declared entity. We define an entity
 in the same way that the JLS does:
 
-\quote{A declared entity is a \tbf{package}, \tbf{class} type,
+\begin{quote}
+A declared entity is a \tbf{package}, \tbf{class} type,
 \tbf{interface} type, member (class,interface, \tbf{field}, or
 \tbf{method}) of a reference type, \tbf{parameter} (to a method,
-constructor, or exception handler), or \tbf{local variable}.}
+constructor, or exception handler), or \tbf{local variable}.
+\end{quote}
 
 For the entities that Joos supports; \ttt{Package}, \ttt{Class},
 \ttt{Interface}, \ttt{Field}, \ttt{Method}, \ttt{Parameter}, and
