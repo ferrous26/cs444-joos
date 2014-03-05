@@ -81,8 +81,8 @@ module Joos::Entity::HasInterfaces
     end
   end
 
-  def check_interfaces
-    # Detect duplicate extends clauses (not allowed!)
+  # Checks that there are no duplicate extends clauses
+  def check_duplicate_interfaces
     @superinterfaces.each do |unit|
       if @superinterfaces.select { |x| unit.equal? x }.size > 1
         raise DuplicateSuperInterface.new(self, unit)
@@ -101,6 +101,21 @@ module Joos::Entity::HasInterfaces
         interface.check_interface_circularity chain
       end
     end
+  end
+
+  # All interface methods the {Class} must conform to.
+  # In the case of {Interface}s, this is equivalent to #all_methods.
+  # This is only defined after the #link_declarations pass.
+  #
+  # @return [Array<InterfaceMethod>]
+  def interface_methods
+    return @interface_methods if @interface_methods
+    @interface_methods = @superinterfaces.reduce [] do |methods, interface|
+      methods.concat interface.interface_methods
+    end
+    @interface_methods.uniq!(&:signature)
+
+    @interface_methods
   end
 
   # @!endgroup

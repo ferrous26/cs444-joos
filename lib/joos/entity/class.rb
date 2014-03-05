@@ -44,9 +44,12 @@ class Joos::Entity::Class < Joos::Entity
   attr_reader :fields
 
   # All methods contained in the class, including inherited ones.
-  # @return [Array<Field>]
+  # @return [Array<Method>]
   attr_reader :all_methods
 
+  # All fields contained in the class, including inherited ones.
+  # @return [Array<Method>]
+  attr_reader :all_fields
 
   # @!group Exceptions
 
@@ -251,7 +254,7 @@ class Joos::Entity::Class < Joos::Entity
     # Hierarchy checks
     check_superclass_is_not_final
     check_superclass_circularity
-    check_interfaces
+    check_duplicate_interfaces
 
     # Own member checks
     methods.each(&:validate)
@@ -263,59 +266,42 @@ class Joos::Entity::Class < Joos::Entity
     check_constructors_have_unique_names
 
     check_fields_have_unique_names
-    check_methods_have_unique_names
     check_abstract_methods_only_if_class_is_abstract
+
+    check_methods_have_unique_names
   end
 
   # Populate #all_methods, etc.
   # Also links the #ancestor of overriden methods.
   def link_inherits
+    # java.lang.Object doesn't inherit anything
+    if top_class?
+      @all_methods = []
+      @all_fields = []
+      return
+    end
+
   end
 
   # Checks performed on inherited members
   def check_inherits
+    return # pending
+    # Check that inheriting methods doesn't make anything ambiguous
+    check_ambiguous_methods all_methods
   end
 
-#  def link_superclass
-#    return unless superclass # handle the root class :(
-#    @superclass = get_type superclass
-#    unless @superclass.is_a? Joos::Entity::Class
-#      raise NonClassSuperclass.new(self)
-#    end
-#  end
-#
-#  def set_superclass
-#    if BASE_CLASS == fully_qualified_name
-#      if @node.TypeDeclaration.ClassDeclaration.QualifiedIdentifier
-#        # @todo proper exception
-#        raise 'you tried to give java.lang.Object a superclass'
-#      end
-#      @superclass = nil
-#    else
-#      @superclass =
-#        @node.TypeDeclaration.ClassDeclaration.QualifiedIdentifier ||
-#        BASE_CLASS
-#    end
-#  end
-#
-#  def set_interfaces
-    #@node.TypeDeclaration.ClassDeclaration.TypeList ||
-    #[]
-#  end
-  
+  # Check that the Class has implemented all of its interfaces
+  def check_implements
+    # interface_methods comes from HasInterfaces
+    interface_methods.each do |interface_method|
+      # TODO
+    end
+  end
 
   def link_identifiers
     constructors.each(&:link_identifiers)
     fields.each(&:link_identifiers)
   end
-
-#  def link_declarations
-#    super
-#    link_superclass
-#    fields.each(&:link_declarations)
-#    methods.each(&:link_declarations)
-#    constructors.each(&:link_declarations)
-#  end
 
   def check_superclass_circularity chain = []
     chain << self

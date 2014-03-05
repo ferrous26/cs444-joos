@@ -33,18 +33,32 @@ module Joos::Entity::HasMethods
     end
   end
 
-  # Checks that own (not inherited) methods are unambiguous
+  # Check that own methods are unambiguous.
+  # {Class}es need not call this - they have a more general case of checking
+  # that #all_methods is unambiguous.
   def check_methods_have_unique_names
+    check_ambiguous_methods methods
+  end
+
+  # Checks that the passed methods are unambiguous.
+  # Raises exception with an array of duplicates if ambiguous.
+  #
+  # @param methods [Array<Method>]
+  # @param exception [::Class]
+  def check_ambiguous_methods methods, exception = DuplicateMethodName
     methods.each do |method1|
       dupes = methods.select { |method2|
         method1.signature == method2.signature
       }
-      raise DuplicateMethodName.new(dupes) if dupes.size > 1
+      raise exception.new(dupes) if dupes.size > 1
     end
   end
 
   def link_method_identifiers
     methods.each(&:link_identifiers)
   end
+
+private
+  
 
 end

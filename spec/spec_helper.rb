@@ -37,6 +37,7 @@ def get_std_ast qualified_name
   lib_version = '2.0'
   job = "test/stdlib/#{lib_version}/#{path}.java"
   Joos::Parser.new(Joos::Scanner.scan_file job).parse
+end
 
 class String
   include Joos::SourceInfo

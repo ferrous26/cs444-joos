@@ -137,6 +137,10 @@ class Joos::Compiler
     @compilation_units.sort_by(&:depth).each(&:link_inherits)
     @compilation_units.each(&:check_inherits)
 
+    # Check that classes implement their interfaces
+    classes = @compilation_units.select {|unit| unit.is_a? Joos::Entity::Class}
+    classes.each(&:check_implements)
+
     @compilation_units.each(&:link_identifiers)
   end
 

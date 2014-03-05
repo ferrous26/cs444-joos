@@ -74,8 +74,9 @@ class Joos::Entity::Interface < Joos::Entity
 
   # Hierarchy and own method checks
   def check_declarations
-    check_interfaces
+    check_duplicate_interfaces
     check_interface_circularity
+    check_methods_have_unique_names
     methods.each(&:validate)
   end
 
