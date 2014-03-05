@@ -2,7 +2,15 @@ require 'joos/entity'
 
 ##
 # Mixin for entities which `implements` or `extends` {Interface}s.
-module Joos::Entity::Implementor
+module Joos::Entity::HasInterfaces
+
+  ##
+  # Interfaces that the receiver conforms to or plans to conform to.
+  #
+  # @return [Array<Interface>]
+  attr_reader :superinterfaces
+  alias_method :interfaces, :superinterfaces
+
 
   ##
   # Exception raised when an interface has a circular extension.
@@ -52,24 +60,36 @@ module Joos::Entity::Implementor
     end
   end
 
-  ##
-  # Interfaces that the receiver conforms to or plans to conform to.
-  #
-  # @return [Array<Interface>]
-  attr_reader :superinterfaces
-  alias_method :interfaces, :superinterfaces
-
 
   # @!group Assignment 2
-
-  def link_declarations
-    link_superinterfaces
+  
+  # Populates #superinterfaces with {Interface}s created for each type
+  # identifier given in interface_identifers.
+  #
+  # Checks that the interfaces are actually Interface types.
+  #
+  # @param interface_identifier [Array<QualifiedIdentifier>]
+  def link_superinterfaces interface_identifiers
+    @superinterfaces = interface_identifiers.map do |qid|
+      get_type(qid).tap do |interface|
+        unless interface.is_a? Joos::Entity::Interface
+          raise NonInterfaceSuperInterface.new(self, qid)
+        end
+      end
+    end
   end
 
-  def check_hierarchy
-    check_interface_circularity
+  def check_interfaces
+    # Detect duplicate extends clauses (not allowed!)
+    @superinterfaces.each do |unit|
+      if @superinterfaces.select { |x| unit.equal? x }.size > 1
+        raise DuplicateSuperInterface.new(self, unit)
+      end
+    end
   end
 
+  # Check for circular chain of interfaces
+  # Only Interface classes actually have to do this.
   def check_interface_circularity chain = []
     chain = chain.dup << self
     superinterfaces.each do |interface|
@@ -86,22 +106,6 @@ module Joos::Entity::Implementor
 
   private
 
-  def link_superinterfaces
-    @superinterfaces = @superinterfaces.map do |qid|
-      get_type(qid).tap do |interface|
-        unless interface.is_a? Joos::Entity::Interface
-          raise NonInterfaceSuperInterface.new(self, qid)
-        end
-      end
-    end
-
-    # detect duplicate extends clauses (not allowed!)
-    @superinterfaces.each do |unit|
-      if @superinterfaces.select { |x| unit.equal? x }.size > 1
-        raise DuplicateSuperInterface.new(self, unit)
-      end
-    end
-  end
 
 
   # @!group Inspect

@@ -27,13 +27,15 @@ describe Joos::Entity::Interface do
     expect(int.modifiers).to be == [:Abstract, :Public]
 
     supers = ['all'.cyan, ['the', 'fixings'].cyan_join, ['andMore'].cyan_join]
-    expect(int.superinterfaces.map(&:inspect)).to be == supers
-    expect(int.methods.size).to be == 1
+    expect(int.interface_identifiers.map(&:inspect)).to be == supers
+    expect(int.method_nodes.size).to be == 1
   end
 
   it 'sets the default superinterfaces to be empty' do
     ast = get_ast 'Je_interfaceNoModifiers'
     int = Joos::Entity::Interface.new ast
+    int.link_declarations
+    int.check_declarations
     expect(int.superinterfaces).to be_empty
   end
 
@@ -70,10 +72,13 @@ describe Joos::Entity::Interface do
 
   # this should be a little be more unit-y, but I hate writing mocks
   it 'recursively validates members' do
+    pending 'Way to mock #link_imports'
     ast = get_ast 'Je_allthefixings_Interface'
     int = Joos::Entity::Interface.new ast
     expect {
-      int.validate
+      int.link_imports
+      int.link_declarations
+      int.check_declarations
     }.to raise_error Joos::Entity::Modifiable::MissingVisibilityModifier
   end
 

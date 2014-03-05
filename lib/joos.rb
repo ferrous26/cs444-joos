@@ -126,8 +126,17 @@ class Joos::Compiler
 
   def resolve_names
     @compilation_units.each(&:link_imports)
+
+    # Resolve hierarchy and populate own members
     @compilation_units.each(&:link_declarations)
-    @compilation_units.each(&:check_hierarchy)
+    @compilation_units.each(&:check_declarations)
+
+    # Resolve inherited members.
+    # Order is important since the contains set of a class depends on the
+    # contains set of its parent
+    @compilation_units.sort_by(&:depth).each(&:link_inherits)
+    @compilation_units.each(&:check_inherits)
+
     @compilation_units.each(&:link_identifiers)
   end
 

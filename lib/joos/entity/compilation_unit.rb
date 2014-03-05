@@ -9,6 +9,25 @@ require 'joos/exceptions'
 # {Joos::Entity} interface.
 module Joos::Entity::CompilationUnit
 
+  ##
+  # The {Joos::Package} to which the compilation unit belongs
+  #
+  # @return [Joos::Package]
+  attr_reader :package
+
+  ##
+  # {Class}es and {Interface}s which have been directly imported.
+  #
+  # @return [Array<CompilationUnit>]
+  attr_reader :imported_types
+
+  ##
+  # {Joos::Package}s (namespaces) which have been imported into the receiver
+  #
+  # @return [Array<Joos::Package>]
+  attr_reader :imported_packages
+
+
   # @!group Exceptions
 
   ##
@@ -85,24 +104,6 @@ module Joos::Entity::CompilationUnit
 
   # @!endgroup
 
-
-  ##
-  # The {Joos::Package} to which the compilation unit belongs
-  #
-  # @return [Joos::Package]
-  attr_reader :package
-
-  ##
-  # {Class}es and {Interface}s which have been directly imported.
-  #
-  # @return [Array<CompilationUnit>]
-  attr_reader :imported_types
-
-  ##
-  # {Joos::Package}s (namespaces) which have been imported into the receiver
-  #
-  # @return [Array<Joos::Package>]
-  attr_reader :imported_packages
 
   def initialize name
     super name

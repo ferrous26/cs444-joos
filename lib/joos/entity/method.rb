@@ -9,6 +9,21 @@ class Joos::Entity::Method < Joos::Entity
   include Modifiable
   include TypeResolution
 
+  # @return [Array<Entity::FormalParameter>]
+  attr_reader :parameters
+  alias_method :variables, :parameters
+
+  ##
+  # This should only be `nil` for abstract methods.
+  #
+  # @return [Joos::AST::Block, nil]
+  attr_reader :body
+
+  # Optional ancestor method that this method overrides
+  # @return [Joos::Entity::Method, nil]
+  attr_accessor :ancestor
+
+
   # @!group Exceptions
 
   ##
@@ -47,16 +62,6 @@ class Joos::Entity::Method < Joos::Entity
 
   # @!endgroup
 
-
-  # @return [Array<Entity::FormalParameter>]
-  attr_reader :parameters
-  alias_method :variables, :parameters
-
-  ##
-  # This should only be `nil` for abstract methods.
-  #
-  # @return [Joos::AST::Block, nil]
-  attr_reader :body
 
   # @param node [Joos::AST::ClassBodyDeclaration]
   # @param parent [Joos::AST::CompilationUnit]

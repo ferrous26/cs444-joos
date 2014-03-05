@@ -1,8 +1,8 @@
 require 'joos/entity'
 require 'joos/entity/compilation_unit'
 require 'joos/entity/modifiable'
-require 'joos/entity/implementor'
-require 'joos/entity/callable'
+require 'joos/entity/has_methods'
+require 'joos/entity/has_interfaces'
 require 'joos/token/identifier'
 require 'joos/ast'
 require 'joos/exceptions'
@@ -15,8 +15,37 @@ require 'joos/exceptions'
 class Joos::Entity::Class < Joos::Entity
   include CompilationUnit
   include Modifiable
-  include Implementor
-  include Callable
+  include HasInterfaces
+  include HasMethods
+
+
+  ##
+  # The superclass of the receiver.
+  #
+  # This will only be `nil` for `java.lang.Object`.
+  #
+  # @return [Class, nil]
+  attr_reader :superclass
+
+  ##
+  # Constructors implemented on the class.
+  #
+  # Not including constructors defined in ancestor classes.
+  #
+  # @return [Array<Constructor>]
+  attr_reader :constructors
+
+  ##
+  # All fields defined on the class.
+  #
+  # Not including fields defined in ancestor classes.
+  #
+  # @return [Array<Field>]
+  attr_reader :fields
+
+  # All methods contained in the class, including inherited ones.
+  # @return [Array<Field>]
+  attr_reader :all_methods
 
 
   # @!group Exceptions
@@ -97,41 +126,20 @@ class Joos::Entity::Class < Joos::Entity
     end
   end
 
+  class TopInherits < Joos::CompilerException
+    def initialize node
+      super "Superclass specified for java.lang.Object", node
+    end
+  end
+
   # @!endgroup
 
-
-  ##
-  # The superclass of the receiver.
-  #
-  # This will only be `nil` for `java.lang.Object`.
-  #
-  # @return [Class, nil]
-  attr_reader :superclass
-
-  ##
-  # Constructors implemented on the class.
-  #
-  # Not including constructors defined in ancestor classes.
-  #
-  # @return [Array<Constructor>]
-  attr_reader :constructors
-
-  ##
-  # All fields defined on the class.
-  #
-  # Not including fields defined in ancestor classes.
-  #
-  # @return [Array<Field>]
-  attr_reader :fields
 
   # @param compilation_unit [Joos::AST::CompilationUnit]
   def initialize compilation_unit
     @node = compilation_unit
     decl  = compilation_unit.TypeDeclaration
     super decl.ClassDeclaration.Identifier, decl.Modifiers
-    set_superclass
-    set_interfaces
-    set_members
   end
 
   def to_sym
@@ -142,24 +150,172 @@ class Joos::Entity::Class < Joos::Entity
     :class
   end
 
+  # Validation checks on the AST
   def validate
     super
     ensure_modifiers_not_present(:Protected, :Native, :Static)
     ensure_mutually_exclusive_modifiers(:Final, :Abstract)
-    ensure_at_least_one_constructor
-    ensure_constructor_names_match
-    constructors.each(&:validate)
-    fields.each(&:validate)
-    methods.each(&:validate)
   end
 
-  def link_declarations
-    super
-    link_superclass
-    fields.each(&:link_declarations)
-    methods.each(&:link_declarations)
-    constructors.each(&:link_declarations)
+  # Is the receiver the top class, java.lang.Object?
+  # @return [Bool]
+  def top_class?
+    # Don't do this: == is not defined to be reflexive
+    #fully_qualified_name == BASE_CLASS
+    BASE_CLASS == fully_qualified_name
   end
+
+  # The QualifiedIdentifier of the receiver's superclass, as taken from the AST.
+  # Returns `nil` if no superclass is explicitly declared.
+  # 
+  # @return [Joos::AST::QualifiedIdentifier, nil]
+  def superclass_identifier
+    @node.TypeDeclaration.ClassDeclaration.QualifiedIdentifier
+  end
+
+  # The set of Interface identifiers, as returned by the AST
+  # @return [Array<Joos::AST::QualifiedIdentifier>]
+  def interface_identifiers
+    @node.TypeDeclaration.ClassDeclaration.TypeList ||
+    []
+  end
+
+  # Constructor AST nodes
+  # @return [Array<Joos::AST>]
+  def constructor_nodes
+    member_nodes[0]
+  end
+
+  # Field AST nodes
+  # @return [Array<Joos::AST>]
+  def field_nodes
+    member_nodes[1]
+  end
+
+  # Method AST nodes
+  # @return [Array<Joos::AST>]
+  def method_nodes
+    member_nodes[2]
+  end
+
+  # The depth of the class in the inheritance hierarchy.
+  # This only includes the class hierarchy, not the interface hierarchy.
+  # @return [fixnum]
+  def depth
+    if top_class?
+      0
+    else
+      superclass.depth + 1
+    end
+  end
+  
+  # Populates superclass, interfaces, own methods, constructors, fields, etc.
+  # Does not populate #all_methods or do any hierarchy checks
+  def link_declarations
+    # Resolve superclass
+    super_id = superclass_identifier || BASE_CLASS
+    @superclass = get_type super_id unless top_class?
+
+    # Resolve interfaces (implemented in HasInterfaces)
+    link_superinterfaces interface_identifiers
+
+    # Create methods (implemented in HasMethods)
+    link_methods method_nodes
+
+    # Create fields
+    @fields = field_nodes.map do |node|
+      field = Field.new node, self
+      field.link_declarations
+      field
+    end
+
+    # Create constructors
+    @constructors = constructor_nodes.map do |node|
+      Constructor.new node, self
+    end
+  end
+
+  # Check that the class/interface hierarchy is correct.
+  # Occurs after the hierarchy is resolved, but before method resolution
+  def check_declarations
+    # Check that superclass is an actual class
+    unless top_class? || (@superclass.is_a? Joos::Entity::Class)
+      raise NonClassSuperclass.new(self)
+    end
+
+    # Check that java.lang.Object does not inherit
+    if top_class? && superclass_identifier
+      raise TopInherits.new(node)
+    end
+
+    # Hierarchy checks
+    check_superclass_is_not_final
+    check_superclass_circularity
+    check_interfaces
+
+    # Own member checks
+    methods.each(&:validate)
+    fields.each(&:validate)
+    constructors.each(&:validate)
+
+    check_at_least_one_constructor
+    check_constructor_names_match
+    check_constructors_have_unique_names
+
+    check_fields_have_unique_names
+    check_methods_have_unique_names
+    check_abstract_methods_only_if_class_is_abstract
+  end
+
+  # Populate #all_methods, etc.
+  # Also links the #ancestor of overriden methods.
+  def link_inherits
+  end
+
+  # Checks performed on inherited members
+  def check_inherits
+  end
+
+#  def link_superclass
+#    return unless superclass # handle the root class :(
+#    @superclass = get_type superclass
+#    unless @superclass.is_a? Joos::Entity::Class
+#      raise NonClassSuperclass.new(self)
+#    end
+#  end
+#
+#  def set_superclass
+#    if BASE_CLASS == fully_qualified_name
+#      if @node.TypeDeclaration.ClassDeclaration.QualifiedIdentifier
+#        # @todo proper exception
+#        raise 'you tried to give java.lang.Object a superclass'
+#      end
+#      @superclass = nil
+#    else
+#      @superclass =
+#        @node.TypeDeclaration.ClassDeclaration.QualifiedIdentifier ||
+#        BASE_CLASS
+#    end
+#  end
+#
+#  def set_interfaces
+    #@node.TypeDeclaration.ClassDeclaration.TypeList ||
+    #[]
+#  end
+  
+
+  def link_identifiers
+    constructors.each(&:link_identifiers)
+    fields.each(&:link_identifiers)
+  end
+
+#  def link_declarations
+#    super
+#    link_superclass
+#    fields.each(&:link_declarations)
+#    methods.each(&:link_declarations)
+#    constructors.each(&:link_declarations)
+#  end
 
   def check_superclass_circularity chain = []
     chain << self
@@ -168,23 +324,6 @@ class Joos::Entity::Class < Joos::Entity
     elsif superclass
       superclass.check_superclass_circularity chain
     end
-  end
-
-  def check_hierarchy
-    super
-    check_superclass_circularity
-    check_fields_have_unique_names
-    check_abstract_methods_only_if_class_is_abstract
-    check_superclass_is_not_final
-    check_constructors_have_unique_names
-    fields.each(&:check_hierarchy)
-    constructors.each(&:check_hierarchy)
-  end
-
-  def link_identifiers
-    super
-    constructors.each(&:link_identifiers)
-    fields.each(&:link_identifiers)
   end
 
 
@@ -199,29 +338,16 @@ class Joos::Entity::Class < Joos::Entity
   # @return [Joos::AST::QualifiedIdentifier]
   BASE_CLASS = Joos::AST.make :QualifiedIdentifier, *root
 
-  def set_superclass
-    if BASE_CLASS == fully_qualified_name
-      if @node.TypeDeclaration.ClassDeclaration.QualifiedIdentifier
-        # @todo proper exception
-        raise 'you tried to give java.lang.Object a superclass'
-      end
-      @superclass = nil
-    else
-      @superclass =
-        @node.TypeDeclaration.ClassDeclaration.QualifiedIdentifier ||
-        BASE_CLASS
-    end
-  end
+  # A tuple containing (constructor, field, method) AST nodes.
+  def member_nodes
+    raise "Class does not have an AST node" unless @node
 
-  def set_interfaces
-    @superinterfaces = @node.TypeDeclaration.ClassDeclaration.TypeList ||
-    []
-  end
+    # Cache
+    return @member_nodes if @member_nodes
 
-  def set_members
-    @constructors = []
-    @fields       = []
-    @methods      = []
+    constructors = []
+    fields       = []
+    methods      = []
 
     @node
     .TypeDeclaration
@@ -230,38 +356,30 @@ class Joos::Entity::Class < Joos::Entity
     .ClassBodyDeclarations.each do |node|
 
       if node.ConstructorDeclaratorRest
-        @constructors << Constructor.new(node, self)
-
+        constructors << node
       elsif node.MethodDeclaratorRest
-        @methods << Method.new(node, self)
-
+        methods << node
       elsif node.first.to_sym == :Semicolon
         # nop
-
       else # must be a field declaration
-        @fields << Field.new(node, self)
-
+        fields << node
       end
     end
+
+    @member_nodes = [constructors, fields, methods]
+    @member_nodes
   end
 
-  def ensure_at_least_one_constructor
-    raise NoConstructorError.new(self) if @constructors.empty?
+
+  def check_at_least_one_constructor
+    raise NoConstructorError.new(self) if constructors.empty?
   end
 
-  def ensure_constructor_names_match
+  def check_constructor_names_match
     constructors.each do |constructor|
       unless constructor.name == name
         raise ConstructorNameMismatch.new(constructor)
       end
-    end
-  end
-
-  def link_superclass
-    return unless superclass # handle the root class :(
-    @superclass = get_type superclass
-    unless @superclass.is_a? Joos::Entity::Class
-      raise NonClassSuperclass.new(self)
     end
   end
 

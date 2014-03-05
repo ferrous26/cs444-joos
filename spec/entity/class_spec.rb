@@ -24,42 +24,47 @@ describe Joos::Entity::Class do
     klass = Joos::Entity::Class.new ast
     expect(klass.modifiers).to                      be == [:Abstract, :Public]
     expect(klass.name.to_s).to                      be == 'J1_allthefixings'
-    expect(klass.superclass.inspect).to             be == 'all'.cyan
+    expect(klass.superclass_identifier.inspect).to  be == 'all'.cyan
 
     supers = [['the', 'fixings'].cyan_join, ['andMore'].cyan_join]
-    expect(klass.superinterfaces.map(&:inspect)).to be == supers
+    expect(klass.interface_identifiers.map(&:inspect)).to be == supers
 
-    expect(klass.constructors.size).to be == 1
-    expect(klass.methods.size).to      be == 1
-    expect(klass.fields.size).to       be == 1
+    expect(klass.constructor_nodes.size).to be == 1
+    expect(klass.method_nodes.size).to      be == 1
+    expect(klass.field_nodes.size).to       be == 1
+  end
+
+  it 'initializes superclass, interfaces, etc. to nil before name resolution' do
+    ast   = get_ast 'J1_minusminusminus'
+    klass = Joos::Entity::Class.new ast
+    expect(klass.superclass).to be_nil
+    expect(klass.interfaces).to be_nil
+    expect(klass.fields).to be_nil
+    expect(klass.methods).to be_nil
+    expect(klass.constructors).to be_nil
   end
 
   it 'sets the default superclass to be Object' do
+    pending "Load multiple compilation units in tests"
     ast   = get_ast 'J1_minusminusminus'
     klass = Joos::Entity::Class.new ast
-    expect(klass.superclass.inspect).to be == ['java',
-                                               'lang',
-                                               'Object'].cyan_join
+    expect(klass.superclass).to be_a Joos::Entity::Class
   end
 
   it 'sets the default interfaces to be empty' do
+    pending "Load multiple compilation units in tests"
     ast   = get_ast 'J1_minusminusminus'
     klass = Joos::Entity::Class.new ast
-    expect(klass.superinterfaces).to be_empty
+    expect(klass.superinterfaces).to be_nil
+    klass.resolve_hierarchy
+    klass.check_hierarchy
+    expect(klass.superinterfaces).to be []
   end
 
   it 'sets the default modifiers to be empty' do
     ast   = get_ast 'Je_nomodifiers'
     klass = Joos::Entity::Class.new ast
     expect(klass.modifiers).to be_empty
-  end
-
-  it 'initializes empty constructor, field, and member lists' do
-    ast   = get_ast 'Je_nomodifiers'
-    klass = Joos::Entity::Class.new ast
-    expect(klass.constructors).to be_empty
-    expect(klass.fields).to be_empty
-    expect(klass.methods).to be_empty
   end
 
   it 'responds to #to_sym correctly' do
@@ -74,16 +79,13 @@ describe Joos::Entity::Class do
     expect(klass.unit_type).to be == :class
   end
 
-  it 'validates to make sure at least one constructor is present' do
+  it 'raises an error when no constructor' do
+    pending "Load multiple compilation units in tests"
     ast   = get_ast 'Je_noConstructor'
     klass = Joos::Entity::Class.new ast
     expect {
-      klass.validate
+      klass.check_members
     }.to raise_error Joos::Entity::Class::NoConstructorError
-
-    ast   = get_ast 'J1_minusminusminus'
-    klass = Joos::Entity::Class.new ast
-    expect { klass.validate }.to_not raise_error
   end
 
   it 'validates that protected, native, and static modifiers are not used' do
@@ -104,11 +106,27 @@ describe Joos::Entity::Class do
   end
 
   it 'recursively validates class members' do
+    pending 'Need way to link java.lang.Object'
     ast   = get_ast 'Je_allthefixings'
     klass = Joos::Entity::Class.new ast
     expect {
-      klass.validate
+      klass.link_imports
+      klass.link_declarations
+      klass.check_declarations
     }.to raise_error Joos::Entity::Modifiable::MissingVisibilityModifier
+  end
+
+  it 'validates that java.lang.Object is the top_class? and others are not' do
+    expect(Joos::Entity::Class::BASE_CLASS).to be == ['java', 'lang', 'Object']
+
+    klass = Joos::Entity::Class.new get_test_ast('Foo')
+    obj   = Joos::Entity::Class.new get_std_ast('java.lang.Object')
+    expect(klass.top_class?).to be == false
+    expect(obj.top_class?).to be == true
+  end
+
+  it 'inherits methods from superclass' do
+    pending "Need some way of loading an entire class hiearchy"
   end
 
 end

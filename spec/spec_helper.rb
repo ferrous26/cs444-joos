@@ -26,3 +26,15 @@ def get_ast name
   job = "test/a1/#{name}.java"
   Joos::Parser.new(Joos::Scanner.scan_file job).parse
 end
+
+def get_test_ast name
+  job = "spec/test_data/java/#{name}.java"
+  Joos::Parser.new(Joos::Scanner.scan_file job).parse
+end
+
+def get_std_ast qualified_name
+  path = qualified_name.tr '.', '/'
+  lib_version = '2.0'
+  job = "test/stdlib/#{lib_version}/#{path}.java"
+  Joos::Parser.new(Joos::Scanner.scan_file job).parse
+end
