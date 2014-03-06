@@ -59,6 +59,16 @@ class Joos::Token::Identifier < Joos::Token
     end
   end
 
+  def hash
+    # usual #hash and #eql? for the annoyingly large amount of things in Ruby
+    # that depend on them
+    to_s.hash
+  end
+
+  def eql? other
+    to_s == other.to_s
+  end
+
   ##
   # Whether or not the receiver represents a simple name
   #

@@ -54,6 +54,15 @@ class Joos::BasicType
     self.class == other.class
   end
 
+  def eql? other
+    # needed for #uniq. Should be equivalent to == here anyway
+    self == other
+  end
+
+  def hash
+    # need #hash equality for Array #uniq to work
+    self.class.hash
+  end
 
   # @!group Type API
 

@@ -111,7 +111,6 @@ class Joos::Entity::Interface < Joos::Entity
 
   # @!endgroup
 
-
   private
 
 

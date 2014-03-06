@@ -182,6 +182,12 @@ class Joos::Entity::Class < Joos::Entity
     end
   end
 
+  class OverridesFinal < Joos::CompilerException
+    def initialize method
+      super "Method #{method.name.cyan} overrides a final method", method
+    end
+  end
+
   # @!endgroup
 
 
@@ -366,10 +372,10 @@ class Joos::Entity::Class < Joos::Entity
     check_ambiguous_methods all_methods
 
     # Check that interface methods are unambiguous
-    # FIXME: This results in a duplicate method error for some reason
-    #check_ambiguous_methods interface_methods
+    check_ambiguous_methods interface_methods
 
     check_abstract_methods_only_if_class_is_abstract
+    check_no_override_final
     check_instance_overrides_static
     check_protected_overrides_public
 
@@ -492,6 +498,12 @@ class Joos::Entity::Class < Joos::Entity
     end
   end
 
+  def check_no_override_final
+    methods.select(&:ancestor).each do |method|
+        raise OverridesFinal.new(method) if method.ancestor.final?
+    end
+  end
+
   def check_superclass_is_not_final
     raise ExtendingFinalClass.new(self) if superclass && superclass.final?
   end
@@ -523,7 +535,7 @@ class Joos::Entity::Class < Joos::Entity
   end
 
   # @!group Inspect
-
+  
   def inspect_superclass
     if superclass.blank?
       'ROOT'.white
