@@ -93,9 +93,10 @@ class Joos::Entity::Class < Joos::Entity
   end
 
   class AbstractMethodNonAbsractClass < Joos::CompilerException
-    def initialize klass
+    def initialize method, klass
       name = klass.name.cyan
-      super "#{name} has abstract methods but is not abstract itself", klass
+      m = method.name.cyan
+      super "#{name} has abstract method #{m} but is not abstract itself", method
     end
   end
 
@@ -131,6 +132,14 @@ class Joos::Entity::Class < Joos::Entity
     end
   end
 
+  class ProtectedImplementation < Joos::CompilerException
+    def initialize interface_method, implementation
+      m = implementation.name.cyan
+      n = interface_method.name.cyan
+      super "Implmentation #{m} of #{n} declared protected", implementation
+    end
+  end
+
   ##
   # Exception raised when an class has a circular superclass hierarchy.
   #
@@ -153,9 +162,23 @@ class Joos::Entity::Class < Joos::Entity
     end
   end
 
+  class AmbiguousOverload < Joos::CompilerException
+    def initialize method_a, method_b
+      super "#{method_a.name.cyan} overloads a method with the same signature", method_a
+    end
+  end
+
   class TopInherits < Joos::CompilerException
     def initialize node
       super "Superclass specified for java.lang.Object", node
+    end
+  end
+
+  class InterfaceMethodMissing < Joos::CompilerException
+    def initialize interface_method, klass
+      m = interface_method.name.cyan
+      c = klass.fully_qualified_name.cyan_join
+      super "Class #{c} must provide a method for #{m}", klass
     end
   end
 
@@ -275,7 +298,7 @@ class Joos::Entity::Class < Joos::Entity
     end
 
     # Check that java.lang.Object does not inherit
-    if top_class? && superclass_identifier
+    if top_class? && @superclass
       raise TopInherits.new(node)
     end
 
@@ -286,15 +309,17 @@ class Joos::Entity::Class < Joos::Entity
 
     # Own member checks
     methods.each(&:validate)
+    methods.each(&:check_hierarchy);
     fields.each(&:validate)
+    fields.each(&:check_hierarchy);
     constructors.each(&:validate)
+    constructors.each(&:check_hierarchy);
 
     check_at_least_one_constructor
     check_constructor_names_match
     check_constructors_have_unique_names
 
     check_fields_have_unique_names
-    check_abstract_methods_only_if_class_is_abstract
 
     check_methods_have_unique_names
   end
@@ -306,6 +331,7 @@ class Joos::Entity::Class < Joos::Entity
     if top_class?
       @all_methods = @methods
       @all_fields = @fields
+      @interface_methods = []
       return
     end
 
@@ -322,6 +348,16 @@ class Joos::Entity::Class < Joos::Entity
     end
     @all_methods = methods + inherited_methods.compact
 
+    # Populate #interface_methods
+    link_interface_methods
+  end
+
+  def link_interface_methods
+    # Call HasInterfaces to link interface methods,
+    # then add in interface methods of the superclass
+    # (since these are implicitly abstract methods)
+    super
+    append_interface_methods @superclass.interface_methods
   end
 
   # Checks performed on inherited members
@@ -329,15 +365,45 @@ class Joos::Entity::Class < Joos::Entity
     # Check that inheriting methods doesn't make anything ambiguous
     check_ambiguous_methods all_methods
 
+    # Check that interface methods are unambiguous
+    # FIXME: This results in a duplicate method error for some reason
+    #check_ambiguous_methods interface_methods
+
+    check_abstract_methods_only_if_class_is_abstract
     check_instance_overrides_static
     check_protected_overrides_public
+
+    check_implements
   end
 
   # Check that the Class has implemented all of its interfaces
   def check_implements
+    # Start by building a list of (interface method, implementation) pairs
     # #interface_methods comes from HasInterfaces
-    interface_methods.each do |interface_method|
-      # TODO
+    implementation_pairs = interface_methods.map do |interface_method|
+      implementation = all_methods.detect do |method| 
+        method.signature == interface_method.signature
+      end
+      [interface_method, implementation]
+    end
+
+    implementation_pairs.each do |pair|
+      interface_method = pair[0]
+      implementation = pair[1]
+
+      if implementation
+        # Check that the implementation is not protected
+        raise ProtectedImplementation.new(interface_method, implementation) if implementation.protected?
+
+        # Check that implementation has same return type
+        unless implementation.return_type == interface_method.return_type
+          raise AmbiguousOverload.new(implementation, interface_method)
+        end
+      else
+        # If a class is final, it must implement all its interfaces
+        # and inherited interfaces (whose methods become implicitly abstract)
+        raise InterfaceMethodMissing.new(interface_method, self) unless abstract?
+      end
     end
   end
 
@@ -420,8 +486,9 @@ class Joos::Entity::Class < Joos::Entity
   end
 
   def check_abstract_methods_only_if_class_is_abstract
-    if methods.any? { |method| method.abstract? }
-      raise AbstractMethodNonAbsractClass.new(self) unless self.abstract?
+    method = all_methods.detect{ |m| m.abstract? }
+    if method
+      raise AbstractMethodNonAbsractClass.new(method, self) unless self.abstract? 
     end
   end
 

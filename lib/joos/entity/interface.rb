@@ -85,6 +85,13 @@ class Joos::Entity::Interface < Joos::Entity
   end
 
   def link_inherits
+    link_interface_methods
+  end
+
+  def link_interface_methods
+    # Call HasInterfaces, then add in own methods
+    super
+    append_interface_methods @methods
   end
 
   def check_inherits
@@ -96,7 +103,7 @@ class Joos::Entity::Interface < Joos::Entity
 
     # Check that methods do not differ only by return type
     # (interface_methods may contain duplicates if they differ only by return type)
-    check_ambiguous_methods interface_methods
+    check_ambiguous_methods @interface_methods
   end
 
   def link_identifiers

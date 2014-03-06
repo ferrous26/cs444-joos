@@ -11,6 +11,11 @@ module Joos::Entity::HasInterfaces
   attr_reader :superinterfaces
   alias_method :interfaces, :superinterfaces
 
+  # Methods a Class must conform to
+  # #all_methods if this is an Interface
+  # @return [Array<InterfaceMethod>]
+  attr_reader :interface_methods
+
 
   ##
   # Exception raised when an interface has a circular extension.
@@ -103,22 +108,21 @@ module Joos::Entity::HasInterfaces
     end
   end
 
-  # All interface methods the {Class} must conform to.
-  # In the case of {Interface}s, this is equivalent to #all_methods.
-  # This is only defined after the #link_declarations pass.
+  # Populate #interface_methods, the list of methods a class must conform to.
+  # If the receiver is itself an Interface, this should be equivalent to #all_methods
   #
-  # @return [Array<InterfaceMethod>]
-  def interface_methods
-    return @interface_methods if @interface_methods
-
-    # Methods whose full signature match are merged
-    # Methods whose signature differs only in return type are checked later.
-    @interface_methods = @superinterfaces.reduce [] do |methods, interface|
-      methods.concat interface.interface_methods
-    end
+  # Methods whose full signature match are merged
+  # Methods whose signature differ only in return type are checked later.
+  def link_interface_methods
+    @interface_methods = @superinterfaces.flat_map(&:interface_methods)
     @interface_methods.uniq!(&:full_signature)
+  end
 
-    @interface_methods
+  # Append methods to #interface_methods
+  # @param methods [Array<InterfaceMethod>]
+  def append_interface_methods methods
+    @interface_methods += methods
+    @interface_methods.uniq!(&:full_signature)
   end
 
   # @!endgroup
