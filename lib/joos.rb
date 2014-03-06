@@ -94,12 +94,12 @@ class Joos::Compiler
     ast.visit { |parent, node| node.validate(parent) } # some weeder checks
   end
 
-  def build_entities ast
+  def build_entity ast, root_package
     type = ast.TypeDeclaration
     if type.ClassDeclaration
-      Joos::Entity::Class.new ast
+      Joos::Entity::Class.new ast, root_package
     elsif type.InterfaceDeclaration
-      Joos::Entity::Interface.new ast
+      Joos::Entity::Interface.new ast, root_package
     else
       raise NoDeclarationError.new ast
     end
@@ -116,8 +116,12 @@ class Joos::Compiler
       raise result if result.kind_of? Exception
     end
 
+    # create a new root package to be shared by all compilation
+    # units for this compiler instance
+    root_package = Joos::Package.make_root
+
     @compilation_units = asts.map do |ast|
-      build_entities(ast).tap do |entity|
+      build_entity(ast, root_package).tap do |entity|
         entity.validate
         $stderr.puts entity.inspect if $DEBUG
       end

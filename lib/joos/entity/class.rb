@@ -125,7 +125,9 @@ class Joos::Entity::Class < Joos::Entity
   attr_reader :fields
 
   # @param compilation_unit [Joos::AST::CompilationUnit]
-  def initialize compilation_unit
+  # @param root_package     [Joos::Package]
+  def initialize compilation_unit, root_package
+    @root_package = root_package
     @node = compilation_unit
     decl  = compilation_unit.TypeDeclaration
     super decl.ClassDeclaration.Identifier, decl.Modifiers
