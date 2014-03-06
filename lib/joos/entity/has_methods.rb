@@ -33,6 +33,27 @@ module Joos::Entity::HasMethods
     end
   end
 
+  # An array of (method, supermethod) pairs representing the outer join of
+  # the two arrays. Methods are joined if they have the same full signature.
+  # @return [Array<(Method, Method)>]
+  def override_pairs methods, supermethods
+    has_overrides = Set.new
+
+    ret = methods.map.with_index do |method, i|
+      sig = method.full_signature
+      parent_index = supermethods.find_index {|s| s.full_signature == sig}
+      has_overrides << parent_index
+      parent = supermethods[parent_index] if parent_index
+      [method, parent]
+    end
+
+    supermethods.each_index do |index|
+      ret << [nil, supermethods[index]] unless has_overrides.include? index
+    end
+
+    ret
+  end
+
   # Check that own methods are unambiguous.
   # {Class}es need not call this - they have a more general case of checking
   # that #all_methods is unambiguous.

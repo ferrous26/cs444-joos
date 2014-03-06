@@ -345,17 +345,16 @@ class Joos::Entity::Class < Joos::Entity
     end
 
     # Link inherited methods
-    inherited_methods = @superclass.all_methods.map do |supermethod|
-      sig = supermethod.full_signature
-      submethod = @methods.detect {|method| method.full_signature == sig}
-      if submethod
-        submethod.ancestor = supermethod
-        nil
+    overrides = override_pairs(methods, @superclass.all_methods)
+    @all_methods = overrides.flat_map do |pair|
+      if pair[0] && pair[1]
+        pair[0].ancestor = pair[1]
+        [pair[0]]
       else
-        supermethod
+        pair
       end
     end
-    @all_methods = methods + inherited_methods.compact
+    @all_methods.compact!
 
     # Populate #interface_methods
     link_interface_methods

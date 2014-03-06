@@ -22,6 +22,15 @@ class Joos::Entity::Interface < Joos::Entity
   # @return [Array<InterfaceMethod>]
   alias_method :all_methods, :interface_methods
 
+
+  class InterfaceShadowsFinal < Joos::CompilerException
+    def initialize method
+      m = method.name.cyan
+      super "Interface method #{m} shadows a final method of java.lang.Object", method
+    end
+  end
+
+
   # @param compilation_unit [Joos::AST::CompilationUnit]
   # @param root_package [Joos::Package]
   def initialize compilation_unit, root_package
@@ -100,8 +109,15 @@ class Joos::Entity::Interface < Joos::Entity
     # Check that we are not ambiguous with java.lang.Object
     # TODO: Add a more specific exception (defaults to DuplicateMethodName)
     top = get_top_class
-    top_merged_methods = methods.concat(top.methods).uniq(&:full_signature)
+    top_merged_methods = (methods + top.methods).uniq(&:full_signature)
     check_ambiguous_methods top_merged_methods
+
+    # Check that we don't have a method which is final in java.lang.Object
+    override_pairs(methods, top.methods).each do |pair|
+      if pair[0] && pair[1]
+        raise InterfaceShadowsFinal.new(pair[0]) if pair[1].final?
+      end
+    end
 
     # Check that methods do not differ only by return type
     # (interface_methods may contain duplicates if they differ only by return type)
@@ -113,8 +129,6 @@ class Joos::Entity::Interface < Joos::Entity
 
   # @!endgroup
 
-<<<<<<< HEAD
-=======
 
   # @!group Inspect
 
@@ -125,7 +139,6 @@ class Joos::Entity::Interface < Joos::Entity
   # @!endgroup
 
 
->>>>>>> master
   private
 
 
