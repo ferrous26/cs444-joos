@@ -27,6 +27,12 @@ module Joos::Entity::CompilationUnit
   # @return [Array<Joos::Package>]
   attr_reader :imported_packages
 
+  ##
+  # The root pseudo-package.
+  #
+  # @return [Joos::Package]
+  attr_accessor :root_package
+
 
   # @!group Exceptions
 
@@ -109,8 +115,8 @@ module Joos::Entity::CompilationUnit
 
   def initialize name
     super name
-    @package = Joos::Package.declare @node.QualifiedIdentifier
-    @package.add self
+    @package = root_package.declare @node.QualifiedIdentifier
+    @package.add_compilation_unit self
     @imported_packages = []
     @imported_types    = []
   end
@@ -170,7 +176,7 @@ module Joos::Entity::CompilationUnit
         raise TypeMatchesPrefix.new(qid)
       end
 
-      Joos::Package.find qid
+      root_package.find qid
     end
   end
 
@@ -219,11 +225,11 @@ module Joos::Entity::CompilationUnit
   ##
   # The one and only automatic import, as listed in JLS 7.5.3
   def default_package
-    Joos::Package.get ['java', 'lang']
+    root_package.get ['java', 'lang']
   end
 
   def import_package qid
-    package = Joos::Package.get(qid.nodes[0..-2])
+    package = root_package.get(qid.nodes[0..-2])
     if package.is_a? Joos::Package
       @imported_packages << package
     else
@@ -243,7 +249,7 @@ module Joos::Entity::CompilationUnit
   # Note that an import statement cannot import a subpackage, only a type.
   def import_single qid
 
-    unit = Joos::Package.get(qid)
+    unit = root_package.get(qid)
     if unit.kind_of? Joos::Entity::CompilationUnit
       if unit == self
         return # we can ignore the import, no point in importing yourself

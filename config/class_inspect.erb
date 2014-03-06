@@ -2,6 +2,6 @@
 
 <%= inspect_modifiers_space %>class <%= name.cyan %> < <%= inspect_superclass %> (<%= inspect_superinterfaces %>)
 
-<%= fields.map(&:inspect).join("\n\n") << "\n\n" %>
-<%= methods.map(&:inspect).join("\n\n") << "\n\n" %>
-<%= constructors.map(&:inspect).join("\n\n") << "\n\n" %>
+<%= fields.map(&:long_inspect).join("\n\n") << "\n\n" %>
+<%= methods.map(&:long_inspect).join("\n\n") << "\n\n" %>
+<%= constructors.map(&:long_inspect).join("\n\n") << "\n\n" %>

@@ -23,7 +23,9 @@ class Joos::Entity::Interface < Joos::Entity
   alias_method :all_methods, :interface_methods
 
   # @param compilation_unit [Joos::AST::CompilationUnit]
-  def initialize compilation_unit
+  # @param root_package [Joos::Package]
+  def initialize compilation_unit, root_package
+    @root_package = root_package
     @node = compilation_unit
     decl  = compilation_unit.TypeDeclaration
     super decl.InterfaceDeclaration.Identifier, decl.Modifiers
@@ -91,6 +93,15 @@ class Joos::Entity::Interface < Joos::Entity
   end
 
   def link_identifiers
+  end
+
+  # @!endgroup
+
+
+  # @!group Inspect
+
+  def inspect
+    "interface #{fully_qualified_name.cyan_join}"
   end
 
   # @!endgroup

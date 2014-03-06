@@ -77,6 +77,18 @@ class Joos::Entity::Field < Joos::Entity
     []
   end
 
+
+  # @!group Inspect
+
+  def inspect
+    base = "#{name.cyan}: #{inspect_type @type}"
+    if static?
+      base << ' S'.yellow
+    else
+      base
+    end
+  end
+
   # @!endgroup
 
 

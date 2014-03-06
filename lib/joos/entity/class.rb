@@ -139,7 +139,9 @@ class Joos::Entity::Class < Joos::Entity
 
 
   # @param compilation_unit [Joos::AST::CompilationUnit]
-  def initialize compilation_unit
+  # @param root_package     [Joos::Package]
+  def initialize compilation_unit, root_package
+    @root_package = root_package
     @node = compilation_unit
     decl  = compilation_unit.TypeDeclaration
     super decl.ClassDeclaration.Identifier, decl.Modifiers
@@ -311,6 +313,22 @@ class Joos::Entity::Class < Joos::Entity
       superclass.check_superclass_circularity chain
     end
   end
+
+
+  # @!group Inspect
+
+  def inspect
+    base = "class #{fully_qualified_name.cyan_join}"
+    if abstract?
+      base << ' A'.yellow
+    elsif final?
+      base << ' F'.yellow
+    else
+      base
+    end
+  end
+
+  # @!endgroup
 
 
   private

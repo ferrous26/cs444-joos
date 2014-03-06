@@ -103,6 +103,12 @@ class Joos::AST::Term
   def validate_against_bad_casting
     # we do not want to do anything unless we are casting
     return unless self.OpenParen
+
+    # we need a quick check here to see if we might be looking
+    # at a possible mistaken parse of casting becaue a binary minus
+    # was parsed as a unary minus
+    return 'assumption failure' if self.Term.TermModifier.Minus
+
     if self.Expression
       # we only need to check that the Expression is clean
       exception = BadCast.new(self)
@@ -121,6 +127,8 @@ class Joos::AST::Term
       raise exception unless expr.Expression.blank?
       raise exception unless expr.QualifiedIdentifier
     end
+
+    # wrap it up!
     fix_casting
   end
 
