@@ -43,66 +43,20 @@ class Joos::Package
     end
   end
 
+
   ##
-  # Perform a path lookup through the package hierarchy using a fully
-  # qualified path, if part of the package path is missing then a new
-  # package will be created on demand to fit the path.
+  # Create a brand new, isolated, root pseudo-package
   #
-  # If some non-last component of the path is not a {Package} then an
-  # exception will be raised.
-  #
-  # Passing `nil` as the argument here indicates that you want the
-  # "unnamed" package.
-  #
-  # @raise [BadPath]
-  # @param qualified_id [Joos::AST::QualifiedIdentifier, nil]
-  # @return [Package, Joos::Entity::CompilationUnit]
-  def self.declare qualified_id
-    qid = qualified_id.blank? ? [nil] : Array(qualified_id)
-    qid.reduce(ROOT) do |package, id|
-      package.declare(id).tap do |member|
-        raise BadPath.new(qualified_id, id) unless member.is_a? Joos::Package
-      end
+  # @return [Joos::Package]
+  def self.make_root
+    root = new('', nil)
+    root.declare(nil).define_singleton_method(:fully_qualified_name) { [] }
+    root.define_singleton_method(:fully_qualified_name) { [] }
+    root.define_singleton_method(:inspect) do |tab = 0|
+      @members.map { |_, m| m.inspect tab }.join("\n")
     end
+    root
   end
-
-  ##
-  # Perform a path lookup through the package hierarchy using a fully
-  # qualified path.
-  #
-  # If some non-last component of the path is not a {Package} then `nil`
-  # will be returned.
-  #
-  # Passing `nil` as the argument here indicates that you want the
-  # anonymous "unnamed" package.
-  #
-  # @param qualified_id [Joos::AST::QualifiedImportIdentifier, nil]
-  # @return [Package, Joos::Entity::CompilationUnit, nil]
-  def self.find qualified_id
-    qid = Array(qualified_id)
-    # lookup _and_ check the all but the last id
-    qid[0..-2].reduce(ROOT) do |package, id|
-      package.find(id).tap do |member|
-        return unless member
-        raise BadPath.new(qualified_id, id) unless member.is_a? Joos::Package
-      end
-    # only lookup the last id, let caller deal with result
-    end.find qid.last
-  end
-
-  ##
-  # Same contract as {.find} except that an exception is raised if the
-  # package or compilation unit cannot be found.
-  #
-  # @raise [DoesNotExist]
-  # @param qualified_id [Joos::AST::QualifiedImportIdentifier, nil]
-  # @return [Package, Joos::Entity::CompilationUnit]
-  def self.get qualified_id
-    p = find qualified_id
-    raise DoesNotExist.new(qualified_id) unless p
-    p
-  end
-
 
   ##
   # The name of the package
@@ -118,6 +72,17 @@ class Joos::Package
   # @return [Package]
   attr_reader :parent
 
+  ##
+  # Packages, classes, and interfaces that are contained in the namespace
+  # of the receiver.
+  #
+  # This does not include classes and interfaces that are inside a package
+  # that is in this namespace (nested package entities).
+  #
+  # @return [Hash{ String => Package, Entity::CompilationUnit }]
+  attr_reader :members
+
+
   # @param name [String]
   # @param parent [Joos::Package]
   def initialize name, parent
@@ -127,36 +92,89 @@ class Joos::Package
   end
 
   ##
-  # This is different from {#find} in that this method guarantees to
-  # return a {Package} or {Joos::Entity::CompilationUnit}.
+  # Perform a path lookup through the package hierarchy using a fully
+  # qualified path, if part of the package path is missing then a new
+  # package will be created on demand to fit the path.
   #
-  # If the key does not exist in the package, then a new subpackage will
-  # be created on demand for the given identifier key.
+  # If some non-last component of the path is not a {Package} then an
+  # exception will be raised.
+  #
+  # Passing `nil` as the argument here indicates that you want the
+  # "unnamed" package.
+  #
+  # @raise [BadPath]
+  # @param qualified_id [Joos::AST::QualifiedIdentifier, nil]
+  # @return [Package, Joos::Entity::CompilationUnit]
+  def declare qualified_id
+    qid = qualified_id.blank? ? [nil] : Array(qualified_id)
+    qid.reduce(self) do |package, id|
+      package.add_subpackage(id).tap do |member|
+        raise BadPath.new(qualified_id, id) unless member.is_a? Joos::Package
+      end
+    end
+  end
+
+  ##
+  # Perform a path lookup through the package hierarchy using a fully
+  # qualified path.
+  #
+  # If some non-last component of the path is not a {Package} then `nil`
+  # will be returned.
+  #
+  # Passing `nil` as the argument here indicates that you want the
+  # anonymous "unnamed" package. However, this only works if the
+  # receiver is a root package (see {.make_root}).
+  #
+  # @param qualified_id [Joos::AST::QualifiedImportIdentifier, nil]
+  # @return [Package, Joos::Entity::CompilationUnit, nil]
+  def find qualified_id
+    qid = Array(qualified_id) # handle the nil case
+
+    # lookup _and_ check the all but the last id
+    penultimate = qid[0..-2].reduce(self) do |package, id|
+      package.members[id.to_s].tap do |member|
+        return unless member
+        raise BadPath.new(qualified_id, id) unless member.is_a? Joos::Package
+      end
+
+    # only lookup the last id, let caller deal with result
+    end
+
+    penultimate.members[qid.last.to_s]
+  end
+
+  ##
+  # Same contract as {.find} except that an exception is raised if the
+  # package or compilation unit cannot be found.
+  #
+  # @raise [DoesNotExist]
+  # @param qualified_id [Joos::AST::QualifiedImportIdentifier, nil]
+  # @return [Package, Joos::Entity::CompilationUnit]
+  def get qualified_id
+    p = find qualified_id
+    raise DoesNotExist.new(qualified_id) unless p
+    p
+  end
+
+  ##
+  # Add a new subpackage to the receiver.
+  #
+  # If a package member with the given name already exists, then it will
+  # be returned instead.
   #
   # @param id [Joos::Token::Identifier] this __must__ be a single identifier
   # @return [Package, Joos::Entity::CompilationUnit]
-  def declare id
+  def add_subpackage id
     @members.fetch(id.to_s) do |k|
       @members[k] = Joos::Package.new k, self
     end
   end
 
   ##
-  # Lookup a member of the receiver package with the given key.
-  #
-  # If no member exists, then `nil` is returned.
-  #
-  # @param id [Joos::Token::Identifier] this __must__ be a single identifier
-  # @return [Joos::Package, Joos::Entity::CompilationUnit, nil]
-  def find id
-    @members[id.to_s]
-  end
-
-  ##
   # Add the given compilation unit to the package namespace.
   #
   # @param unit [Joos::Entity::CompilationUnit]
-  def add unit
+  def add_compilation_unit unit
     key = unit.name.to_s
     raise NameClash.new(self, unit) if @members.key? key
     @members[key] = unit
@@ -177,40 +195,6 @@ class Joos::Package
            m.inspect inner
          end
        }.join("\n"))
-  end
-
-
-  private
-
-  ##
-  # Packages, classes, and interfaces that are contained in the namespace
-  # of the receiver.
-  #
-  # This does not include classes and interfaces that are inside a package
-  # that is in this namespace (nested package entities).
-  #
-  # @return [Hash{ String => Package, Entity::CompilationUnit }]
-  attr_reader :members
-
-  ##
-  # The special root pseudo-package
-  #
-  # @return [Package]
-  ROOT = new('', nil)
-
-  # Add the "unnamed" package to the root package
-  ROOT.declare(nil).define_singleton_method(:fully_qualified_name) { [] }
-
-  ##
-  # A hack so that children build their FQDN in a nice clean
-  # manner without the need for branching.
-  ROOT.define_singleton_method(:fully_qualified_name) { [] }
-
-  ##
-  # A special case of the way we want to inspect, so let's use
-  # instance specialization to do it without weird branching!
-  ROOT.define_singleton_method(:inspect) do |tab = 0|
-    @members.map { |_, m| m.inspect tab }.join("\n")
   end
 
 end
