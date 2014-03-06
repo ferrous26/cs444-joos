@@ -188,6 +188,22 @@ class Joos::Entity::Class < Joos::Entity
   end
 
 
+  # @!group Inspect
+
+  def inspect
+    base = "class #{fully_qualified_name.cyan_join}"
+    if abstract?
+      base << ' A'.yellow
+    elsif final?
+      base << ' F'.yellow
+    else
+      base
+    end
+  end
+
+  # @!endgroup
+
+
   private
 
   # @private

@@ -49,6 +49,13 @@ class Joos::Entity::Interface < Joos::Entity
     methods.each(&:link_declarations)
   end
 
+
+  # @!group Inspect
+
+  def inspect
+    "interface #{fully_qualified_name.cyan_join}"
+  end
+
   # @!endgroup
 
 
