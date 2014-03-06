@@ -138,6 +138,13 @@ class Joos::Entity::Method < Joos::Entity
     []
   end
 
+
+  # @!group Inspect
+
+  def inspect
+    "#{name.cyan}: #{inspect_params} -> #{inspect_type @type}"
+  end
+
   # @!endgroup
 
 

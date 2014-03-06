@@ -2,4 +2,4 @@
 
 <%= inspect_modifiers_space %>interface <%= name.cyan %> (<%= inspect_superinterfaces %>)
 
-<%= methods.map(&:inspect).join("\n\n") << "\n\n" %>
+<%= methods.map(&:long_inspect).join("\n\n") << "\n\n" %>
