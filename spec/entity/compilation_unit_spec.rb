@@ -3,17 +3,11 @@ require 'joos/entity/compilation_unit'
 
 describe Joos::Entity::CompilationUnit do
 
-  before :each do
-    # reset the global namespace between tests
-    Joos::Package::ROOT.instance_variable_get(:@members).clear
-    Joos::Package::ROOT.declare nil
-  end
-
-
   # LSP class to test the CompilationUnit module
   class CUTest < Joos::Entity
     include CompilationUnit
     def initialize name, file
+      @root_package = Joos::Package.make_root
       super name
       name.define_singleton_method(:file)   { file }
       name.define_singleton_method(:source) { 'nope' }
@@ -34,6 +28,7 @@ describe Joos::Entity::CompilationUnit do
   class CUTest2 < Joos::Entity
     include CompilationUnit
     def initialize node
+      @root_package = Joos::Package.make_root
       @node = node
       name = 'CUTest2'
       super name
@@ -47,12 +42,13 @@ describe Joos::Entity::CompilationUnit do
 
   it 'assigns the unit to the given package' do
     unit = CUTest2.new get_ast('J1_allthefixings')
-    expect(unit.package).to be == Joos::Package.find('Foo')
+    expect(unit.package).to be == unit.root_package.find('Foo')
   end
 
   it 'assigns the unit to the unnamed package if no package specified' do
     unit = CUTest2.new get_ast('J1_minusminusminus')
-    expect(unit.package.object_id).to be == Joos::Package.find(nil).object_id
+    expect(unit.package.object_id).to be ==
+      unit.root_package.find(nil).object_id
   end
 
   it 'uses the package to create the fully qualified name' do

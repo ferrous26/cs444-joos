@@ -88,13 +88,11 @@ describe Joos::Token::String do
 
   context 'type resolution' do
     before :each do
-      # reset the global namespace between tests
-      Joos::Package::ROOT.instance_variable_get(:@members).clear
-      Joos::Package::ROOT.declare nil
+      @root = Joos::Package.make_root
     end
 
     it 'resolves its type as java.lang.String' do
-      p = Joos::Package.declare ['java', 'lang', 'String']
+      p = @root.declare ['java', 'lang', 'String']
       expect(Joos::Token.make(:String, 'hi').type).to be == p
     end
   end
