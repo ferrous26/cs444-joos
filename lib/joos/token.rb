@@ -60,6 +60,12 @@ class Joos::Token
   # @return [Fixnum]
   attr_reader :column
 
+  ##
+  # Once placed into the AST, this will point up the tree
+  #
+  # @return [Joos::AST]
+  attr_accessor :parent
+
   # @param token [String]
   # @param file [String]
   # @param line [Fixnum]
@@ -127,6 +133,10 @@ class Joos::Token
 
   def link_identifiers
     # nop
+  end
+
+  def scope
+    parent.scope
   end
 
   # @!endgroup
