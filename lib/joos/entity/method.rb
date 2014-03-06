@@ -201,7 +201,7 @@ class Joos::Entity::Method < Joos::Entity
       raise DuplicateParameterName.new(dupes) if dupes.size > 1
     end
 
-    #@body.check_no_overlapping_variables @parameters if @body
+    @body.check_no_overlapping_variables @parameters if @body
   end
 
 
