@@ -72,7 +72,7 @@ class Joos::Token::String < Joos::Token
   end
 
   def type
-    Joos::Package.get ['java', 'lang', 'String']
+    scope.type_environment.root_package.get ['java', 'lang', 'String']
   end
 
   def inspect tab = 0

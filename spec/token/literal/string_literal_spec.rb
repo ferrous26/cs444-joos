@@ -93,7 +93,18 @@ describe Joos::Token::String do
 
     it 'resolves its type as java.lang.String' do
       p = @root.declare ['java', 'lang', 'String']
-      expect(Joos::Token.make(:String, 'hi').type).to be == p
+      s = Joos::Token.make(:String, 'hi')
+
+      root = @root
+      mock_unit = Object.new
+      mock_unit.define_singleton_method(:root_package) { root }
+
+      mock_scope = Object.new
+      mock_scope.define_singleton_method(:type_environment) { mock_unit }
+
+      s.parent = Object.new
+      s.parent.define_singleton_method(:scope) { mock_scope }
+      expect(s.type).to be == p
     end
   end
 
