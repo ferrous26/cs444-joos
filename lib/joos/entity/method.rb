@@ -132,10 +132,6 @@ class Joos::Entity::Method < Joos::Entity
     check_no_overlapping_variables
   end
 
-  def link_identifiers
-    @body.link_identifiers if @body
-  end
-
   ##
   # Called recursively from {Joos::Scope#find_declaration} if a name
   # does not match a local variable name.
@@ -153,6 +149,19 @@ class Joos::Entity::Method < Joos::Entity
   # Dummy method to be consistent with the {Joos::Block} API.
   def children_scopes
     []
+  end
+
+
+  # @!group Assignment 3
+
+  def type_check
+    if @body
+      @body.type_check
+      # @todo
+      # unless self.type == @body.type
+      #   TypeCheckError.new self, @body
+      # end
+    end
   end
 
 

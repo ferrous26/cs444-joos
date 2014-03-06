@@ -56,10 +56,6 @@ class Joos::Entity::Field < Joos::Entity
     # @todo check_static_fields_do_not_use_this
   end
 
-  def link_identifiers
-    @initializer.link_identifiers if @initializer
-  end
-
   ##
   # Called recursively from {Joos::Scope#find_declaration} if a name
   # does not match a local variable name.
@@ -75,6 +71,17 @@ class Joos::Entity::Field < Joos::Entity
   # Dummy method to be consistent with the {Joos::Block} API.
   def children_scopes
     []
+  end
+
+
+  # @!group Assignment 3
+
+  def type_check
+    @initializer.type_check if @initializer
+    # @todo
+    # unless self.type == @initializer.type
+    #   TypeCheckError.new self, @initializer
+    # end
   end
 
 

@@ -131,12 +131,15 @@ class Joos::Token
     # nop
   end
 
-  def link_identifiers
-    # nop
-  end
-
   def scope
     parent.scope
+  end
+
+
+  # @!group Assignment 3
+
+  def type_check
+    # nop
   end
 
   # @!endgroup

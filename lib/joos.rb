@@ -99,7 +99,7 @@ class Joos::Compiler
   def compile
     scan_and_parse_and_weed     # Assignment 1
     resolve_names               # Assignment 2
-    # type_check                # Assignment 3
+    type_check                  # Assignment 3
     # static analysis           # Assignment 4
     # generate_code             # Assignment 5
 
@@ -193,8 +193,6 @@ class Joos::Compiler
 
     classes.sort_by(&:depth).each(&:link_inherits)
     classes.each(&:check_inherits)
-
-    @compilation_units.each(&:link_identifiers)
   end
 
   def type_check

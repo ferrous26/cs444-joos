@@ -67,7 +67,7 @@ class Joos::Entity::Interface < Joos::Entity
       node if node.Identifier
     end.compact
   end
-   
+
   # The set of superinterface identifiers, as returned by the AST
   # @return [Array<Joos::AST::QualifiedIdentifier>]
   def interface_identifiers
@@ -124,10 +124,12 @@ class Joos::Entity::Interface < Joos::Entity
     check_ambiguous_methods @interface_methods
   end
 
-  def link_identifiers
-  end
 
-  # @!endgroup
+  # @!group Assignment 3
+
+  def type_check
+    methods.each(&:type_check)
+  end
 
 
   # @!group Inspect

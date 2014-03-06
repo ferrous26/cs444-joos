@@ -415,11 +415,6 @@ class Joos::Entity::Class < Joos::Entity
     end
   end
 
-  def link_identifiers
-    constructors.each(&:link_identifiers)
-    fields.each(&:link_identifiers)
-  end
-
   def check_superclass_circularity chain = []
     chain << self
     if chain.include? superclass
@@ -435,6 +430,17 @@ class Joos::Entity::Class < Joos::Entity
   # @return [Joos::AST::QualifiedIdentifier]
   BASE_CLASS = Joos::AST.make :QualifiedIdentifier,
     *['java', 'lang', 'Object'].map { |s| Joos::Token.make :Identifier, s }
+
+
+  # @!group Assignment 3
+
+  def type_check
+    constructors.each(&:type_check)
+    methods.each(&:type_check)
+    fields.each(&:type_check)
+  end
+
+  # @!endgroup
 
 
   private
