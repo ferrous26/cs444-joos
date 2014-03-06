@@ -57,20 +57,38 @@ class Joos::Compiler
     @result = SUCCESS
   end
 
-  def self.load_directory path
-    self.new *Dir.glob(path + '/**/*.java')
+  def self.load_directory name
+    split = name.split('/')
+    glob  = ''
+
+    if split.size > 1
+      glob = name
+      name = split.last
+    else
+      glob = "a*/#{name}"
+    end
+
+    names = Dir.glob("test/#{glob}{.java,}")
+    return puts "Could not find test named `#{name}'" if names.empty?
+    return puts "Ambiguous test name:\n#{names}"      if names.size > 1
+
+    set = if File.directory? names.first
+            Dir.glob("#{names.first}/**/*.java")
+          else
+            names.first
+          end
+
+    new(*set)
   end
 
   def self.load_dir_with_stdlib path
-    ret = self.load_directory path
+    ret = load_directory path
     ret.add_stdlib
-
     ret
   end
 
   def add_stdlib
-    version = '2.0'
-    @files += Dir.glob "test/stdlib/#{version}/**/*.java"
+    @files += Dir.glob 'test/stdlib/5.0/**/*.java'
   end
 
   ##
