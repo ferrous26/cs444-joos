@@ -225,7 +225,7 @@ class Joos::Entity::Class < Joos::Entity
 
   # The QualifiedIdentifier of the receiver's superclass, as taken from the AST.
   # Returns `nil` if no superclass is explicitly declared.
-  # 
+  #
   # @return [Joos::AST::QualifiedIdentifier, nil]
   def superclass_identifier
     @node.TypeDeclaration.ClassDeclaration.QualifiedIdentifier
@@ -266,7 +266,7 @@ class Joos::Entity::Class < Joos::Entity
       superclass.depth + 1
     end
   end
-  
+
   # Populates superclass, interfaces, own methods, constructors, fields, etc.
   # Does not populate #all_methods or do any hierarchy checks
   def link_declarations
@@ -319,11 +319,11 @@ class Joos::Entity::Class < Joos::Entity
 
     # Own member checks
     methods.each(&:validate)
-    methods.each(&:check_hierarchy)
+    methods.each(&:check_hierarchy);
     fields.each(&:validate)
-    fields.each(&:check_hierarchy)
+    fields.each(&:check_hierarchy);
     constructors.each(&:validate)
-    constructors.each(&:check_hierarchy)
+    constructors.each(&:check_hierarchy);
 
     check_at_least_one_constructor
     check_constructor_names_match
@@ -389,7 +389,7 @@ class Joos::Entity::Class < Joos::Entity
     # Start by building a list of (interface method, implementation) pairs
     # #interface_methods comes from HasInterfaces
     implementation_pairs = interface_methods.map do |interface_method|
-      implementation = all_methods.detect do |method| 
+      implementation = all_methods.detect do |method|
         method.signature == interface_method.signature
       end
       [interface_method, implementation]
@@ -448,7 +448,7 @@ class Joos::Entity::Class < Joos::Entity
 
   # A tuple containing (constructor, field, method) AST nodes.
   def member_nodes
-    raise "Class does not have an AST node" unless @node
+    raise 'Class does not have an AST node' unless @node
 
     # Cache
     return @member_nodes if @member_nodes
@@ -475,7 +475,6 @@ class Joos::Entity::Class < Joos::Entity
     end
 
     @member_nodes = [constructors, fields, methods]
-    @member_nodes
   end
 
   def check_at_least_one_constructor
@@ -502,7 +501,7 @@ class Joos::Entity::Class < Joos::Entity
   def check_abstract_methods_only_if_class_is_abstract
     method = all_methods.detect{ |m| m.abstract? }
     if method
-      raise AbstractMethodNonAbsractClass.new(method, self) unless self.abstract? 
+      raise AbstractMethodNonAbsractClass.new(method, self) unless self.abstract?
     end
   end
 
@@ -554,7 +553,7 @@ class Joos::Entity::Class < Joos::Entity
       base
     end
   end
-  
+
   def inspect_superclass
     if superclass.blank?
       'ROOT'.white
