@@ -6,9 +6,8 @@ require 'joos/version'
 module Joos::Constructable
   include Joos::Entity::TypeResolution
 
-  def build parent_scope, type_environment
-    super
-    @type = resolve_type type_environment
+  def type
+    @type ||= resolve_type scope.type_environment
   end
 
 

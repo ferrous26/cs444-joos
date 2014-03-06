@@ -147,9 +147,8 @@ class Joos::AST
   # Recursively tell all children to build their scope environment
   #
   # @param parent [Joos::Scope, Joos::Entity::Method]
-  # @param type_environment [Joos::Entity::CompilationUnit]
-  def build parent, type_environment
-    @nodes.each { |node| node.build(parent, type_environment) }
+  def build parent
+    @nodes.each { |node| node.build parent }
     self
   end
 

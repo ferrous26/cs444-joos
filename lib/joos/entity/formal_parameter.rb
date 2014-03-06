@@ -7,16 +7,13 @@ require 'joos/entity/type_resolution'
 class Joos::Entity::FormalParameter < Joos::Entity
   include TypeResolution
 
-  # @return [CompilationUnit, Joos::BasicType, Joos::Array]
-  attr_reader :type
-
   # @param node [Joos::AST::FormalParameter]
   # @param unit [Joos::Entity::CompilationUnit]
   def initialize node, unit
-    @node = node
+    @node            = node
     super node.Identifier
-    @type = node.Type
-    @unit = unit
+    @type_identifier = node.Type
+    @unit            = unit
   end
 
   def to_sym
@@ -27,7 +24,7 @@ class Joos::Entity::FormalParameter < Joos::Entity
   # @!group Assignment 2
 
   def link_declarations
-    @type = resolve_type @type
+    @type = resolve_type @type_identifier
   end
 
   # @!endgroup

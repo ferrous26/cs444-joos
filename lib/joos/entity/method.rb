@@ -16,7 +16,7 @@ class Joos::Entity::Method < Joos::Entity
   ##
   # This should only be `nil` for abstract methods.
   #
-  # @return [Joos::AST::Block, nil]
+  # @return [Joos::Scope, nil]
   attr_reader :body
 
   # Optional ancestor method that this method overrides
@@ -70,13 +70,14 @@ class Joos::Entity::Method < Joos::Entity
   # @param node [Joos::AST::ClassBodyDeclaration]
   # @param unit [Joos::AST::CompilationUnit]
   def initialize node, unit
-    @node       = node
+    @node            = node
     super node.Identifier, node.Modifiers
-    @type       = node.Void || node.Type
-    decl        = node.last # MethodDeclRest, InterfaceMethodDeclRest, etc.
-    @parameters = (decl.FormalParameters.FormalParameterList || []).map do |p|
-      Joos::Entity::FormalParameter.new p, unit
-    end
+    @type_identifier = node.Void || node.Type
+    decl             = node.last # MethodDeclRest, InterfaceMethodDeclRest, etc
+    @parameters      =
+      (decl.FormalParameters.FormalParameterList || []).map do |p|
+        Joos::Entity::FormalParameter.new p, unit
+      end
     parse_body decl
     @unit = unit
   end
@@ -94,24 +95,11 @@ class Joos::Entity::Method < Joos::Entity
 
 
   # @!group Assignment 2
-  
+
   # Types of parameters
   # @return [Array<BasicType, Joos::Array, CompilationUnit>)]
   def parameter_types
     @parameters.map(&:type)
-  end
-
-  # Return type of the method.
-  # Returns `nil` for `void` and constructors.
-  # FIXME Probably want to change this for the former case.
-  #
-  # @return [BasicType, Joos::Array, CompilationUnit, nil]
-  def return_type
-    if @node.Void
-      nil
-    else
-      @node.Type.resolve @unit
-    end
   end
 
   ##
@@ -135,8 +123,9 @@ class Joos::Entity::Method < Joos::Entity
   end
 
   def link_declarations
+    @type ||= resolve_type @type_identifier
     @parameters.each(&:link_declarations)
-    @body.build(self, @unit) if @body # body building (tee hee)
+    @body.build(self) if @body
   end
 
   def check_hierarchy
@@ -157,7 +146,7 @@ class Joos::Entity::Method < Joos::Entity
   #
   # @param qid [Joos::AST::QualifiedIdentifier, Joos::Token::Identifier]
   def find_declaration qid
-    @parameters.find { |param| param.name == qid } || find_type(qid)
+    @parameters.find { |param| param.name == qid }
   end
 
   ##
