@@ -21,17 +21,18 @@ class Joos::Entity::Field < Joos::Entity
   end
 
 
-  # @return [Joos::AST::Block]
+  # @return [Joos::Scope]
   attr_reader :initializer
+  alias_method :body, :initializer
 
   # @param node [Joos::AST::ClassBodyDeclaration]
   # @param klass [Joos::Entity::Class]
   def initialize node, klass
-    @node        = node
+    @node             = node
     super node.Identifier, node.Modifiers
-    @type        = node.Type
-    @initializer = wrap_initializer node.Expression
-    @unit        = klass
+    @type_identifier  = node.Type
+    @initializer      = wrap_initializer node.Expression
+    @unit             = klass
   end
 
   def to_sym
@@ -47,8 +48,8 @@ class Joos::Entity::Field < Joos::Entity
   # @!group Assignment 2
 
   def link_declarations
-    @type = resolve_type @type
-    @initializer.build(self, @unit) if @initializer
+    @type = resolve_type @type_identifier
+    @initializer.build(self) if @initializer
   end
 
   def check_hierarchy
@@ -63,12 +64,11 @@ class Joos::Entity::Field < Joos::Entity
   # Called recursively from {Joos::Scope#find_declaration} if a name
   # does not match a local variable name.
   #
-  # This method will need to just pass the search along to the next level
-  # of abstraction.
+  # This method is a nop since it declares no parameters or local
+  # variables of its own.
   #
-  # @param qid [Joos::AST::QualifiedIdentifier, Joos::Token::Identifier]
-  def find_declaration qid
-    find_type qid
+  def find_declaration _
+    # nop
   end
 
   ##
@@ -104,9 +104,7 @@ class Joos::Entity::Field < Joos::Entity
   end
 
   def ensure_final_field_is_initialized
-    if modifiers.include? :Final
-      raise UninitializedFinalField.new(self) unless initializer
-    end
+    raise UninitializedFinalField.new(self) if final? && !@initializer
   end
 
 end

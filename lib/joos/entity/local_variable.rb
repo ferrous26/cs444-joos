@@ -11,13 +11,15 @@ class Joos::Entity::LocalVariable < Joos::Entity
   attr_reader :initializer
 
   # @param node  [Joos::AST::LocalVariableDeclaration]
-  # @param klass [Joos::Entity::Class]
-  def initialize node, klass
-    @node = node
+  # @param scope [Joos::Scope]
+  def initialize node, scope
+    @node             = node
     super node.VariableDeclarator.Identifier
-    @initializer = node.VariableDeclarator.Expression
-    @unit = klass
-    @type = resolve_type node.Type
+    @initializer      = node.VariableDeclarator.Expression
+    @type_identifier  = node.Type
+    @unit             = scope.type_environment
+    @scope            = scope
+    @type             = resolve_type @type_identifier
   end
 
   def to_sym

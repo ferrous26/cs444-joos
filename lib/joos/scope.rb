@@ -2,7 +2,7 @@ require 'joos/entity/local_variable'
 require 'joos/exceptions'
 
 ##
-# Mixin for AST nodes which have their own scope
+# Mixin for AST nodes which have their own scope (i.e. Block)
 module Joos::Scope
 
   ##
@@ -17,11 +17,11 @@ module Joos::Scope
   end
 
 
-  ##
-  # @note We _could_ remove this once GH-69 is resolved with only a bit of work
-  #
   # @return [Array<Joos::Entity::LocalVariable>]
-  attr_reader :members
+  attr_reader :declarations
+
+  # @return [Array<Joos::AST::Statement>]
+  attr_reader :statements
 
   # @return [Joos::Scope, Joos::Entity::Method]
   attr_reader :parent_scope
@@ -29,13 +29,41 @@ module Joos::Scope
   # @return [Array<Joos::Scope>]
   attr_reader :children_scopes
 
+  # @param entity [Joos::Entity::Method, Joos::Entity::Field, Joos::Scope]
+  def build entity
+    @type_environment = entity.type_environment
+    @parent_scope     = entity
+    @children_scopes  = []
+    @declarations     = []
+    @statements       = []
+    parent_scope.children_scopes << self
+    sort_decls
+  end
+
+
+  # @!group Context
+
+  ##
+  # The return type for the enclosing method or field.
+  #
+  # @return [Joos::BasicType, Joos::Array, Joos::CompilationUnit, Joos::Token::Void]
+  def return_type
+    parent_scope.return_type
+  end
+  alias_method :sigma, :return_type
+
+  ##
+  # The type environment for the executing code
+  #
   # @return [Joos::Entity::CompilationUnit]
-  attr_reader :type_environment
+  def type_environment
+    parent_scope.type_environment
+  end
   alias_method :this, :type_environment
 
   ##
   # Given a qualified identifier, this method will search up the hierarchy
-  # for a declaration whose name matches.
+  # for a local variable declaration or parameter whose name matches.
   #
   # @param qid [Joos::AST::QualifiedIdentifier]
   # @return [Joos::Entity, nil]
@@ -44,48 +72,18 @@ module Joos::Scope
       parent_scopes.find_declaration(qid)
   end
 
-  def return_type
-    parent_scope.return_type
-  end
+  # @!endgroup
 
-  ##
-  # @note This is like `#initialize` for the mixin: call it first
-  #
-  # Instruct the scope to construct itself from the receiving scope
-  # and recursively for all nested scopes.
-  #
-  # @param parent_scope [Joos::Scope, Joos::Entity::Method]
-  # @param type_environment [Joos::Entity::CompilationUnit]
-  def build parent_scope, type_environment
-    @parent_scopes    = parent_scope
-    @type_environment = type_environment
-    @children_scopes  = []
-    @members          = []
 
-    parent_scope.children_scopes << self
-
-    return if @nodes.empty?
-    self.BlockStatements.each_with_index do |node, index|
-      child = node.first
-      if child.to_sym == :LocalVariableDeclarationStatement
-        variable  = Joos::Entity::LocalVariable.new child, type_environment
-        @members     << variable
-        @nodes[index] = variable
-      else
-        child.build(self, type_environment)
-      end
-    end
-  end
-
-  def check_no_overlapping_variables variables
-    vars = @members + variables # do not mutate variables, it is shared
+  def check_no_overlapping_variables other_declarations
+    vars = @declarations + other_declarations # don't mutate other_declarations
     vars.each do |var1|
       dupes = vars.select { |var2| var1.name == var2.name }
       raise DuplicateLocalVariables.new(dupes) if dupes.size > 1
     end
 
-    @children_scopes.each do |scope|
-      scope.check_no_overlapping_variables vars
+    @children_scopes.each do |child_scope|
+      child_scope.check_no_overlapping_variables vars
     end
   end
 
@@ -98,6 +96,26 @@ module Joos::Scope
   # @return [Joos::Scope]
   def scope
     self
+  end
+
+
+  private
+
+  # Instruct the scope to construct itself
+  #
+  # @param block [Joos::AST::Scope, Joos::Entity::Method, Joos::Entity::Field]
+  def sort_decls
+    return unless self.BlockStatements
+    self.BlockStatements.each do |block_statement|
+      statement = block_statement.first
+
+      if statement.to_sym == :LocalVariableDeclarationStatement
+        @declarations << Joos::Entity::LocalVariable.new(statement, self)
+      else
+        @statements << statement
+        statement.build self
+      end
+    end
   end
 
 end
