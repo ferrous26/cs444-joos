@@ -13,7 +13,8 @@ class Joos::Entity::Constructor < Joos::Entity::Method
   # @param klass [Joos::AST::Class]
   def initialize node, klass
     super
-    @type = klass # yay, we don't have to resolve this one!
+    # constuctors implicitly have a void return type
+    @type = Joos::Token.make(:Void, 'void')
   end
 
   def to_sym
