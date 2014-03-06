@@ -34,7 +34,7 @@ describe Joos::Entity::Class do
 
   it 'initializes superclass, interfaces, etc. to nil before name resolution' do
     ast   = get_ast 'J1_minusminusminus'
-    klass = Joos::Entity::Class.new ast
+    klass = Joos::Entity::Class.new ast, @root
     expect(klass.superclass).to be_nil
     expect(klass.interfaces).to be_nil
     expect(klass.fields).to be_nil
@@ -121,8 +121,8 @@ describe Joos::Entity::Class do
   it 'validates that java.lang.Object is the top_class? and others are not' do
     expect(Joos::Entity::Class::BASE_CLASS).to be == ['java', 'lang', 'Object']
 
-    klass = Joos::Entity::Class.new get_test_ast('Foo')
-    obj   = Joos::Entity::Class.new get_std_ast('java.lang.Object')
+    klass = Joos::Entity::Class.new get_test_ast('Foo'), @root
+    obj   = Joos::Entity::Class.new get_std_ast('java.lang.Object'), @root
     expect(klass.top_class?).to be == false
     expect(obj.top_class?).to be == true
   end

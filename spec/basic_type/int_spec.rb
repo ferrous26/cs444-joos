@@ -15,10 +15,10 @@ describe Joos::BasicType::Int do
   end
 
   it 'is equal to other Int types when loaded from a certain test case' do
-    c = Joos::Compiler.new 'test/a2/Je_4_DuplicateConstructor_Args.java'
+    c = Joos::Compiler.new 'test/a2/J1_IntSig.java'
     c.add_stdlib
     c.compile
-    u = c.get_unit 'Je_4_DuplicateConstructor_Args'
+    u = c.get_unit 'J1_IntSig'
     s1, s2 = u.constructors.map(&:signature)
     # Both of these are Ints
     expect(s1[1][0]).to be == s2[1][0]

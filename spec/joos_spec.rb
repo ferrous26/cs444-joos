@@ -66,7 +66,7 @@ describe Joos::Compiler do
 
   it 'reports FATAL result for internal failures' do
     c = Joos::Compiler.new('test/a1/J1_BigInt.java', *@stdlib)
-    c.define_singleton_method(:build_entities) { raise NotImplementedError }
+    c.define_singleton_method(:build_entity) { raise NotImplementedError }
     c.compile
     expect(c.result).to be == Joos::Compiler::FATAL
   end
