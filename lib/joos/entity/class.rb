@@ -291,7 +291,9 @@ class Joos::Entity::Class < Joos::Entity
 
     # Create constructors
     @constructors = constructor_nodes.map do |node|
-      Constructor.new node, self
+      c = Constructor.new node, self
+      c.link_declarations
+      c
     end
   end
 
@@ -323,10 +325,9 @@ class Joos::Entity::Class < Joos::Entity
 
     check_at_least_one_constructor
     check_constructor_names_match
+
     check_constructors_have_unique_names
-
     check_fields_have_unique_names
-
     check_methods_have_unique_names
   end
 
