@@ -57,6 +57,22 @@ class Joos::Compiler
     @result = SUCCESS
   end
 
+  def self.load_directory path
+    self.new *Dir.glob(path + '/**/*.java')
+  end
+
+  def self.load_dir_with_stdlib path
+    ret = self.load_directory path
+    ret.add_stdlib
+
+    ret
+  end
+
+  def add_stdlib
+    version = '2.0'
+    @files += Dir.glob "test/stdlib/#{version}/**/*.java"
+  end
+
   ##
   # Cause {#files} to be compiled to i386 assembly (NASM style).
   #
@@ -79,6 +95,22 @@ class Joos::Compiler
     $stderr.puts exception.backtrace
   end
 
+  # @return [Array<Joos::Entity::Class>]
+  def classes
+    return nil unless @compilation_units
+    @compilation_units.select {|unit| unit.is_a? Joos::Entity::Class}
+  end
+
+  # @return [Array<Joos::Entity::Interface>]
+  def interfaces
+    return nil unless @compilation_units
+    @compilation_units.select {|unit| unit.is_a? Joos::Entity::Interface}
+  end
+
+  # @return [Joos::Entity::CompilationUnit]
+  def get_unit name
+    @compilation_units.detect {|unit| unit.fully_qualified_name.join('.') == name}
+  end
 
   private
 
@@ -132,14 +164,13 @@ class Joos::Compiler
     @compilation_units.each(&:check_declarations)
 
     # Resolve inherited members.
-    # Order is important since the contains set of a class depends on the
-    # contains set of its parent
-    @compilation_units.sort_by(&:depth).each(&:link_inherits)
-    @compilation_units.each(&:check_inherits)
+    # Sort by depth so parent contain set is always defined
+    # Do Interfaces first so Classes can check conformance in #check_inherits
+    interfaces.sort_by(&:depth).each(&:link_inherits)
+    interfaces.each(&:check_inherits)
 
-    # Check that classes implement their interfaces
-    classes = @compilation_units.select {|unit| unit.is_a? Joos::Entity::Class}
-    classes.each(&:check_implements)
+    classes.sort_by(&:depth).each(&:link_inherits)
+    classes.each(&:check_inherits)
 
     @compilation_units.each(&:link_identifiers)
   end
