@@ -155,18 +155,15 @@ class Joos::Entity::Method < Joos::Entity
   # @!group Assignment 3
 
   def type_check
-    if @body
-      @body.type_check
-      # @todo
-      # unless self.type == @body.type
-      #   TypeCheckError.new self, @body
-      # end
-    end
+    return unless @body
+    @body.type_check
+    raise TypeMismatch.new(@body, self, self) unless @body.type == @type
   end
 
 
   # @!group Inspect
 
+  # @todo add relevant modifiers
   def inspect
     "#{name.cyan}: #{inspect_params} -> #{inspect_type @type}"
   end

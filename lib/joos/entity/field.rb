@@ -76,11 +76,11 @@ class Joos::Entity::Field < Joos::Entity
   # @!group Assignment 3
 
   def type_check
-    @initializer.type_check if @initializer
-    # @todo
-    # unless self.type == @initializer.type
-    #   TypeCheckError.new self, @initializer
-    # end
+    return unless @initializer
+    @initializer.type_check
+    unless @initializer.type == @type
+      raise TypeMismatch(@initializer, self, self)
+    end
   end
 
 
