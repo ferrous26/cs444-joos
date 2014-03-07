@@ -15,9 +15,9 @@ describe Joos::Entity::FormalParameter do
 
   it 'should accept a node at init and parse it correctly' do
     ast, param = extract['J1_fullyLoadedMethod']
-    expect(param.name.to_s).to be  == 'lint'
-    expect(param.type).to be       == ast.Type
-    expect(param.unit).to be       == outer
+    expect(param.name.to_s).to be       == 'lint'
+    expect(param.type_identifier).to be == ast.Type
+    expect(param.unit).to be            == outer
   end
 
   it 'responds to #to_sym correctly' do

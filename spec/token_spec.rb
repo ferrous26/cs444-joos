@@ -94,7 +94,7 @@ describe Joos::Token do
 
   it 'has a secret parameter for #inspect that adds leading spaces' do
     token = Joos::Token::Identifier.new('hello', 'there.c', 3, 21)
-    expect(token.inspect(1)[0..1]).to be == '| '
+    expect(token.inspect(1)[0..1]).to be == '  '
   end
 
   it 'has exceptions which inherit from RuntimeError, not raw Exception' do

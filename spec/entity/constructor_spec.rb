@@ -18,7 +18,7 @@ describe Joos::Entity::Constructor do
     expect(constructor.name.to_s).to be == 'J1_fullyLoadedConstructor'
     expect(constructor.modifiers).to be == [:Public]
     expect(constructor.body).to_not be_nil
-    expect(constructor.type).to be == outer # dirty check
+    expect(constructor.type).to be_kind_of Joos::Token::Void
   end
 
   it 'makes sure that modifiers is empty if there are none' do
