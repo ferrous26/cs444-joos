@@ -9,11 +9,6 @@ require 'joos/source'
 class Joos::CompilerException < RuntimeError
   include Joos::SourceInfo
 
-  def initialize msg = nil, source = nil
-    set_source source if source
-    super format(msg)
-  end
-
   # @return [Fixnum]
   attr_writer :column
 
@@ -23,13 +18,15 @@ class Joos::CompilerException < RuntimeError
   # @return [String]
   attr_writer :file_name
 
+  def initialize msg = nil, source = nil
+    set_source source if source
+    super format(msg)
+  end
+
   private
 
   def format msg
-    <<-EOS
-#{formatted_source}: ERROR
-#{msg}
-    EOS
+    "#{formatted_source}: #{msg}"
   end
 
   def formatted_source
