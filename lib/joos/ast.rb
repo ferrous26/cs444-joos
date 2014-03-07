@@ -28,6 +28,9 @@ class Joos::AST
   # @return [Joos::AST]
   attr_accessor :parent
 
+  # @return [Joos::BasicType, Joos::Entity::CompilationUnit, Joos::Array, Joos::Token::Void]
+  attr_reader :type
+
   # @param nodes [Array<Joos::AST, Joos::Token, Joos::Entity>]
   def initialize nodes
     @nodes = nodes
@@ -179,6 +182,15 @@ class Joos::AST
   ##
   # Mixin used for AST nodes which represent a list of nodes but have
   # been modeled as a tree due to the way the parser works.
+  #
+  # @example
+  #
+  #  # before list collapse
+  #  Foo -> [Bar, Foo -> [Bar, Baz]]
+  #
+  #  # after list collapsing
+  #  Foo -> [Bar, Bar, Baz]
+  #
   module ListCollapse
     def initialize nodes
       super
