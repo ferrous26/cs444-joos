@@ -89,7 +89,7 @@ class Joos::Entity::Field < Joos::Entity
   def inspect
     base = "#{name.cyan}: #{inspect_type @type}"
     if static?
-      base << ' S'.yellow
+      'static '.yellow << base
     else
       base
     end
