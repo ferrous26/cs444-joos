@@ -11,6 +11,11 @@ class Joos::AST::Statement
     transform_while
   end
 
+  def type_check
+    super
+    @type ||= Joos::Token.make(:Void, 'void') # must be the empty statement
+  end
+
 
   private
 
