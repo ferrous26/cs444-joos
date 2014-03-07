@@ -119,6 +119,17 @@ class Joos::Token
   # actually return anything.
   class Void
 
+    def eql? other
+      if other.respond_to? :to_sym
+        to_sym == other.to_sym
+      end
+    end
+
+    def hash
+      self.class.hash
+    end
+
+
     # @!group Type API
 
     alias_method :type, :to_sym
