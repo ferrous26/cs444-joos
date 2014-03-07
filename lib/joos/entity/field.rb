@@ -31,7 +31,7 @@ class Joos::Entity::Field < Joos::Entity
     @node             = node
     super node.Identifier, node.Modifiers
     @type_identifier  = node.Type
-    @initializer      = wrap_initializer node.Expression
+    @initializer      = node.Expression
     @unit             = klass
   end
 
@@ -49,7 +49,6 @@ class Joos::Entity::Field < Joos::Entity
 
   def link_declarations
     @type = resolve_type @type_identifier
-    @initializer.build(self) if @initializer
   end
 
   def check_hierarchy
@@ -100,15 +99,6 @@ class Joos::Entity::Field < Joos::Entity
 
 
   private
-
-  def wrap_initializer expr
-    return unless expr
-    ast = Joos::AST
-    ast.make(:Block,
-             ast.make(:BlockStatements,
-                      ast.make(:BlockStatement,
-                               ast.make(:Statement, expr))))
-  end
 
   def ensure_final_field_is_initialized
     raise UninitializedFinalField.new(self) if final? && !@initializer
