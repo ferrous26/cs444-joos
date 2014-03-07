@@ -1,8 +1,10 @@
 require 'joos/ast'
+require 'joos/type_checking'
 
 ##
 # A sub-expression is any expression that is not an assignment.
 class Joos::AST::SubExpression
+  include Joos::SubExpressionTypeChecking
 
   def validate parent
     fix_instanceof

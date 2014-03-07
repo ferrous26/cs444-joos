@@ -35,7 +35,7 @@ class Joos::AST
   def initialize nodes
     @nodes = nodes
     nodes.each do |node|
-      node.parent = self if node.kind_of? Joos::AST
+      node.parent = self if node.respond_to? :parent=
     end
   end
 
@@ -203,7 +203,7 @@ class Joos::AST
         @nodes = @nodes.last.nodes.unshift @nodes.first
       end
 
-      @nodes.each { |node| node.parent = self if node.kind_of? Joos::AST }
+      @nodes.each { |node| node.parent = self if node.respond_to? :parent= }
     end
   end
 

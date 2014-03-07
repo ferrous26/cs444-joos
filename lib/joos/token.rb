@@ -117,7 +117,7 @@ class Joos::Token
   # An exception should be raised if the node is not valid.
   #
   # @param parent [Joos::AST]
-  def validate parent
+  def validate _
     # nop
   end
 

@@ -43,8 +43,13 @@ end
 class Joos::TypeMismatch < Joos::CompilerException
 
   def initialize lhs, rhs, source
-    msg = "Type mismatch. Expected #{lhs.type} but got #{rhs.type}\n" <<
-      "for #{rhs.inspect} in #{lhs.inspect}"
+    msg = <<-EOS
+Type mismatch. Epected #{lhs.type.type_inspect} but got #{rhs.type.type_inspect} for
+#{rhs.inspect}
+
+In
+#{lhs.inspect}
+    EOS
     super msg, source
   end
 

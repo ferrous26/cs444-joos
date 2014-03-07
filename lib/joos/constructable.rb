@@ -6,8 +6,9 @@ require 'joos/version'
 module Joos::Constructable
   include Joos::Entity::TypeResolution
 
-  def type
-    @type ||= resolve_type scope.type_environment
+  def type_check
+    super # so that the constructor args can be linked and checked
+    @type = resolve_type scope.type_environment
   end
 
 

@@ -1,19 +1,16 @@
 require 'joos/ast'
+require 'joos/statement_type_checking'
 
 ##
 # AST node representing a Joos method statement.
 class Joos::AST::Statement
+  include Joos::StatementTypeChecking
 
   def initialize nodes
     super
     transform_for_loop
     transform_if
     transform_while
-  end
-
-  def type_check
-    super
-    @type ||= Joos::Token.make(:Void, 'void') # must be the empty statement
   end
 
 

@@ -79,9 +79,13 @@ class Joos::Entity::Field < Joos::Entity
   def type_check
     return unless @initializer
     @initializer.type_check
-    unless @initializer.type == @type
-      raise TypeMismatch(@initializer, self, self)
+    unless real_initializer.type == @type
+      raise Joos::TypeMismatch.new(self, real_initializer, self)
     end
+  end
+
+  def real_initializer
+    @initializer.statements.first.first
   end
 
 

@@ -157,7 +157,7 @@ class Joos::Entity::Method < Joos::Entity
   def type_check
     return unless @body
     @body.type_check
-    raise TypeMismatch.new(@body, self, self) unless @body.type == @type
+    raise Joos::TypeMismatch.new(self, @body, self) unless @body.type == @type
   end
 
 
