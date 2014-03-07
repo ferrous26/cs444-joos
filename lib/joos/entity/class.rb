@@ -440,6 +440,21 @@ class Joos::Entity::Class < Joos::Entity
     fields.each(&:type_check)
   end
 
+
+  # @!group Inspect
+
+  def inspect
+    base = "class #{fully_qualified_name.cyan_join}"
+    if abstract?
+      'abstract '.yellow << base
+    elsif final?
+      'final '.yellow << base
+    else
+      base
+    end
+  end
+
+
   # @!endgroup
 
 
@@ -541,18 +556,8 @@ class Joos::Entity::Class < Joos::Entity
     end
   end
 
-  # @!group Inspect
 
-  def inspect
-    base = "class #{fully_qualified_name.cyan_join}"
-    if abstract?
-      base << ' A'.yellow
-    elsif final?
-      base << ' F'.yellow
-    else
-      base
-    end
-  end
+  # @!group Inspect
 
   def inspect_superclass
     if superclass.blank?
