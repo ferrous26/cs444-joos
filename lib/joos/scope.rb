@@ -16,7 +16,6 @@ module Joos::Scope
     end
   end
 
-
   # @return [Array<Joos::Entity::LocalVariable>]
   attr_reader :declarations
 

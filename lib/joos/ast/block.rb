@@ -33,7 +33,7 @@ class Joos::AST::Block
                             make(:BlockStatements, *statements[index..-1]))))
 
         statements.pop(statements.size - index)
-        statements[index] = make(:BlockStatements, bs)
+        statements[index] = bs
         return # we just fucked with the array we are enumerating, so bail!
       elsif node.Statement
         statement_seen = true

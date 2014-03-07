@@ -6,16 +6,20 @@ class Joos::AST::Statement
 
   def initialize nodes
     super
-    transform_for_loop if self.For
+    transform_for_loop
+    transform_if
+    transform_while
   end
 
 
   private
 
   def transform_for_loop
+    return unless self.For
     @nodes = [make(:Block,
                    make(:BlockStatements,
-                        while_init_statement, while_loop))]
+                        while_init_statement,
+                        while_loop))]
     @nodes.first.parent = self
   end
 
@@ -31,22 +35,61 @@ class Joos::AST::Statement
   def while_loop
     make(:BlockStatement,
          make(:Statement,
-              Joos::Token.make(:While, 'while'), while_condition, while_body))
+              Joos::Token.make(:While, 'while'),
+              Joos::Token.make(:OpenParen, '('),
+              while_condition,
+              Joos::Token.make(:CloseParen, ')'),
+              while_body))
   end
 
   def while_condition
     self.Expression ||
-      make(:BooleanLiteral, Joos::Token.make(:True, 'true'))
+      make(:Expression,
+           make(:SubExpression,
+                make(:Term,
+                     make(:Primary,
+                          make(:Literal,
+                               make(:BooleanLiteral,
+                                    Joos::Token.make(:True, 'true')))),
+                     make(:Selectors))))
   end
 
   def while_body
-    make(:Block,
-         make(:BlockStatements,
-              make(:BlockStatement, self.Statement),
-              *if self.ForUpdate.Expression
-                 [make(:BlockStatement,
-                       make(:Statement, self.ForUpdate.Expression))]
-               end))
+    make(:Statement,
+         make(:Block,
+              make(:BlockStatements,
+                   make(:BlockStatement, self.Statement),
+                   *if self.ForUpdate.Expression
+                      [make(:BlockStatement,
+                            make(:Statement, self.ForUpdate.Expression))]
+                    end)))
+  end
+
+  def transform_if
+    return unless self.If
+
+    if_clause = make(:Block,
+                     make(:BlockStatements,
+                          make(:BlockStatement,
+                               self.Statement)))
+    reparent if_clause, at_index: 4
+
+    if self.Else
+      else_clause = make(:Block,
+                         make(:BlockStatements,
+                              make(:BlockStatement,
+                                   self.last)))
+      reparent else_clause, at_index: 6
+    end
+  end
+
+  def transform_while
+    return unless self.While
+    block = make(:Block,
+                 make(:BlockStatements,
+                      make(:BlockStatement,
+                           self.Statement)))
+    reparent block, at_index: 4
   end
 
 end
