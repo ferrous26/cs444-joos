@@ -37,3 +37,15 @@ class Joos::CompilerException < RuntimeError
     end.red
   end
 end
+
+##
+# Exception raised when a type checking failure occurs
+class Joos::TypeMismatch < Joos::CompilerException
+
+  def initialize lhs, rhs, source
+    msg = "Type mismatch. Expected #{lhs.type} but got #{rhs.type}\n" <<
+      "for #{rhs.inspect} in #{lhs.inspect}"
+    super msg, source
+  end
+
+end
