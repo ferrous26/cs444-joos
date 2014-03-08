@@ -1,11 +1,9 @@
 require 'joos/ast'
 require 'joos/exceptions'
-require 'joos/type_checking'
 
 ##
 # Extensions to the basic node to support term rewriting.
 class Joos::AST::Term
-  include Joos::TermTypeChecking
 
   ##
   # Exception raised when an illegal cast is detected.

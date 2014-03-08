@@ -1,10 +1,8 @@
 require 'joos/ast'
-require 'joos/statement_type_checking'
 
 ##
 # AST node representing a Joos method statement.
 class Joos::AST::Statement
-  include Joos::StatementTypeChecking
 
   def initialize nodes
     super

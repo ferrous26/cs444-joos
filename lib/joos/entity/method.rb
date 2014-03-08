@@ -1,6 +1,7 @@
 require 'joos/entity'
 require 'joos/entity/modifiable'
 require 'joos/entity/type_resolution'
+require 'joos/type_checking'
 
 ##
 # Entity representing the definition of an class/interface method.
@@ -156,8 +157,11 @@ class Joos::Entity::Method < Joos::Entity
 
   def type_check
     return unless @body
+    puts "type checking #{inspect}"
     @body.type_check
-    raise Joos::TypeMismatch.new(self, @body, self) unless @body.type == @type
+    unless @body.type == @type
+      raise Joos::TypeChecking::Mismatch.new(self, @body, self)
+    end
   end
 
 

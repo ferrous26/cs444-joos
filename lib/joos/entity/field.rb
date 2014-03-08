@@ -1,6 +1,7 @@
 require 'joos/entity'
 require 'joos/entity/modifiable'
 require 'joos/entity/type_resolution'
+require 'joos/type_checking'
 
 ##
 # Entity representing the definition of an class/interface field.
@@ -28,11 +29,11 @@ class Joos::Entity::Field < Joos::Entity
   # @param node [Joos::AST::ClassBodyDeclaration]
   # @param klass [Joos::Entity::Class]
   def initialize node, klass
-    @node             = node
+    @node            = node
     super node.Identifier, node.Modifiers
-    @type_identifier  = node.Type
-    @initializer      = wrap_initializer node.Expression
-    @unit             = klass
+    @type_identifier = node.Type
+    @initializer     = wrap_initializer node.Expression
+    @unit            = klass
   end
 
   def to_sym
@@ -80,12 +81,12 @@ class Joos::Entity::Field < Joos::Entity
     return unless @initializer
     @initializer.type_check
     unless real_initializer.type == @type
-      raise Joos::TypeMismatch.new(self, real_initializer, self)
+      raise Joos::TypeChecking::Mismatch.new(self, real_initializer, self)
     end
   end
 
   def real_initializer
-    @initializer.statements.first.first
+    @initializer.statements.first.Expression
   end
 
 

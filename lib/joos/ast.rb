@@ -259,6 +259,9 @@ class Joos::AST
   # apply some grammar hacks
   require 'joos/list_collapse'
 
+  # inject type checking code
+  require 'joos/type_checking'
+
   # @!endgroup
 
 end
