@@ -13,13 +13,14 @@ class Joos::Entity::LocalVariable < Joos::Entity
   # @param node  [Joos::AST::LocalVariableDeclaration]
   # @param scope [Joos::Scope]
   def initialize node, scope
-    @node             = node
+    @node            = node
     super node.VariableDeclarator.Identifier
-    @initializer      = node.VariableDeclarator.Expression
-    @type_identifier  = node.Type
-    @unit             = scope.type_environment
-    @scope            = scope
-    @type             = resolve_type @type_identifier
+    @unit            = scope.type_environment
+    @scope           = scope
+    @type_identifier = node.Type
+    @type            = resolve_type @type_identifier
+    @initializer     = node.VariableDeclarator.Expression
+    @initializer.build scope
   end
 
   def to_sym
@@ -46,7 +47,7 @@ class Joos::Entity::LocalVariable < Joos::Entity
 
   def type_check
     unless @type == @initializer.type
-      raise Joos::TypeMismatch.new(self, @initializer, self)
+      raise Joos::TypeChecking::Mismatch.new(self, @initializer, self)
     end
   end
 
