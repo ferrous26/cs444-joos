@@ -18,7 +18,7 @@ describe Joos::Entity::Field do
     expect(field.name.to_s).to be       == 'hello'
     expect(field.modifiers).to be       == [:Final, :Public]
     expect(field.type_identifier).to be == field_ast.Type
-    expect(field.initializer).to be_kind_of Joos::AST::Expression
+    expect(field.initializer).to be_kind_of Joos::AST::Block
     expect(field.unit).to be            == outer
   end
 
