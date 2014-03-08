@@ -29,26 +29,40 @@ In
 
   def type_check
     super
-    @type = check_type
+    @type = resolve_type
+    check_type
+    resolve_name
+  end
+
+  ##
+  # The responsibility of this method is resolve the type of the
+  # receiver AST node and return that type.
+  #
+  # @return [Joos::Token::Void, Joos::BasicType, Joos::ArrayType, Joos::Entity::CompilationUnit]
+  def resolve_type
   end
 
   ##
   # The responsibility of this method is to check that the type rules
-  # for the AST node type are checked and correct. If they are not
+  # for the AST node are checked and correct. If they are not
   # correct then a {Joos::TypeChecking::Mismatch} error can be raised.
-  #
-  # The secondary responsibility of this method is return the resolved
-  # type for the node.
   #
   # @return [Joos::Token::Void, Joos::BasicType, Joos::ArrayType, Joos::Entity::CompilationUnit]
   def check_type
   end
 
+  ##
+  # The responsibility of this method is to resolve any names which may
+  # need to be resolved in the AST node. This is relevant for any rules
+  # which have an `Identifier`.
+  def resolve_name
+  end
+
+
   module Expression
     include Joos::TypeChecking
 
-    def check_type
-      # no rules to check here, type is just whatever the child is
+    def resolve_type
       first.type
     end
   end
@@ -56,7 +70,7 @@ In
   module SubExpression
     include Joos::TypeChecking
 
-    def check_type
+    def resolve_type
       if self.Infixop
         # @todo ZOMG
       else
@@ -68,7 +82,7 @@ In
   module Term
     include Joos::TypeChecking
 
-    def check_type
+    def resolve_type
       if self.Primary
         self.Selectors.type || self.Primary.type
 
@@ -83,6 +97,7 @@ In
 
       else
         raise "someone fucked up the AST with a #{inspect}"
+
       end
     end
   end
@@ -90,7 +105,7 @@ In
   module Joos::Primary
     include Joos::TypeChecking
 
-    def check_type
+    def resolve_type
       if self.OpenParen
         self.Expression.type
 
@@ -105,6 +120,7 @@ In
 
       else
         raise "someone fucked up the AST with a #{inspect}"
+
       end
     end
   end
@@ -112,7 +128,7 @@ In
   module Literal
     include Joos::TypeChecking
 
-    def check_type
+    def resolve_type
       first.type
     end
   end
@@ -120,7 +136,7 @@ In
   module BooleanLiteral
     include Joos::TypeChecking
 
-    def check_type
+    def resolve_type
       first.type
     end
   end
@@ -128,7 +144,7 @@ In
   module Selectors
     include Joos::TypeChecking
 
-    def check_type
+    def resolve_type
       last ? last.type : nil
     end
   end
@@ -136,9 +152,8 @@ In
   module Arguments
     include Joos::TypeChecking
 
-    ##
-    # Determine the arguments portion of a method signature
-    def signature
+    # @note this is the one case where the type is actually a tuple
+    def resolve_type
       self.Expressions.map(&:type)
     end
   end
@@ -146,14 +161,7 @@ In
   module Creator
     include Joos::TypeChecking
 
-    def check_type
-      resolve_type scope.type_environment
-      # @todo find the correct constructor for the class
-    end
-
-    private
-
-    def resolve_type env
+    def resolve_type env = scope.type_environment
       # cheat
       scalar = make(:Type, self.first).resolve env
 
@@ -163,13 +171,25 @@ In
         scalar
       end
     end
+
+    def resolve_name
+      # @todo find the correct constructor for the class
+    end
   end
 
   module ArrayCreator
     include Joos::TypeChecking
 
+    def resolve_type
+      Joos::BasicType.new :Int # must be an int
+    end
+
     def check_type
-      self.Expression.type
+      # @todo do we actually want to force widening on smaller types?
+      expr = self.Expression
+      unless expr.type.basic_type? && expr.type.numeric_type?
+        raise Joos::TypeChecking::Mismatch.new(self, expr, expr)
+      end
     end
   end
 
@@ -191,35 +211,21 @@ Type mismatch. Epected #{BOOL} but got #{expr.type.type_inspect} for
       end
     end
 
-    def check_type
-      if self.If || self.While
-        check_type_guarded_statement
-
-      elsif self.Return
-        check_type_return
-
-      else # must be the empty statement
-        Joos::Token.make(:Void, 'void')
-      end
-    end
-
-    private
-
-    def check_type_return
-      if self.Expression
+    def resolve_type
+      if self.Return && self.Expression
         self.Expression.type
-
       else
         Joos::Token.make(:Void, 'void')
       end
     end
 
-    # @return [Joos::Token::Void]
-    def check_type_guarded_statement
-      unless self.Expression.type.class == Joos::BasicType::Boolean
+    def check_type
+      return unless self.If || self.While
+
+      expected_type = Joos::BasicType.new :Boolean
+      unless expected_type == self.Expression.type
         raise GuardTypeMismatch.new self.Expression
       end
-      Joos::Token.make(:Void, 'void')
     end
   end
 
