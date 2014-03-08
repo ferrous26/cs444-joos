@@ -29,9 +29,9 @@ In
 
   def type_check
     super
+    resolve_name
     @type = resolve_type
     check_type
-    resolve_name
   end
 
   ##
@@ -161,20 +161,37 @@ In
   module Creator
     include Joos::TypeChecking
 
-    def resolve_type env = scope.type_environment
-      # cheat
-      scalar = make(:Type, self.first).resolve env
-
-      if self.ArrayCreator
-        Joos::Array.new scalar, 0
-      else
-        scalar
+    ##
+    # Exception raised when code that tries to allocate things which
+    # cannot be allocated is detected.
+    #
+    # We cannot allocate abstract classes, interfaces, or basic types.
+    class NonObjectAllocation < Joos::CompilerException
+      def initialize unit, source
+        super "Cannot allocate #{unit.inspect}", source
       end
+    end
+
+    def build scope
+      # cheat by wrapping it in a Type, so it can reuse that logic
+      scalar = make(:Type, self.first).resolve scope.type_environment
+
+      @type = if self.ArrayCreator
+                Joos::Array.new scalar, 0
+              else
+                scalar
+              end
     end
 
     def resolve_name
       # @todo find the correct constructor for the class
     end
+
+    # because we already resolved the type during the #build phase
+    def resolve_type
+      type
+    end
+
   end
 
   module ArrayCreator
