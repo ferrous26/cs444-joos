@@ -124,6 +124,10 @@ class Joos::Entity::Interface < Joos::Entity
     check_ambiguous_methods @interface_methods
   end
 
+  def abstract?
+    true
+  end
+
 
   # @!group Assignment 3
 
