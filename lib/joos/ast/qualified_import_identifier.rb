@@ -7,7 +7,6 @@ require 'joos/ast'
 # with a `*`, then we interpret the meaning as an import-on-demand statement,
 # otherwise it is an import-single-type statement.
 class Joos::AST::QualifiedImportIdentifier
-  include ListCollapse
 
   def list_collapse
     super

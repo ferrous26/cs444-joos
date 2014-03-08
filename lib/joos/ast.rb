@@ -179,34 +179,6 @@ class Joos::AST
     @nodes.each(&:type_check)
   end
 
-  ##
-  # Mixin used for AST nodes which represent a list of nodes but have
-  # been modeled as a tree due to the way the parser works.
-  #
-  # @example
-  #
-  #  # before list collapse
-  #  Foo -> [Bar, Foo -> [Bar, Baz]]
-  #
-  #  # after list collapsing
-  #  Foo -> [Bar, Bar, Baz]
-  #
-  module ListCollapse
-    def initialize nodes
-      super
-      list_collapse
-    end
-
-    # @return [nil]
-    def list_collapse
-      if @nodes.last && @nodes.last.to_sym == to_sym
-        @nodes = @nodes.last.nodes.unshift @nodes.first
-      end
-
-      @nodes.each { |node| node.parent = self if node.respond_to? :parent= }
-    end
-  end
-
   # @!group Source Info compatability
 
   ##
@@ -283,6 +255,9 @@ class Joos::AST
   Dir.glob("#{path}/ast/*.rb").each do |klass|
     require klass
   end
+
+  # apply some grammar hacks
+  require 'joos/list_collapse'
 
   # @!endgroup
 

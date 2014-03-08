@@ -5,7 +5,6 @@ require 'joos/ast'
 #
 # The meaning will depend on semantic analysis.
 class Joos::AST::QualifiedIdentifier
-  include ListCollapse
 
   ##
   # Test for equality based on equality of the component identifiers
