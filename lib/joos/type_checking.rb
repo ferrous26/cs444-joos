@@ -192,6 +192,14 @@ In
       type
     end
 
+    def check_type
+      error =
+        type.basic_type? ||
+        (type.reference_type? && type.abstract?) ||
+        (type.array_type? && type.type.reference_type? && type.type.abstract?)
+
+      raise NonObjectAllocation.new(type, self) if error
+    end
   end
 
   module ArrayCreator
