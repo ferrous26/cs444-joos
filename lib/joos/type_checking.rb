@@ -154,7 +154,7 @@ In
 
     # @note this is the one case where the type is actually a tuple
     def resolve_type
-      self.Expressions.map(&:type)
+      self.Expressions.to_a.map(&:type)
     end
   end
 
@@ -193,12 +193,10 @@ In
     end
 
     def check_type
-      error =
-        type.basic_type? ||
-        (type.reference_type? && type.abstract?) ||
-        (type.array_type? && type.type.reference_type? && type.type.abstract?)
-
-      raise NonObjectAllocation.new(type, self) if error
+      target = type.array_type? ? type.type : type
+      if target.reference_type? && target.abstract?
+        raise NonObjectAllocation.new(type, self)
+      end
     end
   end
 
