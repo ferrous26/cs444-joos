@@ -129,6 +129,16 @@ describe Joos::Token do
       token = klass.new('pie', 'pie.java', 23, 32)
       expect(token.value).to be == marker
     end
+
+    it 'gives up its token value from #to_s' do
+      token = Joos::Token.make(:OpenParen, '(')
+      expect(token.to_s) == '('
+    end
+
+    it 'does tabbing in #inspect' do
+      token = Joos::Token.make(:OpenParen, '(')
+      expect(token.inspect 1) == '  ('
+    end
   end
 
 end

@@ -210,11 +210,11 @@ Bad input token: `#{token.value}'
     #
     # @return [String]
     def inspect tab = 0
-      (taby tab) + @token
+      (taby tab) << to_s
     end
 
     def to_s
-      @token.to_s
+      @token.dup.to_s
     end
   end
 

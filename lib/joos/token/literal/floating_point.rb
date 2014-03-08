@@ -4,8 +4,8 @@ require 'joos/token/literal'
 # Token representing a literal floating point value in code.
 #
 class Joos::Token::FloatingPoint < Joos::Token
-  include Joos::Token::Literal
   include Joos::Token::IllegalToken
+  include Joos::Token::Literal
 
   # @return [String]
   DIGITS   = '(\d+)'
