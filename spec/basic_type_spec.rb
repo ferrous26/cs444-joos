@@ -46,4 +46,8 @@ describe Joos::BasicType do
     expect(Joos::BasicType.new :Short).to_not be == Joos::BasicType.new(:Int)
   end
 
+  it 'is not not numeric_type? by default' do
+    expect(Joos::BasicType.new :Boolean).to_not be_numeric_type
+  end
+
 end

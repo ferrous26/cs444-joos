@@ -25,4 +25,8 @@ describe Joos::BasicType::Int do
     expect(s1[1][0]).to be_eql s2[1][0]
   end
 
+  it 'is numeric_type?' do
+    expect(Joos::BasicType.new(:Int)).to be_numeric_type
+  end
+
 end

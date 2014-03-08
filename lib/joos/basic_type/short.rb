@@ -10,4 +10,8 @@ class Joos::BasicType::Short < Joos::BasicType
     'short'.magenta
   end
 
+  def numeric_type?
+    true
+  end
+
 end

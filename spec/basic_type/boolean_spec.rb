@@ -8,4 +8,8 @@ describe Joos::BasicType::Boolean do
     expect(str).to be == 'boolean'.magenta
   end
 
+  it 'is not numeric_type?' do
+    expect(Joos::BasicType.new(:Boolean)).to_not be_numeric_type
+  end
+
 end

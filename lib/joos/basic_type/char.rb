@@ -10,4 +10,8 @@ class Joos::BasicType::Char < Joos::BasicType
     'char'.magenta
   end
 
+  def numeric_type?
+    true
+  end
+
 end

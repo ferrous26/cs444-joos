@@ -10,4 +10,8 @@ class Joos::BasicType::Int < Joos::BasicType
     'int'.magenta
   end
 
+  def numeric_type?
+    true
+  end
+
 end
