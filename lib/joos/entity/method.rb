@@ -157,7 +157,6 @@ class Joos::Entity::Method < Joos::Entity
 
   def type_check
     return unless @body
-    puts "type checking #{inspect}"
     @body.type_check
     unless @body.type == @type
       raise Joos::TypeChecking::Mismatch.new(self, @body, self)
