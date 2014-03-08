@@ -99,20 +99,15 @@ module Joos::Scope
 
   def type_check
     super # recursively resolve types first
-
-    if return_statements.empty?
-      @type = Joos::Token.make(:Void, 'void')
-      return
-    end
-
-    return_statements.each do |lhs|
-      mismatch = return_statements.find { |rhs| lhs.type != rhs.type }
-      raise Joos::TypeMismatch.new(lhs, mismatch, self) if mismatch
-    end
-
-    @type = return_statements.first.type
+    declarations.map(&:type_check)
+    type_check_statements
   end
 
+  ##
+  # All the return statements declared in this scope, including those
+  # statements which may be in nested scopes.
+  #
+  # @return [Array<Joos::AST::Statement>]
   def return_statements
     @returns ||= (statements.select { |statement| statement.Return }
                   .concat(children_scopes.map(&:return_statements)
@@ -137,6 +132,20 @@ module Joos::Scope
         statement.build self
       end
     end
+  end
+
+  def type_check_statements
+    @type = if return_statements.empty?
+              Joos::Token.make(:Void, 'void')
+
+            else
+              return_statements.each do |lhs|
+                miss = return_statements.find { |rhs| lhs.type != rhs.type }
+                raise Joos::TypeMismatch.new(lhs, miss, self) if miss
+              end
+
+              return_statements.first.type
+            end
   end
 
 end

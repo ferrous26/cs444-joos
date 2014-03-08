@@ -27,8 +27,11 @@ class Joos::Entity::LocalVariable < Joos::Entity
   end
 
   def inspect tab = 0
-    "#{taby tab}#{name.cyan}: #{inspect_type @type} =\n" <<
-      "#{initializer.inspect(tab + 1)}"
+    "#{taby tab}#{name.cyan}: #{inspect_type @type}"
+  end
+
+  def long_inspect tab = 0
+    inspect(tab) << " =\n#{initializer.inspect(tab + 1)}"
   end
 
 
@@ -36,6 +39,15 @@ class Joos::Entity::LocalVariable < Joos::Entity
 
   def link_identifiers
     @initializer.link_identifiers
+  end
+
+
+  # @!group Assignment 3
+
+  def type_check
+    unless @type == @initializer.type
+      raise Joos::TypeMismatch.new(self, @initializer, self)
+    end
   end
 
   # @!endgroup
