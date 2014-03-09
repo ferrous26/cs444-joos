@@ -59,6 +59,22 @@ In
   end
 
 
+  module Literal
+    include Joos::TypeChecking
+
+    def resolve_type
+      first.type
+    end
+  end
+
+  module BooleanLiteral
+    include Joos::TypeChecking
+
+    def resolve_type
+      first.type
+    end
+  end
+
   module Expression
     include Joos::TypeChecking
 
@@ -122,22 +138,6 @@ In
         raise "someone fucked up the AST with a #{inspect}"
 
       end
-    end
-  end
-
-  module Literal
-    include Joos::TypeChecking
-
-    def resolve_type
-      first.type
-    end
-  end
-
-  module BooleanLiteral
-    include Joos::TypeChecking
-
-    def resolve_type
-      first.type
     end
   end
 
