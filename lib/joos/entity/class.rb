@@ -356,8 +356,9 @@ class Joos::Entity::Class < Joos::Entity
     end
     @all_methods.compact!
 
-    # @todo Come back and fill in correctly
-    @all_fields = @fields
+    @all_fields = @fields + superclass.all_fields.select { |sfield|
+      @fields.none? { |field| field.name == sfield.name }
+    }
 
     # Populate #interface_methods
     link_interface_methods
