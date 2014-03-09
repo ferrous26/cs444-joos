@@ -219,7 +219,7 @@ class Joos::Entity::Class < Joos::Entity
   # @return [Bool]
   def top_class?
     # Don't do this: == is not defined to be reflexive
-    #fully_qualified_name == BASE_CLASS
+    # fully_qualified_name == BASE_CLASS
     BASE_CLASS == fully_qualified_name
   end
 
@@ -338,8 +338,8 @@ class Joos::Entity::Class < Joos::Entity
   def link_inherits
     # java.lang.Object doesn't inherit anything
     if top_class?
-      @all_methods = @methods
-      @all_fields = @fields
+      @all_methods       = @methods
+      @all_fields        = @fields
       @interface_methods = []
       return
     end
@@ -355,6 +355,9 @@ class Joos::Entity::Class < Joos::Entity
       end
     end
     @all_methods.compact!
+
+    # @todo Come back and fill in correctly
+    @all_fields = @fields
 
     # Populate #interface_methods
     link_interface_methods
