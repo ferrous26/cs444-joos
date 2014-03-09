@@ -67,8 +67,8 @@ module Joos::Scope
   # @param qid [Joos::AST::QualifiedIdentifier]
   # @return [Joos::Entity, nil]
   def find_declaration qid
-    @members.find { |member| member.name == qid } ||
-      parent_scopes.find_declaration(qid)
+    @declarations.find { |member| member.name == qid } ||
+      parent_scope.find_declaration(qid)
   end
 
   # @!endgroup
