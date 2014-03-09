@@ -81,4 +81,19 @@ abstract public class J1_returnGood {
 
   public abstract int abstractMethod();
 
+  public int returnParam(int a) {
+    return a;
+  }
+
+  public boolean returnLocal()  {
+    boolean a = true;
+    return a;
+  }
+
+  public int field = 4;
+
+  public int returnField() {
+    return field;
+  }
+
 }
