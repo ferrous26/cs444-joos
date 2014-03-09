@@ -110,7 +110,8 @@ In
         self.Term.type
 
       elsif self.QualifiedIdentifier
-        # @todo sheeeeeeeot
+        (self.Selectors && self.Selectors.type) ||
+          self.QualifiedIdentifier.type
 
       else
         raise "someone fucked up the AST with a #{inspect}"
