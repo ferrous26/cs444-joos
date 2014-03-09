@@ -319,11 +319,11 @@ class Joos::Entity::Class < Joos::Entity
 
     # Own member checks
     methods.each(&:validate)
-    methods.each(&:check_hierarchy);
+    methods.each(&:check_hierarchy)
     fields.each(&:validate)
-    fields.each(&:check_hierarchy);
+    fields.each(&:check_hierarchy)
     constructors.each(&:validate)
-    constructors.each(&:check_hierarchy);
+    constructors.each(&:check_hierarchy)
 
     check_at_least_one_constructor
     check_constructor_names_match
