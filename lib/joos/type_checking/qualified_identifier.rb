@@ -51,21 +51,17 @@ module Joos::TypeChecking::QualifiedIdentifier
   end
 
   def type_check
-    return if qualified_identifier_is_part_of_type?
-    super
+    super unless qualified_identifier_is_part_of_type?
   end
 
   def resolve_name
     @entity_chain = []
-    puts source.red
-    puts inspect
     entity        = scope.find_declaration first
 
     if entity # LocalVariable | FormalParameter
       # nothing to check here...
 
     else
-      puts scope.type_environment.inspect
       entity = scope.type_environment.all_fields.find { |f| f.name == first }
       if entity # Field
         # need to make sure it was not a static field
