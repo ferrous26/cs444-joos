@@ -33,6 +33,15 @@ class Joos::AST::QualifiedIdentifier
   alias_method :simple, :last
 
   ##
+  # Access components of the qualified identifier
+  #
+  # @param index [Fixnum]
+  # @return [Joos::Token::Identifier]
+  def [] index
+    @nodes[index]
+  end
+
+  ##
   # Return the first `n` components of the qualified identifier.
   #
   # @param n [Fixnum]

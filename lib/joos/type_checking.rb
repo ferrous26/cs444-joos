@@ -58,6 +58,7 @@ In
   def resolve_name
   end
 
+  require 'joos/type_checking/qualified_identifier'
 
   module Literal
     include Joos::TypeChecking
