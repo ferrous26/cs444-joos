@@ -17,7 +17,6 @@ describe Joos::Entity::Interface do
     expect(Joos::Entity::Class.ancestors).to include mod
   end
 
-
   it 'takes a CompilationUnit AST at init' do
     ast = get_ast 'J1_allthefixings_Interface'
     int = Joos::Entity::Interface.new ast, @root
@@ -78,6 +77,12 @@ describe Joos::Entity::Interface do
       int.link_declarations
       int.check_declarations
     }.to raise_error Joos::Entity::Modifiable::MissingVisibilityModifier
+  end
+
+  it 'claims itself as its #type' do
+    ast = get_ast 'J1_allthefixings_Interface'
+    int = Joos::Entity::Interface.new ast, @root
+    expect(int.type).to be int
   end
 
 end

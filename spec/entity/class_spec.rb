@@ -131,4 +131,10 @@ describe Joos::Entity::Class do
     pending "Need some way of loading an entire class hiearchy"
   end
 
+  it 'claims itself as its #type' do
+    ast   = get_ast 'J1_allthefixings'
+    klass = Joos::Entity::Class.new ast, @root
+    expect(klass.type).to be klass
+  end
+
 end

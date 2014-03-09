@@ -440,6 +440,12 @@ class Joos::Entity::Class < Joos::Entity
     fields.each(&:type_check)
   end
 
+  ##
+  # The type of the receiver is itself, because Joos is weird
+  def type
+    self
+  end
+
 
   # @!group Inspect
 
