@@ -51,15 +51,6 @@ class Joos::AST::QualifiedIdentifier
   end
 
   ##
-  # Destructively take the first `n` components of the qualified identifier.
-  #
-  # @param n [Fixnum]
-  # @return [Joos::Token::Identifier]
-  def prefix! n = nil
-    n ? @nodes.shift(n) : @nodes.shift
-  end
-
-  ##
   # Return the last component of the qualified identifier.
   #
   # @return [Joos::Token::Identifier]
