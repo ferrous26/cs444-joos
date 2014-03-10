@@ -152,7 +152,7 @@ In
     end
   end
 
-  module Joos::Primary
+  module Primary
     include Joos::TypeChecking
 
     def resolve_type
@@ -180,6 +180,56 @@ In
 
     def resolve_type
       last ? last.type : nil
+    end
+  end
+
+  # @todo move this to its own file...
+  module Selector
+    include Joos::TypeChecking
+
+    ##
+    # The entity which the identifier refers to
+    attr_reader :entity
+
+    def resolve_name
+      @entity = if self.OpenStaple # array index
+                  previous_entity
+
+                elsif self.Arguments # method call
+                  # @todo check that it even has methods
+                  signature = [self.Identifier, self.Arguments.type]
+                  previous_entity.all_methods.find { |m|
+                    m.signature == signature
+                  }
+
+                else # field access
+                  # @todo check that it even has fields
+                  previous_entity.all_fields.find { |f|
+                    f.name == self.Identifier
+                  }
+
+                end
+    end
+
+    def resolve_type
+      entity.type
+    end
+
+    def check_type
+      # @todo check that entity is an array if we have OpenStaple
+    end
+
+
+    private
+
+    def previous_entity
+      position = parent.to_a.index(self)
+      if position.zero?
+        term = parent.parent
+        (term.QualifiedIdentifier || term.Primary).type
+      else
+        parent.to_a[position - 1].type
+      end
     end
   end
 
