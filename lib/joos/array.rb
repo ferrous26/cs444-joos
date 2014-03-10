@@ -23,6 +23,8 @@ class Joos::Array
   FIELD = Object.new
   FIELD.define_singleton_method(:name) { Joos::Token.make :Identifier, 'length' }
   FIELD.define_singleton_method(:type) { Joos::BasicType.new :Int }
+  FIELD.define_singleton_method(:static?) { false }
+  FIELD.define_singleton_method(:public?) { true  }
 
   def all_fields
     [FIELD]
