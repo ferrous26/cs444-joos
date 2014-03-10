@@ -128,6 +128,10 @@ class Joos::Entity::Interface < Joos::Entity
     true
   end
 
+  def ancestors
+    ancestor_interfaces
+  end
+
 
   # @!group Assignment 3
 

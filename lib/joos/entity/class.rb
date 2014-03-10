@@ -428,6 +428,15 @@ class Joos::Entity::Class < Joos::Entity
     end
   end
 
+  def ancestor_classes base = []
+    return base if top_class?
+    superclass.ancestors(base << self)
+  end
+
+  def ancestors
+    ancestor_classes + ancestor_interfaces
+  end
+
   ##
   # The default base class for any class that does not specify
   #

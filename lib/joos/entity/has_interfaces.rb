@@ -69,7 +69,7 @@ module Joos::Entity::HasInterfaces
 
 
   # @!group Assignment 2
-  
+
   # Populates #superinterfaces with {Interface}s created for each type
   # identifier given in interface_identifers.
   #
@@ -106,6 +106,12 @@ module Joos::Entity::HasInterfaces
         interface.check_interface_circularity chain
       end
     end
+  end
+
+  def ancestor_interfaces base = []
+    i = superinterfaces.reduce(base << self) { |a, e| e.ancestor_interfaces a }
+    i.uniq!
+    i
   end
 
   # Populate #interface_methods, the list of methods a class must conform to.
