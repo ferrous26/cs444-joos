@@ -84,6 +84,18 @@ In
     end
   end
 
+  module Assignment
+    include Joos::TypeChecking
+
+    def resolve_type
+      self.SubExpression.type
+    end
+
+    def check_type
+      # @todo need to check assignability
+    end
+  end
+
   module SubExpression
     include Joos::TypeChecking
 
