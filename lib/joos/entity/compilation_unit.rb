@@ -154,6 +154,10 @@ module Joos::Entity::CompilationUnit
     fully_qualified_name.cyan_join
   end
 
+  def type_environment
+    self
+  end
+
 
   # @!group Assignment 2
 

@@ -26,6 +26,10 @@ class Joos::JoosType
                 end
   end
 
+  def type_environment
+    self.wrap
+  end
+
 
   # @!group Type API
 
