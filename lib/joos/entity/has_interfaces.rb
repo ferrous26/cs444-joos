@@ -113,6 +113,7 @@ module Joos::Entity::HasInterfaces
     i.uniq!
     i
   end
+  alias_method :ancestors, :ancestor_interfaces
 
   # Populate #interface_methods, the list of methods a class must conform to.
   # If the receiver is itself an Interface, this should be equivalent to #all_methods

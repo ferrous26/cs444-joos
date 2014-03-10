@@ -430,7 +430,14 @@ class Joos::Entity::Class < Joos::Entity
 
   def ancestor_classes base = []
     return base if top_class?
-    superclass.ancestors(base << self)
+    superclass.ancestor_classes(base << self)
+  end
+
+  def ancestor_interfaces
+    return [] if top_class?
+    i = superinterfaces.map(&:ancestors).reduce(super) { |a, e| a.concat e }
+    i.uniq!
+    i
   end
 
   def ancestors
