@@ -106,11 +106,24 @@ In
     include Joos::TypeChecking
 
     def resolve_type
-      if self.Infixop
-        # @todo ZOMG
+      # @todo ZOMG, do this properly
+      if self.Infixop && relational_op?
+        Joos::BasicType.new :Boolean
       else
         self.Term.type
       end
+    end
+
+
+    private
+
+    def arithmetic_op?
+      op = self.Infixop
+      op.Plus || op.Minus || op.Multiply || op.Divide || op.Modulo
+    end
+
+    def relational_op?
+      !arithmetic_op?
     end
   end
 
