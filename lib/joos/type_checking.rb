@@ -278,6 +278,8 @@ In
     end
 
     def build scope
+      super
+
       # cheat by wrapping it in a Type, so it can reuse that logic
       scalar = make(:Type, self.first).resolve scope.type_environment
 
