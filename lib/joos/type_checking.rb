@@ -8,11 +8,17 @@ module Joos::TypeChecking
   class Mismatch < Joos::CompilerException
 
     def initialize lhs, rhs, source
+      unless lhs.type && rhs.type
+        raise "type resolution missing for #{lhs.inspect} or #{rhs.inspect}"
+      end
+
       msg = <<-EOS
 Type mismatch. Epected #{lhs.type.type_inspect} but got #{rhs.type.type_inspect} for
+#{rhs.class}
 #{rhs.inspect}
 
 In
+#{lhs.class}
 #{lhs.inspect}
       EOS
       super msg, source
