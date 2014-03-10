@@ -115,8 +115,8 @@ In
       if self.Primary
         self.Selectors.type || self.Primary.type
 
-      elsif self.OpenParen # casting
-        # @todo this could be tricky to handle
+      elsif self.Type # casting
+        self.Type.type
 
       elsif self.Term # the lonesome Term case
         self.Term.type
