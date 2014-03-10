@@ -46,6 +46,7 @@ class Joos::Entity::LocalVariable < Joos::Entity
   # @!group Assignment 3
 
   def type_check
+    # @todo follow assignability rules
     unless @type == @initializer.type
       raise Joos::TypeChecking::Mismatch.new(self, @initializer, self)
     end
