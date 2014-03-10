@@ -141,7 +141,7 @@ module Joos::Scope
             else
               return_statements.each do |lhs|
                 miss = return_statements.find { |rhs| lhs.type != rhs.type }
-                raise Joos::TypeMismatch.new(lhs, miss, self) if miss
+                raise Joos::TypeChecking::Mismatch.new(lhs, miss, self) if miss
               end
 
               return_statements.first.type
