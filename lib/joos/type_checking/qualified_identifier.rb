@@ -131,9 +131,10 @@ module Joos::TypeChecking::QualifiedIdentifier
   def check_visibility_correctness entity, field, name
     return if field.public? # if public, then we can always see it
     # otherwise, it must be protected, so we must test protected visibility
-    unless scope.type_environment.package == entity.type_environment.package
-      raise AccessibilityViolation.new(entity, name)
-    end
+    # which is that "this" must be a subclass or in the same package
+    return if scope.type_environment.package == entity.type_environment.package
+    return if scope.type_environment.ancestors.include? entity.type_environment
+    raise AccessibilityViolation.new(entity, name)
   end
 
 end
