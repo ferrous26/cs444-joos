@@ -1,4 +1,5 @@
 require 'joos/type_checking'
+require 'joos/joos_type'
 
 ##
 # Name resolution and type checking for qualified identifiers
@@ -44,6 +45,12 @@ module Joos::TypeChecking::QualifiedIdentifier
     end
   end
 
+  ##
+  # Chain of entities which have been resolved for the qualified identifier
+  # component with the corresponding index in the receiver
+  #
+  # @return [Array<Joos::Package, Joos::Entity>]
+  attr_reader :entity_chain
 
   def qualified_identifier_is_part_of_type?
     sym = parent.to_sym
@@ -72,6 +79,9 @@ module Joos::TypeChecking::QualifiedIdentifier
         if entity # Package | Class | Interface
           # Java would require we do visibility checks
           # but Joos forces all packages/classes/interfaces to be public
+          if entity.is_a? Joos::Entity::CompilationUnit
+            entity = Joos::JoosType.new entity
+          end
 
         else
           raise NameNotFound.new(first, scope.type_environment)
@@ -81,7 +91,7 @@ module Joos::TypeChecking::QualifiedIdentifier
     end
 
     # resolve the rest of the names
-    resolve_names(entity, 1)
+    resolve_names(entity)
   end
 
   def resolve_type
@@ -89,21 +99,26 @@ module Joos::TypeChecking::QualifiedIdentifier
   end
 
   def check_type
+    # @todo this might be wrong to check here...
+    # if there are no selectors then it is a problem
+    # if there are selectors, and the first selector looks like
+    # a field access, then it might actually be a class name
+    # fuuuuu grammar
     raise PackageValue.new(self) if type.is_a? Joos::Package
   end
 
 
   private
 
-  def resolve_names entity, index
+  def resolve_names entity
     @entity_chain << entity
-    name = @nodes[index]
+    name = @nodes[@entity_chain.length]
     return unless name
 
     found = if entity.is_a? Joos::Package
               entity.find name
 
-            else # it must be a full entity
+            else # it must be a full entity (or pretends to be)
               unless entity.type.respond_to? :all_fields
                 raise HasNoFields.new(entity, name)
               end
@@ -112,26 +127,39 @@ module Joos::TypeChecking::QualifiedIdentifier
             end
 
     raise NameNotFound.new(name, entity) unless found
-    if found.is_a? Joos::Entity::Field
+
+    # if we found a class/interface, then we need to wrap it
+    if found.is_a? Joos::Entity::CompilationUnit
+      found = Joos::JoosType.new found
+    elsif found.is_a? Joos::Entity::Field
       check_static_correctness entity, found, name
       check_visibility_correctness entity, found, name
+    elsif found.is_a? Joos::Package
+      # nop
+    elsif found == Joos::Array::FIELD
+      # nop
+    else
+      raise "internal assumption failure in name resolution #{name}"
     end
 
-    resolve_names(found, index + 1)
+    resolve_names(found)
   end
 
   def check_static_correctness entity, field, name
-    if entity.is_a? Joos::Entity::Class
+    if entity.is_a? Joos::JoosType
       raise NonStaticFieldAccess.new(name) unless field.static?
-    else
+    else # is_a? Field
       raise StaticFieldAccess.new(name) if field.static?
     end
   end
 
+  # Visibility rules:
+  # if public, then we can always see it
+  # if protected and in the same package as "this", then we can see it
+  # if protected and belonging to an ancestor of "this", then we can see it
+  # otherwise, we cannot see it
   def check_visibility_correctness entity, field, name
-    return if field.public? # if public, then we can always see it
-    # otherwise, it must be protected, so we must test protected visibility
-    # which is that "this" must be a subclass or in the same package
+    return if field.public?
     return if scope.type_environment.package == entity.type_environment.package
     return if scope.type_environment.ancestors.include? entity.type_environment
     raise AccessibilityViolation.new(entity, name)

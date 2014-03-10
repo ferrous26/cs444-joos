@@ -79,10 +79,4 @@ describe Joos::Entity::Interface do
     }.to raise_error Joos::Entity::Modifiable::MissingVisibilityModifier
   end
 
-  it 'claims itself as its #type' do
-    ast = get_ast 'J1_allthefixings_Interface'
-    int = Joos::Entity::Interface.new ast, @root
-    expect(int.type).to be int
-  end
-
 end
