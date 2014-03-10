@@ -208,6 +208,45 @@ In
   module Selector
     include Joos::TypeChecking
 
+    class HasNoMethods < Joos::CompilerException
+      def initialize entity, name
+        super "#{entity.inspect} named by #{name.cyan} has no methods", name
+      end
+    end
+
+    class HasNoFields < Joos::CompilerException
+      def initialize entity, name
+        super "#{entity.inspect} named by #{name.cyan} has no fields", name
+      end
+    end
+
+    class StaticFieldAccess < Joos::CompilerException
+      def initialize name
+        super "#{name.cyan} names a static field in non-static context", name
+      end
+    end
+
+    class NonStaticFieldAccess < Joos::CompilerException
+      def initialize name
+        super "#{name.cyan} names a non-static field in static context", name
+      end
+    end
+
+    class AccessibilityViolation < Joos::CompilerException
+      def initialize entity, name
+        msg = "#{entity.inspect} member #{name.cyan} is protected and not " <<
+          "accessible from #{name.source.red}"
+        super msg, name
+      end
+    end
+
+    class NameNotFound < Joos::CompilerException
+      def initialize name, context
+        msg = "Could not find #{name.cyan} in context of #{context.inspect}"
+        super msg, name
+      end
+    end
+
     ##
     # The entity which the identifier refers to
     attr_reader :entity
@@ -216,19 +255,30 @@ In
       @entity = if self.OpenStaple # array index
                   previous_entity
 
-                elsif self.Arguments # method call
-                  # @todo check that it even has methods
-                  signature = [self.Identifier, self.Arguments.type]
-                  previous_entity.all_methods.find { |m|
-                    m.signature == signature
-                  }
+                else
+                  prev = previous_entity
+                  id   = self.Identifier
+                  enty = if self.Arguments # method call
+                           unless prev.respond_to? :all_methods
+                             raise HasNoMethods.new(prev, id)
+                           end
 
-                else # field access
-                  # @todo check that it even has fields
-                  previous_entity.all_fields.find { |f|
-                    f.name == self.Identifier
-                  }
+                           sig = [id, self.Arguments.type]
+                           prev.all_methods.find { |m| m.signature == sig }
 
+                         else # field access
+                           unless prev.respond_to? :all_fields
+                             raise HasNoFields.new(prev, id)
+                           end
+
+                           prev.all_fields.find { |f| f.name == id }
+                         end
+
+                  raise NameNotFound.new(id, prev) unless enty
+                  check_static_correctness prev, enty, id
+                  check_visibility_correctness prev, enty, id
+
+                  enty
                 end
     end
 
@@ -237,7 +287,7 @@ In
     end
 
     def check_type
-      # @todo check that entity is an array if we have OpenStaple
+      # @todo check that previous_entity is an array if we have OpenStaple
     end
 
 
@@ -251,6 +301,27 @@ In
       else
         parent.to_a[position - 1].type
       end
+    end
+
+    # @todo refactor common module for QualifiedIdentifier and Selector
+    def check_static_correctness owner, entity, name
+      if owner.is_a? Joos::JoosType
+        raise NonStaticFieldAccess.new(name) unless entity.static?
+      else
+        raise StaticFieldAccess.new(name) if entity.static?
+      end
+    end
+
+    # Visibility rules:
+    # if public, then we can always see it
+    # if protected and in the same package as "this", then we can see it
+    # if protected and belonging to an ancestor of "this", then we can see it
+    # otherwise, we cannot see it
+    def check_visibility_correctness owner, entity, name
+      return if entity.public?                                           ||
+        scope.type_environment.package == owner.type_environment.package ||
+        scope.type_environment.ancestors.include?(owner.type_environment)
+      raise AccessibilityViolation.new(owner, name)
     end
   end
 
