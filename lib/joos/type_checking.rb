@@ -116,6 +116,7 @@ In
         self.Selectors.type || self.Primary.type
 
       elsif self.Type # casting
+        self.Type.resolve
         self.Type.type
 
       elsif self.Term # the lonesome Term case
