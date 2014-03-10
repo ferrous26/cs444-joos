@@ -135,8 +135,8 @@ class Joos::DFA
     state = start_state || start
 
     tokens = []
-    last_column = 0
-    column = 0
+    last_column = 1
+    column = 1
 
     input.each_char do |character|
       begin

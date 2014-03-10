@@ -64,7 +64,7 @@ describe Joos::DFA do
     expect(tokens[0].lexeme).to be == 'aaa'
     expect(tokens[0].state).to be == :a
 
-    expect(tokens[0].column).to be == 0
+    expect(tokens[0].column).to be == 1
     expect(state).to be_nil
   end
 
@@ -92,11 +92,11 @@ describe Joos::DFA do
 
     expect(tokens[0].lexeme).to be == 'aa'
     expect(tokens[0].state).to be  == :a
-    expect(tokens[0].column).to be == 0
+    expect(tokens[0].column).to be == 1
 
     expect(tokens[1].lexeme).to be == 'bb'
     expect(tokens[1].state).to be  == :b
-    expect(tokens[1].column).to be == 2
+    expect(tokens[1].column).to be == 3
   end
 
 end
