@@ -9,19 +9,6 @@ class Joos::Entity::Field < Joos::Entity
   include Modifiable
   include TypeResolution
 
-  ##
-  # Exception raised when a field is declared to be final but does not
-  # include an expression to be used as the value initializer.
-  #
-  class UninitializedFinalField < Joos::CompilerException
-    # @param field [Joos::Entity::Field]
-    def initialize field
-      super "#{field} MUST include an initializer if it is declared final",
-        field
-    end
-  end
-
-
   # @return [Joos::Scope]
   attr_reader :initializer
   alias_method :body, :initializer
@@ -42,7 +29,7 @@ class Joos::Entity::Field < Joos::Entity
 
   def validate
     super
-    ensure_final_field_is_initialized
+    ensure_modifiers_not_present :Final
   end
 
 
@@ -113,10 +100,6 @@ class Joos::Entity::Field < Joos::Entity
              ast.make(:BlockStatements,
                       ast.make(:BlockStatement,
                                ast.make(:Statement, expr))))
-  end
-
-  def ensure_final_field_is_initialized
-    raise UninitializedFinalField.new(self) if final? && !@initializer
   end
 
 end

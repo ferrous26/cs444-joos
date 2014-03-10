@@ -32,11 +32,11 @@ describe Joos::Entity::Field do
     expect(field.to_sym).to be == :Field
   end
 
-  it 'validates that final fields are initialized' do
+  it 'validates that fields are never final' do
     _, field = extract['Je_1_FinalField_NoInitializer']
     expect {
       field.validate
-    }.to raise_error Joos::Entity::Field::UninitializedFinalField
+    }.to raise_error Joos::Entity::Modifiable::InvalidModifier
   end
 
 end
