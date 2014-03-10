@@ -105,7 +105,7 @@ module Joos::TypeChecking::QualifiedIdentifier
 
             else # it must be a full entity
               unless entity.type.respond_to? :all_fields
-                raise HasNoFields.new(entity, @nodes[index - 1])
+                raise HasNoFields.new(entity, name)
               end
 
               entity.type.all_fields.find { |f| f.name == name }
