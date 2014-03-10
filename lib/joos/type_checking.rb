@@ -348,6 +348,7 @@ Type mismatch. Epected #{BOOL} but got #{expr.type.type_inspect} for
     end
 
     def check_type
+      return # disable until operator precedence is done
       return unless self.If || self.While
 
       expected_type = Joos::BasicType.new :Boolean
