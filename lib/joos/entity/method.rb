@@ -206,7 +206,7 @@ class Joos::Entity::Method < Joos::Entity
   # @!group Inspect
 
   def inspect_params
-    return '()'.blue if parameters.blank?
+    return 'void'.blue if parameters.blank?
     parameters.map(&:type_inspect).join(' -> ')
   end
 

@@ -147,7 +147,7 @@ class Joos::Token
     end
 
     def type_inspect
-      '()'.blue
+      'void'.blue
     end
 
     def == other
