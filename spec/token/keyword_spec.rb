@@ -128,7 +128,7 @@ describe Joos::Token::Keyword do
       end
 
       it 'is not equal in type to a reference type' do
-        arry = Joos::Array.new :a, 900
+        arry = Joos::Array.new :a
         void = Joos::Token.make :Void, 'void'
         expect(void).to_not be == arry
       end

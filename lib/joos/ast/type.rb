@@ -38,7 +38,7 @@ class Joos::AST::Type
              else
                env.get_type sub.QualifiedIdentifier
              end
-      Joos::Array.new wrap, 0
+      Joos::Array.new wrap
 
     else
       raise "Unknown AST::Type type: #{inspect}"

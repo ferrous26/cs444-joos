@@ -77,7 +77,7 @@ describe Joos::Entity::TypeResolution do
     str = MockEntity.inspect_type Joos::BasicType.new(:Boolean)
     expect(str).to be == 'boolean'.magenta
 
-    type = Joos::Array.new Joos::BasicType.new(:Int), 0
+    type = Joos::Array.new Joos::BasicType.new(:Int)
     str  = MockEntity.inspect_type type
     expect(str).to be == ('['.yellow << 'int'.magenta << ']'.yellow)
   end

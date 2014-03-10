@@ -211,7 +211,7 @@ In
       scalar = make(:Type, self.first).resolve scope.type_environment
 
       @type = if self.ArrayCreator
-                Joos::Array.new scalar, 0
+                Joos::Array.new scalar
               else
                 scalar
               end

@@ -7,12 +7,8 @@ class Joos::Array
   # @return [Joos::BasicType, Joos::Entity::CompilationUnit]
   attr_reader :type
 
-  # @return [Fixnum]
-  attr_reader :length
-
-  def initialize type, length
-    @type   = type
-    @length = length
+  def initialize type
+    @type = type
   end
 
   def to_sym
