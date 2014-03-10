@@ -11,7 +11,7 @@ class Joos::AST::Type
 
   # @param env [Joos::Entity::CompilationUnit]
   # @return [Joos::BasicType, Joos::Entity::CompilationUnit, Joos::Array]
-  def resolve env
+  def resolve env = scope.type_environment
     @type ||= internal_resolve env
   end
 
