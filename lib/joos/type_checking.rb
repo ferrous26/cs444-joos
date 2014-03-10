@@ -106,16 +106,36 @@ In
     include Joos::TypeChecking
 
     def resolve_type
-      # @todo ZOMG, do this properly
-      if self.Infixop && relational_op?
+      # we have no operators, so type is just the Terms type
+      return self.Term.type unless self.Infixop
+
+      if boolean_op? || comparison_op?
         Joos::BasicType.new :Boolean
-      else
+
+      elsif self.Term.type == ['java', 'lang', 'String'] && self.Infixop.Plus
         self.Term.type
+
+      elsif arithmetic_op?
+        Joos::BasicType.new :Int
+
+      else # relational_op?
+        Joos::BasicType.new :Boolean
+
       end
     end
 
 
     private
+
+    def boolean_op?
+      op = self.Infixop
+      op.LazyOr || op.LazyAnd || op.EagerOr || op.EagerAnd
+    end
+
+    def comparison_op?
+      op = self.Infixop
+      op.Equality || op.NotEqual
+    end
 
     def arithmetic_op?
       op = self.Infixop
@@ -123,7 +143,8 @@ In
     end
 
     def relational_op?
-      !arithmetic_op?
+      op = self.Infixop
+      op.LessThan || op.GreaterThan || op.LessOrEqual || op.GreaterOrEqual
     end
   end
 
