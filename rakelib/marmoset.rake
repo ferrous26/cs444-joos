@@ -1,7 +1,8 @@
 desc 'Prepare the project for marmoset'
 task :marmoset => 'report:a4' do
   rm_rf 'marmoset.zip'
-  sh 'zip -R marmoset.zip "*"'
+  rm_rf 'doc/'
+  sh 'zip -R marmoset.zip "*" --exclude "ci/**/*" --exclude ".git/**/*"'
 end
 
 task :clobber do
