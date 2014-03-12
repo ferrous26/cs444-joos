@@ -113,6 +113,7 @@ class Joos::Entity::Field < Joos::Entity
   end
 
   def check_no_static_this
+    return unless static?
     @initializer.visit do |_, node|
       raise StaticThis.new(node) if node.to_sym == :This
     end
