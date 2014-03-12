@@ -58,13 +58,13 @@ module Joos::TypeChecking::NameResolution
 
   # Visibility rules:
   # if public, then we can always see it
-  # if protected and in the same package as "this", then we can see it
   # if protected and belonging to an ancestor of "this", then we can see it
+  # if protected and "this" is in the same package as owner then we can see it
   # otherwise, we cannot see it
   def check_visibility_correctness owner, entity, name
-    return if entity.public?                                            ||
-      scope.type_environment.package == owner.type_environment.package  ||
-      scope.type_environment.ancestors.include?(owner.type_environment)
+    return if entity.public?
+    return if scope.type_environment.ancestors.include? entity.type_environment
+    return if scope.type_environment.package == entity.type_environment.package
     raise AccessibilityViolation.new(owner, name)
   end
 
