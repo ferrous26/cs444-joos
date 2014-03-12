@@ -16,6 +16,12 @@ module Joos::Scope
     end
   end
 
+  class ReturnExpression < Joos::CompilerException
+    def initialize statement
+      super 'void methods cannot return an expression', statement
+    end
+  end
+
   ##
   # The unified type of all return statements within the block (or a
   # nested block). No return statements is equivalent to a void return type.
@@ -115,6 +121,7 @@ module Joos::Scope
   def type_check
     super # recursively resolve types first
     declarations.map(&:type_check)
+    check_void_method_has_only_empty_returns
     type_check_statements
   end
 
@@ -161,6 +168,12 @@ module Joos::Scope
 
               return_statements.first.type
             end
+  end
+
+  def check_void_method_has_only_empty_returns
+    return unless return_type.is_a? Joos::Token::Void
+    statement = return_statements.find(&:Expression)
+    raise ReturnExpression.new(statement) if statement
   end
 
 end
