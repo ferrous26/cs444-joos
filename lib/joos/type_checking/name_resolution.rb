@@ -28,7 +28,13 @@ module Joos::TypeChecking::NameResolution
 
   class AccessibilityViolation < Joos::CompilerException
     def initialize entity, name
-      msg = "#{entity.inspect} member #{name.cyan} is protected and not " <<
+      pp_name = if name.respond_to? :cyan
+                  name.cyan
+                else
+                  name.inspect
+                end
+
+      msg = "#{entity.inspect} member #{pp_name} is protected and not " <<
         "accessible from #{name.source.red}"
       super msg, name
     end

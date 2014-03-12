@@ -2,6 +2,7 @@ require 'joos/type_checking'
 require 'joos/type_checking/name_resolution'
 
 module Joos::TypeChecking::Creator
+  include Joos::TypeChecking::NameResolution
   include Joos::TypeChecking
 
   ##
@@ -38,14 +39,11 @@ module Joos::TypeChecking::Creator
 
   def resolve_name
     check_type # we actually have to do this now, in case type is an interface
-    @constructor, signature = if self.ArrayCreator
-                                find_array_constructor
-                              else
-                                find_constructor
-                              end
-
-    raise ConstructorNotFound.new(type, signature, self) unless @constructor
-    # @todo check visibility
+    @constructor = if self.ArrayCreator
+                     find_array_constructor
+                   else
+                     find_constructor
+                   end
   end
 
   # because we already resolved the type during the #build phase
@@ -67,16 +65,26 @@ module Joos::TypeChecking::Creator
   def find_array_constructor
     if type.type.basic_type?
       # this is gonna be kinda fucked up...
-      [:PrimitiveConstructor, nil]
-    else
-      signature = [type.type.name, []]
-      [type.type.constructors.find { |c| c.signature == signature }, signature]
+      return :PrimitiveConstructor, nil
     end
+
+    signature   = [type.type.name, []]
+    constructor = type.type.constructors.find { |c| c.signature == signature }
+
+    raise ConstructorNotFound.new(type, signature, self) unless constructor
+    check_visibility_correctness type.type, constructor, self.QualifiedIdentifier
+
+    constructor
   end
 
   def find_constructor
-    signature = [type.name, self.Arguments.type]
-    [type.constructors.find { |m| m.signature == signature }, signature]
+    signature   = [type.name, self.Arguments.type]
+    constructor = type.constructors.find { |m| m.signature == signature }
+
+    raise ConstructorNotFound.new(type, signature, self) unless constructor
+    check_visibility_correctness type, constructor, self.QualifiedIdentifier
+
+    constructor
   end
 
 end
