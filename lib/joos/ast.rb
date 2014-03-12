@@ -28,9 +28,6 @@ class Joos::AST
   # @return [Joos::AST]
   attr_accessor :parent
 
-  # @return [Joos::BasicType, Joos::Entity::CompilationUnit, Joos::Array, Joos::Token::Void]
-  attr_reader :type
-
   # @param nodes [Array<Joos::AST, Joos::Token, Joos::Entity>]
   def initialize nodes
     @nodes = nodes

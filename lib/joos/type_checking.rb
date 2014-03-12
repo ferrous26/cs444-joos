@@ -33,6 +33,10 @@ In
     target.send :include, mod
   end
 
+
+  # @return [Joos::BasicType, Joos::Entity::CompilationUnit, Joos::Array, Joos::Token::Void]
+  attr_reader :type
+
   def type_check
     super
     resolve_name

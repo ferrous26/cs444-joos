@@ -16,6 +16,13 @@ module Joos::Scope
     end
   end
 
+  ##
+  # The unified type of all return statements within the block (or a
+  # nested block). No return statements is equivalent to a void return type.
+  #
+  # @return [Joos::BasicType, Joos::Entity::CompilationUnit, Joos::Array, Joos::Token::Void]
+  attr_reader :type
+
   # @return [Array<Joos::Entity::LocalVariable>]
   attr_reader :declarations
 
