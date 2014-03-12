@@ -24,6 +24,13 @@ module Joos::TypeChecking::Creator
     end
   end
 
+  class ConstructorProtected < Joos::CompilerException
+    def initialize klass, context
+      msg = "Cannot use protected constructor of #{klass.inspect}"
+      super msg, context
+    end
+  end
+
   def build scope
     super
 
@@ -72,7 +79,7 @@ module Joos::TypeChecking::Creator
     constructor = type.type.constructors.find { |c| c.signature == signature }
 
     raise ConstructorNotFound.new(type, signature, self) unless constructor
-    check_visibility_correctness type.type, constructor, self.QualifiedIdentifier
+    check_constructor_visibility constructor
 
     constructor
   end
@@ -82,9 +89,15 @@ module Joos::TypeChecking::Creator
     constructor = type.constructors.find { |m| m.signature == signature }
 
     raise ConstructorNotFound.new(type, signature, self) unless constructor
-    check_visibility_correctness type, constructor, self.QualifiedIdentifier
+    check_constructor_visibility constructor
 
     constructor
+  end
+
+  def check_constructor_visibility constructor
+    return if constructor.public? ||
+      scope.type_environment.package == constructor.type_environment.package
+    raise ConstructorProtected.new(type, self.QualifiedIdentifier)
   end
 
 end
