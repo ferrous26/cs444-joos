@@ -13,12 +13,12 @@ module Joos::TypeChecking::Selector
     end
   end
 
-  ##
-  # The entity which the identifier refers to
-  attr_reader :entity
-
   def resolve_name
-    @entity = find_entity
+    if self.OpenStaple # array index
+      previous_type
+    else # not array index :)
+      find_named_entity
+    end
   end
 
   def resolve_type
@@ -47,14 +47,6 @@ module Joos::TypeChecking::Selector
                  parent.to_a[position - 1]
 
                end).type
-  end
-
-  def find_entity
-    if self.OpenStaple # array index
-      previous_type
-    else # not array index :)
-      find_named_entity
-    end
   end
 
   def find_named_entity

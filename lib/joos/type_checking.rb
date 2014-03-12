@@ -34,21 +34,37 @@ In
   end
 
 
-  # @return [Joos::BasicType, Joos::Entity::CompilationUnit, Joos::Array, Joos::Token::Void]
+  # @return [Joos::BasicType, Joos::Entity::CompilationUnit, Joos::Array, Joos::Token::Void, Joos::JoosType]
   attr_reader :type
 
   def type_check
     super
-    resolve_name
-    @type = resolve_type
+    @entity = resolve_name
+    @type   = resolve_type
     check_type
+  end
+
+  def entity
+    @entity ||= find(&:entity).entity
+  end
+
+  ##
+  # The responsibility of this method is to resolve any names which may
+  # need to be resolved in the AST node. This is relevant for any rules
+  # which have an `Identifier`.
+  #
+  # Nodes which use this may also want to cache the name they resolve
+  # for later compilation phases.
+  #
+  # @return [Joos::Entity, Joos::Package]
+  def resolve_name
   end
 
   ##
   # The responsibility of this method is resolve the type of the
   # receiver AST node and return that type.
   #
-  # @return [Joos::Token::Void, Joos::BasicType, Joos::ArrayType, Joos::Entity::CompilationUnit]
+  # @return [Joos::Token::Void, Joos::BasicType, Joos::Array, Joos::Entity::CompilationUnit, Joos::JoosType]
   def resolve_type
   end
 
@@ -56,16 +72,7 @@ In
   # The responsibility of this method is to check that the type rules
   # for the AST node are checked and correct. If they are not
   # correct then a {Joos::TypeChecking::Mismatch} error can be raised.
-  #
-  # @return [Joos::Token::Void, Joos::BasicType, Joos::ArrayType, Joos::Entity::CompilationUnit]
   def check_type
-  end
-
-  ##
-  # The responsibility of this method is to resolve any names which may
-  # need to be resolved in the AST node. This is relevant for any rules
-  # which have an `Identifier`.
-  def resolve_name
   end
 
   require 'joos/type_checking/qualified_identifier'
@@ -97,12 +104,21 @@ In
   module Assignment
     include Joos::TypeChecking
 
+    class ArrayLength < Joos::CompilerException
+      def initialize assign
+        super "Cannot assign a new value to length of an array", assign
+      end
+    end
+
     def resolve_type
       self.SubExpression.type
     end
 
     def check_type
-      # @todo need to check assignability
+      if self.SubExpression.entity == Joos::Array::FIELD
+        raise ArrayLength.new(self)
+      end
+      # @todo check assignability
     end
   end
 

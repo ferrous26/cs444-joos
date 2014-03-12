@@ -51,6 +51,8 @@ module Joos::TypeChecking::Creator
                    else
                      find_constructor
                    end
+
+    nil # @todo hmmmm
   end
 
   # because we already resolved the type during the #build phase

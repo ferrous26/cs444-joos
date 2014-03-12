@@ -58,10 +58,12 @@ module Joos::TypeChecking::QualifiedIdentifier
 
     # resolve the rest of the names
     resolve_names entity
+
+    @entity_chain.last
   end
 
   def resolve_type
-    @entity_chain.last.type
+    entity.type
   end
 
   def check_type
