@@ -67,6 +67,14 @@ module Joos::Scope
   end
   alias_method :this, :type_environment
 
+  def top_block
+    if parent_scope.kind_of? Joos::Scope
+      parent_scope.top_block
+    else
+      self
+    end
+  end
+
   ##
   # Given a qualified identifier, this method will search up the hierarchy
   # for a local variable declaration or parameter whose name matches.

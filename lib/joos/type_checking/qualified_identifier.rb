@@ -33,33 +33,24 @@ module Joos::TypeChecking::QualifiedIdentifier
     @entity_chain = []
     entity        = scope.find_declaration first
 
-    if entity # LocalVariable | FormalParameter
-      # nothing to check here...
-
-    else
+    unless entity # LocalVariable | FormalParameter
       entity = scope.type_environment.all_fields.find { |f| f.name == first }
-      if entity # Field
-        # need to make sure it was not a static field
-        raise StaticFieldAccess.new(first) if entity.static?
 
-      else
+      unless entity # Field
         entity = scope.type_environment.find_type(first)
-        if entity # Package | Class | Interface
-          # Java would require we do visibility checks
-          # but Joos forces all packages/classes/interfaces to be public
-          if entity.is_a? Joos::Entity::CompilationUnit
-            entity = Joos::JoosType.new entity
-          end
 
-        else
+        unless entity # Package | Class | Interface
           raise NameNotFound.new(first, scope.type_environment)
 
         end
       end
     end
 
+    # first, make sure we are actually allowed to make the link...
+    entity = check_resolved_type context, entity, first
+
     # resolve the rest of the names
-    resolve_names(entity)
+    resolve_names entity
   end
 
   def resolve_type
@@ -80,7 +71,7 @@ module Joos::TypeChecking::QualifiedIdentifier
 
   def resolve_names entity
     @entity_chain << entity
-    name = @nodes[@entity_chain.length]
+    name = @nodes.at @entity_chain.length
     return unless name
 
     found = if entity.is_a? Joos::Package
@@ -95,22 +86,33 @@ module Joos::TypeChecking::QualifiedIdentifier
             end
 
     raise NameNotFound.new(name, entity) unless found
+    found = check_resolved_type entity, found, name
 
+    resolve_names found
+  end
+
+  def check_resolved_type entity, found, name
     # if we found a class/interface, then we need to wrap it
     if found.is_a? Joos::Entity::CompilationUnit
-      found = Joos::JoosType.new found
+      Joos::JoosType.new found
+
     elsif found.is_a? Joos::Entity::Field
       check_static_correctness entity, found, name
       check_visibility_correctness entity, found, name
-    elsif found.is_a? Joos::Package
-      # nop
-    elsif found == Joos::Array::FIELD
-      # nop
-    else
-      raise "internal assumption failure in name resolution #{name}"
-    end
+      found
 
-    resolve_names(found)
+    else
+      found
+
+    end
+  end
+
+  def context
+    if scope.top_block.parent_scope.static?
+      Joos::JoosType.new scope.type_environment
+    else
+      scope.type_environment
+    end
   end
 
 end
