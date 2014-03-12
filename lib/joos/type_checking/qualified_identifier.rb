@@ -33,13 +33,14 @@ module Joos::TypeChecking::QualifiedIdentifier
     @entity_chain = []
     entity        = scope.find_declaration first
 
-    unless entity # LocalVariable | FormalParameter
+    unless entity # was a LocalVariable | FormalParameter
       entity = scope.type_environment.all_fields.find { |f| f.name == first }
 
-      unless entity # Field
-        entity = scope.type_environment.find_type(first)
+      unless entity # was a Field
+        type_env = scope.type_environment
+        entity = type_env.find_type(first) || type_env.root_package.find(first)
 
-        unless entity # Package | Class | Interface
+        unless entity # was a Package | Class | Interface
           raise NameNotFound.new(first, scope.type_environment)
 
         end
