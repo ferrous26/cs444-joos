@@ -1,43 +1,11 @@
 require 'joos/type_checking'
-require 'joos/joos_type'
+require 'joos/type_checking/name_resolution'
 
 ##
 # Name resolution and type checking for qualified identifiers
 module Joos::TypeChecking::QualifiedIdentifier
+  include Joos::TypeChecking::NameResolution
   include Joos::TypeChecking
-
-  class StaticFieldAccess < Joos::CompilerException
-    def initialize name
-      super "#{name.cyan} names a static field in non-static context", name
-    end
-  end
-
-  class NonStaticFieldAccess < Joos::CompilerException
-    def initialize name
-      super "#{name.cyan} names a non-static field in static context", name
-    end
-  end
-
-  class NameNotFound < Joos::CompilerException
-    def initialize name, context
-      msg = "Could not find #{name.cyan} in context of #{context.inspect}"
-      super msg, name
-    end
-  end
-
-  class HasNoFields < Joos::CompilerException
-    def initialize entity, name
-      super "#{entity.inspect} has no field named #{name.cyan}", name
-    end
-  end
-
-  class AccessibilityViolation < Joos::CompilerException
-    def initialize entity, name
-      msg = "#{entity.inspect} field #{name.cyan} is protected and not " <<
-        "accessible from #{name.source.red}"
-      super msg, name
-    end
-  end
 
   class PackageValue < Joos::CompilerException
     def initialize qid
@@ -143,26 +111,6 @@ module Joos::TypeChecking::QualifiedIdentifier
     end
 
     resolve_names(found)
-  end
-
-  def check_static_correctness entity, field, name
-    if entity.is_a? Joos::JoosType
-      raise NonStaticFieldAccess.new(name) unless field.static?
-    else # is_a? Field
-      raise StaticFieldAccess.new(name) if field.static?
-    end
-  end
-
-  # Visibility rules:
-  # if public, then we can always see it
-  # if protected and in the same package as "this", then we can see it
-  # if protected and belonging to an ancestor of "this", then we can see it
-  # otherwise, we cannot see it
-  def check_visibility_correctness entity, field, name
-    return if field.public?
-    return if scope.type_environment.package == entity.type_environment.package
-    return if scope.type_environment.ancestors.include? entity.type_environment
-    raise AccessibilityViolation.new(entity, name)
   end
 
 end
