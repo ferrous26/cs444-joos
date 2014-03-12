@@ -36,6 +36,7 @@ class Joos::AST
     end
   end
 
+  # @note the `parent` block parameter is obsolete
   # @yield Each node in the tree will be yield in depth first order
   # @yieldparam parent [Joos::AST, Joos::Token, Joos::Entity]
   # @yieldparam node [Joos::AST, Joos::Token, Joos::Entity]

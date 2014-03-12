@@ -65,6 +65,14 @@ class Joos::Entity::Method < Joos::Entity
     end
   end
 
+  ##
+  # Exception raised when a static method tries to use keyword `this`
+  class StaticThis < Joos::CompilerException
+    def initialize this
+      super "Use of keyword `this' in a static method", this
+    end
+  end
+
   # @!endgroup
 
 
@@ -157,6 +165,7 @@ class Joos::Entity::Method < Joos::Entity
 
   def type_check
     return unless @body
+    check_no_static_this
     @body.type_check
     unless @body.type == @type
       raise Joos::TypeChecking::Mismatch.new(self, @body, self)
@@ -200,6 +209,13 @@ class Joos::Entity::Method < Joos::Entity
     end
 
     @body.check_no_overlapping_variables @parameters if @body
+  end
+
+  def check_no_static_this
+    return unless static?
+    @body.visit do |_, node|
+      raise StaticThis.new(node) if node.to_sym == :This
+    end
   end
 
 

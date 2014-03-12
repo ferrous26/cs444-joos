@@ -13,6 +13,16 @@ class Joos::Entity::Field < Joos::Entity
   attr_reader :initializer
   alias_method :body, :initializer
 
+
+  ##
+  # Exception raised when a static field initializer tries to use keyword `this`
+  class StaticThis < Joos::CompilerException
+    def initialize this
+      super "Use of keyword `this' in a static field initializer", this
+    end
+  end
+
+
   # @param node [Joos::AST::ClassBodyDeclaration]
   # @param klass [Joos::Entity::Class]
   def initialize node, klass
@@ -41,7 +51,6 @@ class Joos::Entity::Field < Joos::Entity
   end
 
   def check_hierarchy
-    # @todo check_static_fields_do_not_use_this
   end
 
   ##
@@ -66,6 +75,7 @@ class Joos::Entity::Field < Joos::Entity
 
   def type_check
     return unless @initializer
+    check_no_static_this
     @initializer.type_check
     unless real_initializer.type == @type
       raise Joos::TypeChecking::Mismatch.new(self, real_initializer, self)
@@ -100,6 +110,12 @@ class Joos::Entity::Field < Joos::Entity
              ast.make(:BlockStatements,
                       ast.make(:BlockStatement,
                                ast.make(:Statement, expr))))
+  end
+
+  def check_no_static_this
+    @initializer.visit do |_, node|
+      raise StaticThis.new(node) if node.to_sym == :This
+    end
   end
 
 end
