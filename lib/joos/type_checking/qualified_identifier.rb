@@ -46,7 +46,13 @@ module Joos::TypeChecking::QualifiedIdentifier
       end
     end
 
-    # first, make sure we are actually allowed to make the link...
+    # first, confirm our context and make sure we are actually allowed to make the link...
+    context = if scope.top_block.parent_scope.static?
+                Joos::JoosType.new scope.type_environment
+              else
+                scope.type_environment
+              end
+
     entity = check_resolved_type context, entity, first
 
     # resolve the rest of the names
