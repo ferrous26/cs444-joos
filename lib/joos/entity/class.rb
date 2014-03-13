@@ -401,7 +401,13 @@ class Joos::Entity::Class < Joos::Entity
 
       if implementation
         # Check that the implementation is not protected
-        raise ProtectedImplementation.new(interface_method, implementation) if implementation.protected?
+        # The Java spec requires abstract own methods to have public visibility,
+        # but allows (by ommission) for inherited abstract methods to be protected.
+        unless implementation.abstract? && !methods.include?(implementation)
+          if implementation.protected?
+            raise ProtectedImplementation.new(interface_method, implementation)
+          end
+        end
 
         # Check that implementation has same return type
         unless implementation.return_type == interface_method.return_type
