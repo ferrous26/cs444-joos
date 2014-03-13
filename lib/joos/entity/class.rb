@@ -460,6 +460,9 @@ class Joos::Entity::Class < Joos::Entity
     fields.each(&:type_check)
   end
 
+  def type
+    self
+  end
 
   # @!group Inspect
 

@@ -139,6 +139,9 @@ class Joos::Entity::Interface < Joos::Entity
     methods.each(&:type_check)
   end
 
+  def type
+    self
+  end
 
   # @!group Inspect
 
