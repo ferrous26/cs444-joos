@@ -11,7 +11,7 @@ class Joos::AST::Type
 
   # @param env [Joos::Entity::CompilationUnit]
   # @return [Joos::BasicType, Joos::Entity::CompilationUnit, Joos::Array]
-  def resolve env
+  def resolve env = scope.type_environment
     @type ||= internal_resolve env
   end
 
@@ -19,6 +19,9 @@ class Joos::AST::Type
   # Overriden to produce nicer output once the type has been resolved
   def inspect tab = 0
     @type ? (taby(tab) << @type.type_inspect) : super
+  end
+
+  def entity
   end
 
 
@@ -38,7 +41,7 @@ class Joos::AST::Type
              else
                env.get_type sub.QualifiedIdentifier
              end
-      Joos::Array.new wrap, 0
+      Joos::Array.new wrap
 
     else
       raise "Unknown AST::Type type: #{inspect}"

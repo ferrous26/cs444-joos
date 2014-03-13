@@ -124,11 +124,11 @@ describe Joos::Token::Keyword do
       end
 
       it 'provides a very obvious #type_inspect value' do
-        expect(Joos::Token.make(:Void, 'void').type_inspect).to be == '()'.blue
+        expect(Joos::Token.make(:Void, 'void').type_inspect).to be == 'void'.blue
       end
 
       it 'is not equal in type to a reference type' do
-        arry = Joos::Array.new :a, 900
+        arry = Joos::Array.new :a
         void = Joos::Token.make :Void, 'void'
         expect(void).to_not be == arry
       end

@@ -1,6 +1,7 @@
 require 'joos/entity'
 require 'joos/entity/modifiable'
 require 'joos/entity/type_resolution'
+require 'joos/type_checking'
 
 ##
 # Entity representing the definition of an class/interface field.
@@ -8,31 +9,28 @@ class Joos::Entity::Field < Joos::Entity
   include Modifiable
   include TypeResolution
 
-  ##
-  # Exception raised when a field is declared to be final but does not
-  # include an expression to be used as the value initializer.
-  #
-  class UninitializedFinalField < Joos::CompilerException
-    # @param field [Joos::Entity::Field]
-    def initialize field
-      super "#{field} MUST include an initializer if it is declared final",
-        field
-    end
-  end
-
-
   # @return [Joos::Scope]
   attr_reader :initializer
   alias_method :body, :initializer
 
+
+  ##
+  # Exception raised when a static field initializer tries to use keyword `this`
+  class StaticThis < Joos::CompilerException
+    def initialize this
+      super "Use of keyword `this' in a static field initializer", this
+    end
+  end
+
+
   # @param node [Joos::AST::ClassBodyDeclaration]
   # @param klass [Joos::Entity::Class]
   def initialize node, klass
-    @node             = node
+    @node            = node
     super node.Identifier, node.Modifiers
-    @type_identifier  = node.Type
-    @initializer      = wrap_initializer node.Expression
-    @unit             = klass
+    @type_identifier = node.Type
+    @initializer     = wrap_initializer node.Expression
+    @unit            = klass
   end
 
   def to_sym
@@ -41,7 +39,7 @@ class Joos::Entity::Field < Joos::Entity
 
   def validate
     super
-    ensure_final_field_is_initialized
+    ensure_modifiers_not_present :Final
   end
 
 
@@ -53,7 +51,6 @@ class Joos::Entity::Field < Joos::Entity
   end
 
   def check_hierarchy
-    # @todo check_static_fields_do_not_use_this
   end
 
   ##
@@ -77,11 +74,16 @@ class Joos::Entity::Field < Joos::Entity
   # @!group Assignment 3
 
   def type_check
-    @initializer.type_check if @initializer
-    # @todo
-    # unless self.type == @initializer.type
-    #   TypeCheckError.new self, @initializer
-    # end
+    return unless @initializer
+    check_no_static_this
+    @initializer.type_check
+    unless real_initializer.type == @type
+      raise Joos::TypeChecking::Mismatch.new(self, real_initializer, self)
+    end
+  end
+
+  def real_initializer
+    @initializer.statements.first.Expression
   end
 
 
@@ -90,7 +92,7 @@ class Joos::Entity::Field < Joos::Entity
   def inspect
     base = "#{name.cyan}: #{inspect_type @type}"
     if static?
-      base << ' S'.yellow
+      'static '.yellow << base
     else
       base
     end
@@ -110,8 +112,11 @@ class Joos::Entity::Field < Joos::Entity
                                ast.make(:Statement, expr))))
   end
 
-  def ensure_final_field_is_initialized
-    raise UninitializedFinalField.new(self) if final? && !@initializer
+  def check_no_static_this
+    return unless static?
+    @initializer.visit do |_, node|
+      raise StaticThis.new(node) if node.to_sym == :This
+    end
   end
 
 end

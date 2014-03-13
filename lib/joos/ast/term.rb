@@ -83,8 +83,12 @@ class Joos::AST::Term
                     Joos::Token.make(:Dot, '.') , suffix, self.Arguments)
     self.Selectors.prepend selector
 
-    primary = make(:Primary, Joos::Token.make(:This, 'this'))
-    reparent primary, at_index: 0
+    # if we ate the whole thing...
+    if self.QualifiedIdentifier.to_a.empty?
+      primary = make(:Primary, Joos::Token.make(:This, 'this'))
+      reparent primary, at_index: 0
+    end
+
     @nodes.delete self.Arguments
   end
 

@@ -1,6 +1,7 @@
 require 'joos/entity'
 require 'joos/entity/modifiable'
 require 'joos/entity/type_resolution'
+require 'joos/type_checking'
 
 ##
 # Entity representing the definition of an class/interface method.
@@ -61,6 +62,14 @@ class Joos::Entity::Method < Joos::Entity
       dup_s = dupes.map(&:inspect)
       super "Duplicate parameter names (#{dup_s.first}) and (#{dup_s.second})",
         dupes.first
+    end
+  end
+
+  ##
+  # Exception raised when a static method tries to use keyword `this`
+  class StaticThis < Joos::CompilerException
+    def initialize this
+      super "Use of keyword `this' in a static method", this
     end
   end
 
@@ -155,18 +164,18 @@ class Joos::Entity::Method < Joos::Entity
   # @!group Assignment 3
 
   def type_check
-    if @body
-      @body.type_check
-      # @todo
-      # unless self.type == @body.type
-      #   TypeCheckError.new self, @body
-      # end
+    return unless @body
+    check_no_static_this
+    @body.type_check
+    unless @body.type == @type
+      raise Joos::TypeChecking::Mismatch.new(self, @body, self)
     end
   end
 
 
   # @!group Inspect
 
+  # @todo add relevant modifiers
   def inspect
     "#{name.cyan}: #{inspect_params} -> #{inspect_type @type}"
   end
@@ -202,11 +211,18 @@ class Joos::Entity::Method < Joos::Entity
     @body.check_no_overlapping_variables @parameters if @body
   end
 
+  def check_no_static_this
+    return unless static?
+    @body.visit do |_, node|
+      raise StaticThis.new(node) if node.to_sym == :This
+    end
+  end
+
 
   # @!group Inspect
 
   def inspect_params
-    return '()'.blue if parameters.blank?
+    return 'void'.blue if parameters.blank?
     parameters.map(&:type_inspect).join(' -> ')
   end
 

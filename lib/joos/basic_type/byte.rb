@@ -10,4 +10,8 @@ class Joos::BasicType::Byte < Joos::BasicType
     'byte'.magenta
   end
 
+  def numeric_type?
+    true
+  end
+
 end

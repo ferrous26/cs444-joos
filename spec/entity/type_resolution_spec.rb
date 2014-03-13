@@ -72,12 +72,12 @@ describe Joos::Entity::TypeResolution do
   it 'can inspect a type' do
     void = Joos::Token::Void.new('void', 'internal', 0, 0)
     str  = MockEntity.inspect_type void
-    expect(str).to be == '()'.blue
+    expect(str).to be == 'void'.blue
 
     str = MockEntity.inspect_type Joos::BasicType.new(:Boolean)
     expect(str).to be == 'boolean'.magenta
 
-    type = Joos::Array.new Joos::BasicType.new(:Int), 0
+    type = Joos::Array.new Joos::BasicType.new(:Int)
     str  = MockEntity.inspect_type type
     expect(str).to be == ('['.yellow << 'int'.magenta << ']'.yellow)
   end

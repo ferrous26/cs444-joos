@@ -20,6 +20,11 @@ describe Joos::Token::Null do
     expect(token.to_sym).to be == :NullLiteral
   end
 
+  it 'has colourized inspect output' do
+    token = Joos::Token::Null.new('', '', 3, 4)
+    expect(token.inspect).to match Regexp.new(Regexp.escape('null'.magenta))
+  end
+
   context 'type checking' do
     it 'claims to be a null reference' do
       type = Joos::Token::Null.new('null', 'hi', 0, 0).type

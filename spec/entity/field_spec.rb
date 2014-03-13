@@ -15,14 +15,11 @@ describe Joos::Entity::Field do
 
   it 'should accept a node at init and parse it correctly' do
     field_ast, field = extract['J1_fullyLoadedField']
-    expect(field.name.to_s).to be    == 'hello'
-    expect(field.modifiers).to be    == [:Final, :Public]
-    expect(field.type).to be         == field_ast.Type
+    expect(field.name.to_s).to be       == 'hello'
+    expect(field.modifiers).to be       == [:Final, :Public]
+    expect(field.type_identifier).to be == field_ast.Type
     expect(field.initializer).to be_kind_of Joos::AST::Block
-
-    init = field.initializer.first.first.first.first
-    expect(init).to be field_ast.Expression
-    expect(field.unit).to be       == outer
+    expect(field.unit).to be            == outer
   end
 
   it 'sets modifiers to be empty if none are given' do
@@ -35,11 +32,11 @@ describe Joos::Entity::Field do
     expect(field.to_sym).to be == :Field
   end
 
-  it 'validates that final fields are initialized' do
+  it 'validates that fields are never final' do
     _, field = extract['Je_1_FinalField_NoInitializer']
     expect {
       field.validate
-    }.to raise_error Joos::Entity::Field::UninitializedFinalField
+    }.to raise_error Joos::Entity::Modifiable::InvalidModifier
   end
 
 end

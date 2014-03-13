@@ -86,6 +86,11 @@ describe Joos::Token::String do
     expect(strs.uniq).to be == [strs.first]
   end
 
+  it '#inspect wraps the string in quotes' do
+    str = Joos::Token.make(:String, '"hi there"')
+    expect(str.inspect).to match Regexp.new(Regexp.escape('"'.yellow))
+  end
+
   context 'type resolution' do
     before :each do
       @root = Joos::Package.make_root

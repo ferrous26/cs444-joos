@@ -15,14 +15,14 @@ describe Joos::Entity::Method do
   it 'takes a node at init and parses it correctly' do
     ast, method = extract['J1_fullyLoadedMethod']
 
-    expect(method.name.to_s).to be    == 'hello'
-    expect(method.modifiers).to be    == [:Final, :Public]
-    expect(method.type).to be         == (ast.Void || ast.Type)
-    expect(method.body).to be         == (ast
-                                          .MethodDeclaratorRest
-                                          .MethodBody
-                                          .Block)
-    expect(method.unit).to be         == outer
+    expect(method.name.to_s).to be       == 'hello'
+    expect(method.modifiers).to be       == [:Final, :Public]
+    expect(method.type_identifier).to be == (ast.Void || ast.Type)
+    expect(method.body).to be            == (ast
+                                             .MethodDeclaratorRest
+                                             .MethodBody
+                                             .Block)
+    expect(method.unit).to be            == outer
 
     expect(method.parameters.size).to be == 1
     expect(method.parameters.first).to be_kind_of Joos::Entity::FormalParameter

@@ -21,7 +21,7 @@ class Joos::NullReference
   end
 
   def == other
-    other.reference_type?
+    other.respond_to?(:reference_type?) && other.reference_type?
   end
 
 

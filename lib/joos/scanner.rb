@@ -41,7 +41,7 @@ class Joos::Scanner
   # @param lines [Enumerable]
   # @param path [String] Path of the file we may or may not be reading from
   # @param start_line_number [Fixnum]
-  def self.scan_lines lines, path='', start_line_number = 0
+  def self.scan_lines lines, path='', start_line_number = 1
     dfa = Joos::ScannerDFA.new
     state = nil
     tokens = []

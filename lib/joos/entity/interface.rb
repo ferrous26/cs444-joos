@@ -124,6 +124,14 @@ class Joos::Entity::Interface < Joos::Entity
     check_ambiguous_methods @interface_methods
   end
 
+  def abstract?
+    true
+  end
+
+  def ancestors
+    ancestor_interfaces
+  end
+
 
   # @!group Assignment 3
 
@@ -131,6 +139,9 @@ class Joos::Entity::Interface < Joos::Entity
     methods.each(&:type_check)
   end
 
+  def type
+    self
+  end
 
   # @!group Inspect
 

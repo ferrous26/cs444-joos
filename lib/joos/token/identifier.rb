@@ -58,15 +58,12 @@ class Joos::Token::Identifier < Joos::Token
       to_s == other.to_s
     end
   end
+  alias_method :eql?, :==
 
   def hash
     # usual #hash and #eql? for the annoyingly large amount of things in Ruby
     # that depend on them
     to_s.hash
-  end
-
-  def eql? other
-    to_s == other.to_s
   end
 
   ##

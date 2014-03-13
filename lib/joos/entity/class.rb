@@ -219,7 +219,7 @@ class Joos::Entity::Class < Joos::Entity
   # @return [Bool]
   def top_class?
     # Don't do this: == is not defined to be reflexive
-    #fully_qualified_name == BASE_CLASS
+    # fully_qualified_name == BASE_CLASS
     BASE_CLASS == fully_qualified_name
   end
 
@@ -319,11 +319,11 @@ class Joos::Entity::Class < Joos::Entity
 
     # Own member checks
     methods.each(&:validate)
-    methods.each(&:check_hierarchy);
+    methods.each(&:check_hierarchy)
     fields.each(&:validate)
-    fields.each(&:check_hierarchy);
+    fields.each(&:check_hierarchy)
     constructors.each(&:validate)
-    constructors.each(&:check_hierarchy);
+    constructors.each(&:check_hierarchy)
 
     check_at_least_one_constructor
     check_constructor_names_match
@@ -338,8 +338,8 @@ class Joos::Entity::Class < Joos::Entity
   def link_inherits
     # java.lang.Object doesn't inherit anything
     if top_class?
-      @all_methods = @methods
-      @all_fields = @fields
+      @all_methods       = @methods
+      @all_fields        = @fields
       @interface_methods = []
       return
     end
@@ -355,6 +355,10 @@ class Joos::Entity::Class < Joos::Entity
       end
     end
     @all_methods.compact!
+
+    @all_fields = @fields + superclass.all_fields.select { |sfield|
+      @fields.none? { |field| field.name == sfield.name }
+    }
 
     # Populate #interface_methods
     link_interface_methods
@@ -430,6 +434,22 @@ class Joos::Entity::Class < Joos::Entity
     end
   end
 
+  def ancestor_classes base = []
+    return base if top_class?
+    superclass.ancestor_classes(base << self)
+  end
+
+  def ancestor_interfaces
+    return [] if top_class?
+    i = superinterfaces.map(&:ancestors).reduce(super) { |a, e| a.concat e }
+    i.uniq!
+    i
+  end
+
+  def ancestors
+    ancestor_classes + ancestor_interfaces
+  end
+
   ##
   # The default base class for any class that does not specify
   #
@@ -446,6 +466,9 @@ class Joos::Entity::Class < Joos::Entity
     fields.each(&:type_check)
   end
 
+  def type
+    self
+  end
 
   # @!group Inspect
 

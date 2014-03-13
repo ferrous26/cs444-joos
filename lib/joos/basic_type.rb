@@ -64,6 +64,7 @@ class Joos::BasicType
     self.class.hash
   end
 
+
   # @!group Type API
 
   def basic_type?
@@ -80,6 +81,10 @@ class Joos::BasicType
 
   def type_inspect
     raise NotImplementedError
+  end
+
+  def numeric_type?
+    false
   end
 
   # @!endgroup

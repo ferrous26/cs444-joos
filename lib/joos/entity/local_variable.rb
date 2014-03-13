@@ -13,13 +13,14 @@ class Joos::Entity::LocalVariable < Joos::Entity
   # @param node  [Joos::AST::LocalVariableDeclaration]
   # @param scope [Joos::Scope]
   def initialize node, scope
-    @node             = node
+    @node            = node
     super node.VariableDeclarator.Identifier
-    @initializer      = node.VariableDeclarator.Expression
-    @type_identifier  = node.Type
-    @unit             = scope.type_environment
-    @scope            = scope
-    @type             = resolve_type @type_identifier
+    @unit            = scope.type_environment
+    @scope           = scope
+    @type_identifier = node.Type
+    @type            = resolve_type @type_identifier
+    @initializer     = node.VariableDeclarator.Expression
+    @initializer.build scope
   end
 
   def to_sym
@@ -27,8 +28,11 @@ class Joos::Entity::LocalVariable < Joos::Entity
   end
 
   def inspect tab = 0
-    "#{taby tab}#{name.cyan}: #{inspect_type @type} =\n" <<
-      "#{initializer.inspect(tab + 1)}"
+    "#{taby tab}#{name.cyan}: #{inspect_type @type}"
+  end
+
+  def long_inspect tab = 0
+    inspect(tab) << " =\n#{initializer.inspect(tab + 1)}"
   end
 
 
@@ -36,6 +40,16 @@ class Joos::Entity::LocalVariable < Joos::Entity
 
   def link_identifiers
     @initializer.link_identifiers
+  end
+
+
+  # @!group Assignment 3
+
+  def type_check
+    # @todo follow assignability rules
+    unless @type == @initializer.type
+      raise Joos::TypeChecking::Mismatch.new(self, @initializer, self)
+    end
   end
 
   # @!endgroup

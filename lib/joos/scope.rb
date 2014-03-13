@@ -16,6 +16,18 @@ module Joos::Scope
     end
   end
 
+  class ReturnExpression < Joos::CompilerException
+    def initialize statement
+      super 'void methods cannot return an expression', statement
+    end
+  end
+
+  ##
+  # The unified type of all return statements within the block (or a
+  # nested block). No return statements is equivalent to a void return type.
+  #
+  # @return [Joos::BasicType, Joos::Entity::CompilationUnit, Joos::Array, Joos::Token::Void]
+  attr_reader :type
 
   # @return [Array<Joos::Entity::LocalVariable>]
   attr_reader :declarations
@@ -61,6 +73,14 @@ module Joos::Scope
   end
   alias_method :this, :type_environment
 
+  def top_block
+    if parent_scope.kind_of? Joos::Scope
+      parent_scope.top_block
+    else
+      self
+    end
+  end
+
   ##
   # Given a qualified identifier, this method will search up the hierarchy
   # for a local variable declaration or parameter whose name matches.
@@ -68,8 +88,8 @@ module Joos::Scope
   # @param qid [Joos::AST::QualifiedIdentifier]
   # @return [Joos::Entity, nil]
   def find_declaration qid
-    @members.find { |member| member.name == qid } ||
-      parent_scopes.find_declaration(qid)
+    @declarations.find { |member| member.name == qid } ||
+      parent_scope.find_declaration(qid)
   end
 
   # @!endgroup
@@ -98,6 +118,24 @@ module Joos::Scope
     self
   end
 
+  def type_check
+    super # recursively resolve types first
+    declarations.map(&:type_check)
+    check_void_method_has_only_empty_returns
+    type_check_statements
+  end
+
+  ##
+  # All the return statements declared in this scope, including those
+  # statements which may be in nested scopes.
+  #
+  # @return [Array<Joos::AST::Statement>]
+  def return_statements
+    @returns ||= (statements.select { |statement| statement.Return }
+                  .concat(children_scopes.map(&:return_statements)
+                          .reduce([]) { |a, e| a.concat e }))
+  end
+
 
   private
 
@@ -116,6 +154,26 @@ module Joos::Scope
         statement.build self
       end
     end
+  end
+
+  def type_check_statements
+    @type = if return_statements.empty?
+              Joos::Token.make(:Void, 'void')
+
+            else
+              return_statements.each do |lhs|
+                miss = return_statements.find { |rhs| lhs.type != rhs.type }
+                raise Joos::TypeChecking::Mismatch.new(lhs, miss, self) if miss
+              end
+
+              return_statements.first.type
+            end
+  end
+
+  def check_void_method_has_only_empty_returns
+    return unless return_type.is_a? Joos::Token::Void
+    statement = return_statements.find(&:Expression)
+    raise ReturnExpression.new(statement) if statement
   end
 
 end

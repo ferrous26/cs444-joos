@@ -21,14 +21,14 @@ module Joos::Token::StringHelpers
   #
   # @return [Hash{ String => Fixnum }]
   STANDARD_ESCAPES = {
-                      'b' => "\b".ord, # backspace
-                      't' => "\t".ord, # tab
-                      'n' => "\n".ord, # line feed
-                      'f' => "\f".ord, # form feed
-                      'r' => "\r".ord, # carriage return
-                      '"' => '"'.ord,  # double quote
-                      "'" => "'".ord,  # single quote
-                      '\\' => '\\'.ord # backslash
+                      'b'  => "\b".ord, # backspace
+                      't'  => "\t".ord, # tab
+                      'n'  => "\n".ord, # line feed
+                      'f'  => "\f".ord, # form feed
+                      'r'  => "\r".ord, # carriage return
+                      '"'  => '"' .ord, # double quote
+                      "'"  => "'" .ord, # single quote
+                      '\\' => '\\'.ord  # backslash
                      }
 
   ##

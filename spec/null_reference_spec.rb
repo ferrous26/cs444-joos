@@ -28,7 +28,7 @@ describe Joos::NullReference do
   context '#==' do
     # @todo need to test the reverse of this (i.e. reference == null)
     it 'is true for all reference types' do
-      array = Joos::Array.new Joos::BasicType::Boolean, 1
+      array = Joos::Array.new Joos::BasicType::Boolean
       null  = Joos::NullReference.new :a
       expect(null).to be == array
     end

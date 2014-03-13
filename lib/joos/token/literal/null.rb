@@ -5,8 +5,8 @@ require 'joos/null_reference'
 # Token representing a literal `true` value in code.
 #
 class Joos::Token::Null < Joos::Token
-  include Joos::Token::Literal
   include Joos::Token::ConstantToken
+  include Joos::Token::Literal
 
   # @return [String]
   def self.token

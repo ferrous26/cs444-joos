@@ -7,12 +7,8 @@ class Joos::Array
   # @return [Joos::BasicType, Joos::Entity::CompilationUnit]
   attr_reader :type
 
-  # @return [Fixnum]
-  attr_reader :length
-
-  def initialize type, length
-    @type   = type
-    @length = length
+  def initialize type
+    @type = type
   end
 
   def to_sym
@@ -21,6 +17,17 @@ class Joos::Array
 
   def == other
     self.type == other.type if other.respond_to? :type
+  end
+
+  # @todo MAKE THIS WAY LESS OF A HACK
+  FIELD = Object.new
+  FIELD.define_singleton_method(:name) { Joos::Token.make :Identifier, 'length' }
+  FIELD.define_singleton_method(:type) { Joos::BasicType.new :Int }
+  FIELD.define_singleton_method(:static?) { false }
+  FIELD.define_singleton_method(:public?) { true  }
+
+  def all_fields
+    [FIELD]
   end
 
 

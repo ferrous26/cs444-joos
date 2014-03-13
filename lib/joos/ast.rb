@@ -32,10 +32,11 @@ class Joos::AST
   def initialize nodes
     @nodes = nodes
     nodes.each do |node|
-      node.parent = self if node.kind_of? Joos::AST
+      node.parent = self if node.respond_to? :parent=
     end
   end
 
+  # @note the `parent` block parameter is obsolete
   # @yield Each node in the tree will be yield in depth first order
   # @yieldparam parent [Joos::AST, Joos::Token, Joos::Entity]
   # @yieldparam node [Joos::AST, Joos::Token, Joos::Entity]
@@ -176,25 +177,6 @@ class Joos::AST
     @nodes.each(&:type_check)
   end
 
-  ##
-  # Mixin used for AST nodes which represent a list of nodes but have
-  # been modeled as a tree due to the way the parser works.
-  module ListCollapse
-    def initialize nodes
-      super
-      list_collapse
-    end
-
-    # @return [nil]
-    def list_collapse
-      if @nodes.last && @nodes.last.to_sym == to_sym
-        @nodes = @nodes.last.nodes.unshift @nodes.first
-      end
-
-      @nodes.each { |node| node.parent = self if node.kind_of? Joos::AST }
-    end
-  end
-
   # @!group Source Info compatability
 
   ##
@@ -271,6 +253,12 @@ class Joos::AST
   Dir.glob("#{path}/ast/*.rb").each do |klass|
     require klass
   end
+
+  # apply some grammar hacks
+  require 'joos/list_collapse'
+
+  # inject type checking code
+  require 'joos/type_checking'
 
   # @!endgroup
 

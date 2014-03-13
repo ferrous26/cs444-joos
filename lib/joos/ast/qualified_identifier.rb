@@ -5,7 +5,6 @@ require 'joos/ast'
 #
 # The meaning will depend on semantic analysis.
 class Joos::AST::QualifiedIdentifier
-  include ListCollapse
 
   ##
   # Test for equality based on equality of the component identifiers
@@ -34,21 +33,21 @@ class Joos::AST::QualifiedIdentifier
   alias_method :simple, :last
 
   ##
+  # Access components of the qualified identifier
+  #
+  # @param index [Fixnum]
+  # @return [Joos::Token::Identifier]
+  def [] index
+    @nodes[index]
+  end
+
+  ##
   # Return the first `n` components of the qualified identifier.
   #
   # @param n [Fixnum]
   # @return [Joos::Token::Identifier]
   def prefix n = nil
     n ? take(n) : first
-  end
-
-  ##
-  # Destructively take the first `n` components of the qualified identifier.
-  #
-  # @param n [Fixnum]
-  # @return [Joos::Token::Identifier]
-  def prefix! n = nil
-    n ? @nodes.shift(n) : @nodes.shift
   end
 
   ##

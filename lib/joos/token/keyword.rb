@@ -119,6 +119,17 @@ class Joos::Token
   # actually return anything.
   class Void
 
+    def eql? other
+      if other.respond_to? :to_sym
+        to_sym == other.to_sym
+      end
+    end
+
+    def hash
+      self.class.hash
+    end
+
+
     # @!group Type API
 
     alias_method :type, :to_sym
@@ -136,11 +147,19 @@ class Joos::Token
     end
 
     def type_inspect
-      '()'.blue
+      'void'.blue
     end
 
     def == other
       self.class == other.class
+    end
+  end
+
+  ##
+  # Token representing a pseudo-literal reference to the receiver.
+  class This
+    def entity
+      self
     end
   end
 

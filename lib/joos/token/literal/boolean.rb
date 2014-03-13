@@ -6,8 +6,8 @@ class Joos::Token
   # Common code for both types of boolean values.
   #
   module Bool
-    include Joos::Token::Literal
     include Joos::Token::ConstantToken
+    include Joos::Token::Literal
 
     def type
       Joos::BasicType::Boolean.new self

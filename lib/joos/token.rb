@@ -117,7 +117,7 @@ class Joos::Token
   # An exception should be raised if the node is not valid.
   #
   # @param parent [Joos::AST]
-  def validate parent
+  def validate _
     # nop
   end
 
@@ -140,6 +140,9 @@ class Joos::Token
 
   def type_check
     # nop
+  end
+
+  def entity
   end
 
   # @!endgroup
@@ -210,11 +213,11 @@ Bad input token: `#{token.value}'
     #
     # @return [String]
     def inspect tab = 0
-      (taby tab) + @token
+      (taby tab) << to_s
     end
 
     def to_s
-      @token.to_s
+      @token.dup.to_s
     end
   end
 
