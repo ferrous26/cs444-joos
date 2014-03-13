@@ -56,15 +56,35 @@ module Joos::TypeChecking::NameResolution
     end
   end
 
-  # Visibility rules:
-  # if public, then we can always see it
-  # if protected and belonging to an ancestor of "this", then we can see it
-  # if protected and "this" is in the same package as owner then we can see it
-  # otherwise, we cannot see it
   def check_visibility_correctness owner, entity, name
+    # public is always visible
     return if entity.public?
-    return if scope.type_environment.ancestors.include? entity.type_environment
+
+    # always visible if it was declared in the same package as "this"
     return if scope.type_environment.package == entity.type_environment.package
+
+    # then it must at least be declared in a superclass of "this"
+    unless scope.type_environment.ancestors.include? entity.type_environment
+      raise AccessibilityViolation.new(owner, name)
+    end
+
+    # @todo maybe move this up?
+    # we only need to check if we are accessing a field or method
+    unless entity.is_a?(Joos::Entity::Field) ||
+        entity.kind_of?(Joos::Entity::Method)
+      raise 'tried to check visibility of something other than field/method'
+    end
+
+    # we can see it if "this" is a superclass of the caller...
+    return if owner.type.type_environment.ancestors.include? scope.type_environment
+
+    # if the access is done by qualified name (statically)
+    if owner.is_a? Joos::JoosType
+      # and the owner is a superclass of "this"
+      return if scope.type_environment.ancestors.include? owner.type.type_environment
+    end
+
+    # otherwise, bail...
     raise AccessibilityViolation.new(owner, name)
   end
 
