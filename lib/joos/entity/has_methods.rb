@@ -80,7 +80,4 @@ module Joos::Entity::HasMethods
     methods.each(&:link_identifiers)
   end
 
-private
-  
-
 end
