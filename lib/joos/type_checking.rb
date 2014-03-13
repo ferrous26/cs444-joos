@@ -290,4 +290,49 @@ Type mismatch. Epected #{BOOL} but got #{expr.type.type_inspect} for
     end
   end
 
+  module Block
+    include Joos::TypeChecking
+
+    class ReturnExpression < Joos::CompilerException
+      def initialize statement
+        super 'void methods cannot return an expression', statement
+      end
+    end
+
+    def resolve_type
+      unify_return_type
+    end
+
+    def check_type
+      declarations.map(&:type_check)
+      check_void_method_has_only_empty_returns
+    end
+
+
+    private
+
+    def unify_return_type
+      if return_statements.empty?
+        Joos::Token.make(:Void, 'void')
+
+      else
+        return_statements.each do |lhs|
+          mismatch = return_statements.find { |rhs| lhs.type != rhs.type }
+          if mismatch
+            raise Joos::TypeChecking::Mismatch.new(lhs, mismatch, self)
+          end
+        end
+
+        return_statements.first.type
+      end
+    end
+
+    def check_void_method_has_only_empty_returns
+      return unless return_type.is_a? Joos::Token::Void
+      statement = return_statements.find(&:Expression)
+      raise ReturnExpression.new(statement) if statement
+    end
+
+  end
+
 end
