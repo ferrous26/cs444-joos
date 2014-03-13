@@ -21,6 +21,9 @@ class Joos::AST::Type
     @type ? (taby(tab) << @type.type_inspect) : super
   end
 
+  def entity
+  end
+
 
   private
 
