@@ -53,19 +53,19 @@ class Joos::AST::SubExpression
     reparent subexpr, at_index: 2
   end
 
-# Since the operations are being read from right to left, we need to change the
-# tree when the left operation has precedence at least as high as the right
-# operation.
-#     op1                        op2
-#    /   \                      /   \
-#  s1     op2        =>      op1     s3
-#         / \                / \
-#       s2   s3            s1   s2
-# Then recursively call fix_precedence to make sure op1 has higher precedence
-# than the infix op in s2
-#
-# Note: self.nodes[2] is called due to the fact that there may be (and in most
-# cases, will be) more than one "SubExpression" as a node. We want the second.
+  # Since the operations are being read from right to left, we need to change the
+  # tree when the left operation has precedence at least as high as the right
+  # operation.
+  #     op1                        op2
+  #    /   \                      /   \
+  #  s1     op2        =>      op1     s3
+  #         / \                / \
+  #       s2   s3            s1   s2
+  # Then recursively call fix_precedence to make sure op1 has higher precedence
+  # than the infix op in s2
+  #
+  # Note: self.nodes[2] is called due to the fact that there may be (and in most
+  # cases, will be) more than one "SubExpression" as a node. We want the second.
   def fix_precedence
     left_operation = self.Infixop && self.Infixop.nodes.first.to_sym
     right_operation = self.nodes[2].Infixop &&
