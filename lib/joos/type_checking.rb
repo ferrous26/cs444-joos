@@ -43,18 +43,28 @@ In
     lhs = left.type
     rhs = right.type
 
-    # do the cheapest, safest checks first...
+    if $DEBUG
+      $stderr.puts "checking #{lhs.type_inspect} == #{rhs.type_inspect}"
+    end
 
-    # exact same type is always allowed...
-    return true if lhs == rhs
+    # do the cheapest, safest checks first...
 
     # can always assign null to a reference type
     return true if lhs.reference_type? && rhs.is_a?(Joos::NullReference)
 
     # array assignment depends on the the inner types...recursion!
     if lhs.array_type? && rhs.array_type?
+      # @todo if this check fails we will crash, we should fix that...
       return assignable? lhs, rhs
     end
+
+    # we cannot assign non-arrays into an array reference
+    if lhs.array_type?
+      raise Mismatch.new(left, right, left)
+    end
+
+    # exact same type is always allowed...only after array checks
+    return true if lhs == rhs
 
     if (lhs.reference_type? && rhs.basic_type?) ||
        (lhs.basic_type? && rhs.reference_type?) ||
