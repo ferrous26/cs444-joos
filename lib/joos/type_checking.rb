@@ -33,6 +33,24 @@ In
     target.send :include, mod
   end
 
+  ##
+  # Check if something that is type of `right` is allowed to be assigned
+  # to something of that is type of `left`.
+  #
+  # @param left  [#type] should return  respond to the Type API
+  # @param right [#type] should respond to the Type API
+  def self.assignable? left, right
+    lhs = left.type
+    rhs = right.type
+
+    # check various things that are allowed
+    return if lhs == rhs # exact same type is always allowed...
+    return if lhs.reference_type? && rhs.is_a?(Joos::NullReference)
+
+    # anything that is not allowed is disallowed...
+    raise Mismatch.new(left, right, left)
+  end
+
 
   # @return [Joos::BasicType, Joos::Entity::CompilationUnit, Joos::Array, Joos::Token::Void, Joos::JoosType]
   attr_reader :type
