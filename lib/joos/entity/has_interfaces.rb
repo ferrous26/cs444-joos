@@ -109,11 +109,16 @@ module Joos::Entity::HasInterfaces
   end
 
   def ancestor_interfaces base = []
-    i = superinterfaces.reduce(base << self) { |a, e| e.ancestor_interfaces a }
-    i.uniq!
-    i
+    base << self
+    if superinterfaces.empty?
+      base << root_package.get(['java', 'lang', 'Object'])
+    else
+      superinterfaces.each do |superi|
+        superi.ancestor_interfaces base
+      end
+      base
+    end
   end
-  alias_method :ancestors, :ancestor_interfaces
 
   # Populate #interface_methods, the list of methods a class must conform to.
   # If the receiver is itself an Interface, this should be equivalent to #all_methods
@@ -136,8 +141,6 @@ module Joos::Entity::HasInterfaces
 
 
   private
-
-
 
   # @!group Inspect
 
