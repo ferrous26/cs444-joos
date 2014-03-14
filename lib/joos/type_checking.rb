@@ -151,9 +151,13 @@ In
       if boolean_op? || comparison_op?
         Joos::BasicType.new :Boolean
 
-      elsif first_subexpr.type == ['java', 'lang', 'String'] &&
-          self.Infixop.Plus
-        first_subexpr.type
+      elsif self.Infixop.Plus
+        if first_subexpr.type.reference_type? &&
+            first_subexpr.type.fully_qualified_name == ['java', 'lang', 'String']
+          first_subexpr.type
+        else
+          Joos::BasicType.new :Int
+        end
 
       elsif arithmetic_op?
         Joos::BasicType.new :Int
