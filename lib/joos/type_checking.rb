@@ -136,7 +136,8 @@ In
       if self.SubExpression.entity == Joos::Array::FIELD
         raise ArrayLength.new(self)
       end
-      # @todo check assignability
+
+      Joos::TypeChecking.assignable? self.SubExpression, self.Expression
     end
   end
 
