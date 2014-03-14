@@ -291,6 +291,18 @@ In
       end
     end
 
+    class ComplementError < Joos::CompilerException
+      def initialize term
+        super 'The complement operator can only be used with booleans', term
+      end
+    end
+
+    class UnaryMinus < Joos::CompilerException
+      def initialize term
+        super 'Unary minus can only apply to a numeric type', term
+      end
+    end
+
     attr_reader :upcast
     alias_method :upcast?, :upcast
 
@@ -320,14 +332,27 @@ In
     end
 
     def check_type
-      # @todo if TermModifier used incorrectly...
-      if self.Type && self.Term
+      if self.TermModifier
+        check_term_modifier
+      elsif self.Type && self.Term
         check_casting self.Type.type, self.Term.type, self
       end
     end
 
 
     private
+
+    def check_term_modifier
+      if self.TermModifier.Not &&
+          !self.Term.type.is_a?(Joos::BasicType::Boolean)
+        raise ComplementError.new(self)
+      end
+
+      if self.TermModifier.Minus &&
+          !(self.Term.type.basic_type? && self.Term.type.numeric_type?)
+        raise UnaryMinus.new(self)
+      end
+    end
 
     def check_casting cast, term, src
       if cast.array_type?
