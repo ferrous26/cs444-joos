@@ -377,11 +377,8 @@ Type mismatch. Epected #{BOOL} but got #{expr.type.type_inspect} for
         Joos::Token.make(:Void, 'void')
 
       else
-        # @todo don't duplicate work...
-        return_statements.each do |lhs|
-          return_statements.each do |rhs|
-            Joos::TypeChecking.assignable? lhs, rhs
-          end
+        return_statements.each do |rhs|
+          Joos::TypeChecking.assignable? top_block.parent_scope, rhs
         end
 
         return_statements.first.type
