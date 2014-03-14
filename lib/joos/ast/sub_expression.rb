@@ -35,21 +35,20 @@ class Joos::AST::SubExpression
 
   def fix_instanceof
     return unless self.Instanceof
-
     # wrap the raw 'instanceof' with an 'Infixop'
     reparent make(:Infixop, @nodes.second), at_index: 1
 
-    # wrap the 'ArrayType' with a 'Term', wrapped with a 'SubExpression'
+    # wrap the 'Type' with a 'Term', wrapped with a 'SubExpression'
     subexpr = if self.SubExpression
                 make(:SubExpression,
                      make(:Term,
-                          self.ArrayType ? make(:Type, @nodes[2]) : @nodes[2],
+                          make(:Type, @nodes[2]),
                           @nodes.third,
                           @nodes.fourth))
               else
                 make(:SubExpression,
                      make(:Term,
-                          self.ArrayType ? make(:Type, @nodes[2]) : @nodes[2]))
+                          make(:Type, @nodes[2])))
               end
     reparent subexpr, at_index: 2
   end

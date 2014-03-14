@@ -89,32 +89,6 @@ class Joos::Token
   end
 
   ##
-  # Token representing the `instanceof` keyword/operator
-  class Instanceof
-    ##
-    # Exception raised when the `instanceof` operator is given a non-reference
-    # type for the right hand operand.
-    class InvalidReferenceType < Joos::CompilerException
-      def initialize op
-        l = op.source.red
-        super "#{l} | instanceof expects a reference type as the right operand"
-      end
-    end
-
-    ##
-    # Check that the second operand is a reference type (qualified id or array)
-    #
-    # @param parent [Joos::AST::Infixop]
-    def validate parent
-      term = parent.parent.SubExpression.Term
-      raise InvalidReferenceType.new(self) unless (term.Type ||
-                                                   (term.QualifiedIdentifier &&
-                                                    term.Arguments.blank?    &&
-                                                    term.Selectors.blank?))
-    end
-  end
-
-  ##
   # The keyword `void` is used for the return type of methods which do not
   # actually return anything.
   class Void
