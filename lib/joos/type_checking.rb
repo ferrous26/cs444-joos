@@ -169,6 +169,8 @@ In
   module SubExpression
     include Joos::TypeChecking
 
+    STRING = ['java', 'lang', 'String']
+
     def resolve_type
       # we have no operators, so type is just the Terms type
       return first_subexpr.type unless self.Infixop
@@ -177,9 +179,15 @@ In
         Joos::BasicType.new :Boolean
 
       elsif self.Infixop.Plus
+
         if first_subexpr.type.reference_type? &&
-            first_subexpr.type.fully_qualified_name == ['java', 'lang', 'String']
+            first_subexpr.type.fully_qualified_name == STRING
           first_subexpr.type
+
+        elsif last_subexpr.type.reference_type? &&
+            last_subexpr.type.fully_qualified_name == STRING
+          last_subexpr.type
+
         else
           Joos::BasicType.new :Int
         end
