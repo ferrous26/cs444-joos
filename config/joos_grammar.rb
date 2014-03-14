@@ -48,8 +48,13 @@ GRAMMAR = {
       [:QualifiedIdentifier, :OpenStaple, :CloseStaple]
     ],
     SubExpression: [
+      # after parsing, all Term nodes will be wrapped in a SubExpression
+      # as if the only two rules would be:
+      # [SubExpression]
+      # [SubExpression, Infixop, SubExpression]
       [:Term],
       [:Term, :Infixop, :SubExpression],
+
       # these cases are transformed into the regular Term-Infixop-SubExpr
       # form during runtime and ArrayType/QualifiedIdentifier are Type wrapped
       [:Term, :Instanceof, :QualifiedIdentifier],

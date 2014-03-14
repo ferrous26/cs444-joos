@@ -30,6 +30,9 @@ class Joos::AST::SubExpression
     super
   end
 
+  alias_method :first_subexpr, :first
+  alias_method :last_subexpr,  :last
+
 
   private
 
