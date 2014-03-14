@@ -63,26 +63,29 @@ GRAMMAR = {
       [:Term, :Instanceof, :ArrayType, :Infixop, :SubExpression]
     ],
     Infixop: [
-      # Boolean -> Boolean
+      # Boolean -> Boolean -> Boolean
       [:LazyOr],
       [:LazyAnd],
       [:EagerOr],
       [:EagerAnd],
 
-      # Anything -> Boolean
+      # Anything -> Anything -> Boolean
       [:Equality],
       [:NotEqual],
 
-      # Numeric -> Numeric || String -> String
+      # Reference -> Type -> Boolean
+      # :Instanceof
+
+      # Numeric -> Numeric -> Int || String -> Anything -> String
       [:Plus],
 
-      # Numeric -> Int
+      # Numeric -> Numeric -> Int
       [:Minus],
       [:Multiply],
       [:Divide],
       [:Modulo],
 
-      # Numeric -> Boolean
+      # Numeric -> Numeric -> Boolean
       [:LessThan],
       [:GreaterThan],
       [:LessOrEqual],
