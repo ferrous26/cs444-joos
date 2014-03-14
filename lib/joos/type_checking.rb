@@ -127,13 +127,14 @@ In
 
     def resolve_type
       # we have no operators, so type is just the Terms type
-      return self.Term.type unless self.Infixop
+      return first_subexpr.type unless self.Infixop
 
       if boolean_op? || comparison_op?
         Joos::BasicType.new :Boolean
 
-      elsif self.Term.type == ['java', 'lang', 'String'] && self.Infixop.Plus
-        self.Term.type
+      elsif first_subexpr.type == ['java', 'lang', 'String'] &&
+          self.Infixop.Plus
+        first_subexpr.type
 
       elsif arithmetic_op?
         Joos::BasicType.new :Int
@@ -164,7 +165,8 @@ In
 
     def relational_op?
       op = self.Infixop
-      op.LessThan || op.GreaterThan || op.LessOrEqual || op.GreaterOrEqual
+      op.LessThan || op.GreaterThan || op.LessOrEqual || op.GreaterOrEqual ||
+        op.Instanceof
     end
   end
 
