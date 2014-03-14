@@ -42,8 +42,8 @@ class Joos::AST
   # @yieldparam node [Joos::AST, Joos::Token, Joos::Entity]
   def visit &block
     nodes.each do |node|
-      block.call self, node
       node.visit(&block) if node.respond_to? :visit
+      block.call self, node
     end
     self
   end
