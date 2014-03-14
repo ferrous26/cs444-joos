@@ -128,9 +128,14 @@ class Joos::Entity::Interface < Joos::Entity
     true
   end
 
-  def ancestors
-    ancestor_interfaces
+  alias_method :ancestors, :ancestor_interfaces
+
+  # @param klass [Joos::Entity::Interface]
+  def kind_of_type? interface
+    ancestors.include? interface
   end
+
+  alias_method :is_type?, :==
 
 
   # @!group Assignment 3

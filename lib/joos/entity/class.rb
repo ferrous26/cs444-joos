@@ -450,6 +450,13 @@ class Joos::Entity::Class < Joos::Entity
     ancestor_classes + ancestor_interfaces
   end
 
+  # @param klass [Joos::Entity::Class, Joos::Entity::Interface]
+  def kind_of_type? klass
+    ancestors.include? klass
+  end
+
+  alias_method :is_type?, :==
+
   ##
   # The default base class for any class that does not specify
   #

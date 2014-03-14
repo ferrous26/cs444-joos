@@ -64,24 +64,17 @@ module Joos::TypeChecking::NameResolution
     return if scope.type_environment.package == entity.type_environment.package
 
     # then it must at least be declared in a superclass of "this"
-    unless scope.type_environment.ancestors.include? entity.type_environment
+    unless scope.type_environment.kind_of_type? entity.type_environment
       raise AccessibilityViolation.new(owner, name)
     end
 
-    # @todo maybe move this up?
-    # we only need to check if we are accessing a field or method
-    unless entity.is_a?(Joos::Entity::Field) ||
-        entity.kind_of?(Joos::Entity::Method)
-      raise 'tried to check visibility of something other than field/method'
-    end
-
     # we can see it if "this" is a superclass of the caller...
-    return if owner.type.type_environment.ancestors.include? scope.type_environment
+    return if owner.type.type_environment.kind_of_type? scope.type_environment
 
     # if the access is done by qualified name (statically)
     if owner.is_a? Joos::JoosType
       # and the owner is a superclass of "this"
-      return if scope.type_environment.ancestors.include? owner.type.type_environment
+      return if scope.type_environment.kind_of_type? owner.type.type_environment
     end
 
     # otherwise, bail...
