@@ -45,7 +45,7 @@ In
   end
 
   def entity
-    @entity ||= find(&:entity).entity
+    @entity || find(&:entity).entity # deer lord, the inefficiency
   end
 
   ##
