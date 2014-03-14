@@ -77,9 +77,7 @@ class Joos::Entity::Field < Joos::Entity
     return unless @initializer
     check_no_static_this
     @initializer.type_check
-    unless real_initializer.type == @type
-      raise Joos::TypeChecking::Mismatch.new(self, real_initializer, self)
-    end
+    Joos::TypeChecking.assignable? self, real_initializer
   end
 
   def real_initializer
