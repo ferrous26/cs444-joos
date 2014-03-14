@@ -33,6 +33,25 @@ class Joos::Array
 
   # @!group Type API
 
+  def ancestors
+    root = if type.basic_type?
+             type.token.scope.type_environment.root_package
+          else
+            type.type_environment.root_package
+          end
+    [
+     ['java', 'lang', 'Object'],
+     ['java', 'io', 'Serializable'],
+     ['java', 'lang', 'Cloneable']
+    ].map do |qid|
+      root.find qid
+    end
+  end
+
+  def kind_of_type? type
+    ancestors.include? type
+  end
+
   def basic_type?
     false
   end
