@@ -385,9 +385,18 @@ In
   module Primary
     include Joos::TypeChecking
 
+    class StaticName < Joos::CompilerException
+      def initialize prim
+        super 'A parenthesized expression cannot name a type', prim
+      end
+    end
+
     def resolve_type
       if self.OpenParen
-        self.Expression.type
+        # Java bullshit here, we cannot resolve to a static name...
+        self.Expression.type.tap do |t|
+          raise StaticName.new(self) if t.is_a? Joos::JoosType
+        end
 
       elsif self.This
         scope.type_environment
