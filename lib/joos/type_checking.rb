@@ -285,6 +285,12 @@ In
   module Term
     include Joos::TypeChecking
 
+    class IllegalCast < Joos::CompilerException
+      def initialize cast, term, src
+        super "Cannot cast #{term.type_inspect} to a #{cast.type_inspect}", src
+      end
+    end
+
     def resolve_type
       if self.Primary
         self.Selectors.type || self.Primary.type
@@ -308,6 +314,30 @@ In
 
     def check_type
       # @todo if TermModifier used incorrectly...
+      if self.Type && self.Term
+        check_casting self.Type.type, self.Term.type, self
+      end
+    end
+
+
+    private
+
+    def check_casting cast, term, src
+      if cast.array_type?
+        # always allowed to cast an object into an array;
+        # totally unsafe, but whatevs
+        return if term.reference_type? && term.top_class?
+        raise IllegalCast.new(cast, term, src) unless term.array_type?
+        check_casting cast.type, term.type, src
+
+      elsif cast.basic_type?
+        raise IllegalCast.new(cast, term, src) unless term.basic_type?
+
+      else # just a plain old reference type
+        raise IllegalCast.new(cast, term, src) if term.basic_type?
+        # @todo need to check up/down casting rules here
+
+      end
     end
   end
 
