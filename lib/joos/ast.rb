@@ -145,26 +145,6 @@ class Joos::AST
   end
 
   ##
-  # Recursively tell all children to build their scope environment
-  #
-  # @param parent [Joos::Scope, Joos::Entity::Method]
-  def build parent
-    @nodes.each { |node| node.build parent }
-    self
-  end
-
-  ##
-  # Find the closest enclosing scope of the AST node.
-  #
-  # That is, travel up the AST until you find a parent which is a
-  # {Joos::Scope}.
-  #
-  # @return [Joos::Scope]
-  def scope
-    parent.scope
-  end
-
-  ##
   # Resolve the type of the children nodes and check that they conform
   # to what the AST node expects.
   #
@@ -256,6 +236,9 @@ class Joos::AST
 
   # apply some grammar hacks
   require 'joos/list_collapse'
+
+  # apply scoping rules to blocks
+  require 'joos/scope'
 
   # inject type checking code
   require 'joos/type_checking'

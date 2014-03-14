@@ -1,10 +1,8 @@
 require 'joos/ast'
-require 'joos/scope'
 
 ##
 # Code blocks in Joos (statements between braces)
 class Joos::AST::Block
-  include Joos::Scope
 
   def initialize nodes
     super
