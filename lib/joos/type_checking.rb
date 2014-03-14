@@ -193,6 +193,10 @@ In
 
       end
     end
+
+    def check_type
+      # @todo if TermModifier used incorrectly...
+    end
   end
 
   module Primary
