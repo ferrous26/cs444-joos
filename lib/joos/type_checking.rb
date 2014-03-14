@@ -344,10 +344,10 @@ Type mismatch. Epected #{BOOL} but got #{expr.type.type_inspect} for
         Joos::Token.make(:Void, 'void')
 
       else
+        # @todo don't duplicate work...
         return_statements.each do |lhs|
-          mismatch = return_statements.find { |rhs| lhs.type != rhs.type }
-          if mismatch
-            raise Joos::TypeChecking::Mismatch.new(lhs, mismatch, self)
+          return_statements.each do |rhs|
+            Joos::TypeChecking.assignable? lhs, rhs
           end
         end
 
