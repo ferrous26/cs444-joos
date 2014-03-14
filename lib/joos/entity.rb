@@ -20,6 +20,10 @@ class Joos::Entity
     @name = name
   end
 
+  def field?
+    false
+  end
+
   ##
   # Check that internal state of the entity is consistent with the
   # language specification.

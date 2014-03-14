@@ -13,12 +13,22 @@ class Joos::Entity::Field < Joos::Entity
   attr_reader :initializer
   alias_method :body, :initializer
 
+  # Order in which a field appears in its parent class.
+  # There is an ordering for static methods, and an ordering for instance methods.
+  # @return [Fixnum]
+  attr_accessor :order
 
   ##
   # Exception raised when a static field initializer tries to use keyword `this`
   class StaticThis < Joos::CompilerException
     def initialize this
       super "Use of keyword `this' in a static field initializer", this
+    end
+  end
+
+  class ForwardReference < Joos::CompilerException
+    def initialize field, reference
+      super "#{field} contains a forward reference to #{reference}", field
     end
   end
 
@@ -31,6 +41,10 @@ class Joos::Entity::Field < Joos::Entity
     @type_identifier = node.Type
     @initializer     = wrap_initializer node.Expression
     @unit            = klass
+  end
+
+  def field?
+    true
   end
 
   def to_sym
@@ -84,6 +98,30 @@ class Joos::Entity::Field < Joos::Entity
 
   def real_initializer
     @initializer.statements.first.Expression
+  end
+
+  # Check of other_field is a forward reference from the receiver.
+  # A field is a forward reference if it is a self reference
+  # or declared afterwards in the same class, with the same staticness.
+  #
+  # @param other_field [Field]
+  # @return [Bool]
+  def forward_reference? other_field
+    return false if other_field.unit != unit
+    return false if other_field.static? != static?
+    return other_field.order >= order
+  end
+
+  def check_forward_references
+    return unless initializer
+    initializer.visit do |parent, node|
+      if node.respond_to? :entity_chain
+        # FIXME: #entity_chain is nil for some reason
+        #node.entity_chain.select(&:field?).each do |field|
+          #raise ForwardReference(self, field) if forward_reference? field
+        #end
+      end
+    end
   end
 
 
