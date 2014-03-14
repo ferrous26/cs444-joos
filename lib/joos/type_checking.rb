@@ -43,12 +43,37 @@ In
     lhs = left.type
     rhs = right.type
 
-    # check various things that are allowed
-    return if lhs == rhs # exact same type is always allowed...
-    return if lhs.reference_type? && rhs.is_a?(Joos::NullReference)
+    # do the cheapest, safest checks first...
 
-    # anything that is not allowed is disallowed...
-    raise Mismatch.new(left, right, left)
+    # exact same type is always allowed...
+    return true if lhs == rhs
+
+    # can always assign null to a reference type
+    return true if lhs.reference_type? && rhs.is_a?(Joos::NullReference)
+
+    # array assignment depends on the the inner types...recursion!
+    if lhs.array_type? && rhs.array_type?
+      return assignable? lhs, rhs
+    end
+
+    if (lhs.reference_type? && rhs.basic_type?) ||
+       (lhs.basic_type? && rhs.reference_type?) ||
+       (lhs.array_type? && !rhs.array_type?)
+
+      raise Mismatch.new(left, right, left)
+    end
+
+    if lhs.reference_type? && rhs.reference_type?
+      return true if rhs.kind_of_type? lhs.type
+    end
+
+    # rules for primitive assignment
+    if lhs.basic_type? && rhs.basic_type?
+      return true # ....I dunno
+    end
+
+    # we missed a case...
+    raise "no assignability rule for #{lhs.inspect} and #{rhs.inspect} at #{left.source.red}"
   end
 
 
