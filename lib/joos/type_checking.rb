@@ -87,7 +87,8 @@ In
     end
 
     # we missed a case...
-    raise "no assignability rule for #{lhs.inspect} and #{rhs.inspect} at #{left.source.red}"
+    raise "no assignability rule for #{lhs.inspect} and #{rhs.inspect}" <<
+      " at #{left.source.red}"
   end
 
 
@@ -185,6 +186,12 @@ In
 
     STRING = ['java', 'lang', 'String']
 
+    class BadInstanceof < Joos::CompilerException
+      def initialize expr
+        super 'instanceof operand must check a reference type', expr
+      end
+    end
+
     def resolve_type
       # we have no operators, so type is just the Terms type
       return first_subexpr.type unless self.Infixop
@@ -211,6 +218,41 @@ In
 
       else # relational_op?
         Joos::BasicType.new :Boolean
+
+      end
+    end
+
+    def check_type
+      return unless self.Infixop
+
+      left  = first_subexpr.type
+      right = last_subexpr.type
+
+      if self.Infixop.Instanceof
+        raise BadInstanceof.new(first_subexpr) unless left.reference_type?
+
+      elsif boolean_op?
+        unless left == right && left.is_a?(Joos::BasicType::Boolean)
+          raise Joos::TypeChecking::Mismatch.new(first, last, self)
+        end
+
+      elsif comparison_op?
+        return if left.basic_type? && right.basic_type? ||
+          left.reference_type? && right.reference_type?
+        raise Joos::TypeChecking::Mismatch.new(first, last, self)
+
+      elsif self.Infixop.Plus && type.reference_type? # string concat
+        if left.is_a?(Joos::JoosType) || right.is_a?(Joos::JoosType)
+          raise Joos::TypeChecking::Mismatch.new(first, last, self)
+        end
+
+      elsif arithmetic_op? || relational_op?
+        unless left.basic_type? && right.basic_type?
+          raise Joos::TypeChecking::Mismatch.new(first, last, self)
+        end
+
+      else
+        raise "no type rule for:\n#{inspect}\nfrom #{source.red}"
 
       end
     end

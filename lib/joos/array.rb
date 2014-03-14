@@ -33,6 +33,12 @@ class Joos::Array
 
   # @!group Type API
 
+  ##
+  # Will always be false because arrays are a subclass of `java.lang.Object`
+  def top_class?
+    false
+  end
+
   def ancestors
     root = if type.basic_type?
              type.token.scope.type_environment.root_package

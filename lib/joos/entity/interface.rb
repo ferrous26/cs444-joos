@@ -128,6 +128,10 @@ class Joos::Entity::Interface < Joos::Entity
     true
   end
 
+  def top_class?
+    false
+  end
+
   alias_method :ancestors, :ancestor_interfaces
 
   # @param klass [Joos::Entity::Interface]
