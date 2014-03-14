@@ -67,9 +67,23 @@ In
       return true if rhs.kind_of_type? lhs.type
     end
 
+    if lhs.reference_type? && rhs.array_type?
+      raise Mismatch.new(left, right, left)
+    end
+
     # rules for primitive assignment
     if lhs.basic_type? && rhs.basic_type?
       return true # ....I dunno
+    end
+
+    if lhs.is_a?(Joos::Token::Void) || rhs.is_a?(Joos::Token::Void)
+      raise Mismatch.new(left, right, left)
+    end
+
+    # both are reference types but we haven't matched a rule yet
+    # so they must be incompatible types
+    if lhs.reference_type? && rhs.reference_type?
+      raise Mismatch.new(left, right, left)
     end
 
     # we missed a case...
