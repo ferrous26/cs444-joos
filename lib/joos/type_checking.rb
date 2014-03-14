@@ -291,6 +291,13 @@ In
       end
     end
 
+    attr_reader :upcast
+    alias_method :upcast?, :upcast
+
+    def downcast?
+      !upcast?
+    end
+
     def resolve_type
       if self.Primary
         self.Selectors.type || self.Primary.type
@@ -335,8 +342,17 @@ In
 
       else # just a plain old reference type
         raise IllegalCast.new(cast, term, src) if term.basic_type?
-        # @todo need to check up/down casting rules here
 
+        # determine if it is an upcast or downcast
+        @upcast = if term.is_a? Joos::NullReference # fuuuu, Java
+                    true
+                  elsif term.kind_of_type? cast
+                    true
+                  elsif cast.kind_of_type? term
+                    false
+                  else
+                    raise IllegalCast.new(cast, term, src)
+                  end
       end
     end
   end
