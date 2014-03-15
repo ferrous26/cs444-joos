@@ -47,15 +47,15 @@ In
       $stderr.puts "checking #{lhs.type_inspect} == #{rhs.type_inspect}"
     end
 
-    # do the cheapest, safest checks first...
+    # @note some of these checks are order sensitive (i.e. arrays)
 
     # can always assign null to a reference type
     return true if lhs.reference_type? && rhs.is_a?(Joos::NullReference)
 
-    # array assignment depends on the the inner types...recursion!
+    # arrays depend on the the inner types...recursion without recursion!
     if lhs.array_type? && rhs.array_type?
-      # @todo if this check fails we will crash, we should fix that...
-      return assignable? lhs, rhs
+      lhs = lhs.type
+      rhs = rhs.type
     end
 
     # we cannot assign non-arrays into an array reference
@@ -83,8 +83,13 @@ In
 
     # rules for primitive assignment
     if lhs.basic_type? && rhs.basic_type?
-      return true if lhs.numeric_type? == rhs.numeric_type?
-      raise Mismatch.new(left, right, left)
+      unless lhs.numeric_type? == rhs.numeric_type?
+        raise Mismatch.new(left, right, left)
+      end
+      if lhs.numeric_type? && lhs.length < rhs.length
+        raise Mismatch.new(left, right, left)
+      end
+      return true
     end
 
     if lhs.is_a?(Joos::Token::Void) || rhs.is_a?(Joos::Token::Void)
@@ -207,7 +212,7 @@ In
       # we have no operators, so type is just the Terms type
       return first_subexpr.type unless self.Infixop
 
-      if boolean_op? || comparison_op?
+      if boolean_op? || comparison_op? || relational_op?
         Joos::BasicType.new :Boolean
 
       elsif self.Infixop.Plus
@@ -227,8 +232,8 @@ In
       elsif arithmetic_op?
         Joos::BasicType.new :Int
 
-      else # relational_op?
-        Joos::BasicType.new :Boolean
+      else
+        raise 'unknown operator type'
 
       end
     end
@@ -248,17 +253,30 @@ In
         end
 
       elsif comparison_op?
-        return if left.basic_type? && right.basic_type? ||
-          left.reference_type? && right.reference_type?
+        if left.basic_type? && right.basic_type?
+          return if left.numeric_type? == right.numeric_type?
+
+        elsif left.reference_type? && right.reference_type?
+          # they cannot possibly be equal unless one is a kind_of the other
+          if left.is_a?(Joos::NullReference)   ||
+              right.is_a?(Joos::NullReference) ||
+              right.kind_of_type?(left)        ||
+              left.kind_of_type?(right)
+            return
+          end
+        end
+
         raise Joos::TypeChecking::Mismatch.new(first, last, self)
 
       elsif self.Infixop.Plus && type.reference_type? # string concat
-        if left.is_a?(Joos::JoosType) || right.is_a?(Joos::JoosType)
+        if left.is_a?(Joos::JoosType) || right.is_a?(Joos::JoosType) ||
+            left.is_a?(Joos::Token::Void) || right.is_a?(Joos::Token::Void)
           raise Joos::TypeChecking::Mismatch.new(first, last, self)
         end
 
       elsif arithmetic_op? || relational_op?
-        unless left.basic_type? && right.basic_type?
+        unless left.basic_type? && right.basic_type? &&
+            left.numeric_type? && right.numeric_type?
           raise Joos::TypeChecking::Mismatch.new(first, last, self)
         end
 

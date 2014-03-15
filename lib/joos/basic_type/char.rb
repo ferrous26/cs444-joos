@@ -14,4 +14,8 @@ class Joos::BasicType::Char < Joos::BasicType
     true
   end
 
+  def length
+    1
+  end
+
 end

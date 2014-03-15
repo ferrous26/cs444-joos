@@ -14,4 +14,8 @@ class Joos::BasicType::Int < Joos::BasicType
     true
   end
 
+  def length
+    4
+  end
+
 end
