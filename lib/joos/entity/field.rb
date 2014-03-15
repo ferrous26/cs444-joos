@@ -114,7 +114,7 @@ class Joos::Entity::Field < Joos::Entity
 
   def check_forward_references
     return unless initializer
-		check_forward_refs_visit initializer
+    check_forward_refs_visit initializer
   end
 
 
@@ -134,31 +134,36 @@ class Joos::Entity::Field < Joos::Entity
 
   private
 
-	def check_forward_refs_visit node
-		case node
-		when Joos::AST::Assignment
-			check_forward_refs_visit node.nodes[3]
-		when Joos::AST::Selectors
-			check_forward_refs_visit node.nodes[0]
-		when Joos::AST::QualifiedIdentifier
-			if node.entity_chain
-				check_forward_ref_entity node.entity_chain.first, node
-			end
-		else
-			if node.respond_to? :nodes
-				node.nodes.each do |child|
-					check_forward_refs_visit child
-				end
-			end
-		end
-	end
+  def check_forward_refs_visit node, leftmost_selector=true
+    case node
+    when Joos::AST::Assignment
+      puts node.inspect
+      check_forward_refs_visit node.nodes[0], false
+      check_forward_refs_visit node.nodes[2]
+    when Joos::AST::Selectors
+      check_forward_refs_visit node.nodes[0]
+      (node.nodes[1..-1] || []).each do |child|
+        child.check_forward_refs_visit child, false
+      end
+    when Joos::AST::QualifiedIdentifier
+      if node.entity_chain && leftmost_selector
+        check_forward_ref_entity node.entity_chain.first, node
+      end
+    else
+      if node.respond_to? :nodes
+        node.nodes.each do |child|
+          check_forward_refs_visit child, leftmost_selector
+        end
+      end
+    end
+  end
 
-	def check_forward_ref_entity entity, node
-		if entity && entity.is_a?(Field) && forward_reference?(entity)
-			raise ForwardReference.new(self, entity, node)
-		end
-	end
-
+  def check_forward_ref_entity entity, node
+    if entity && entity.is_a?(Field) && forward_reference?(entity)
+      raise ForwardReference.new(self, entity, node)
+    end
+  end
+  
   def wrap_initializer expr
     return unless expr
     ast = Joos::AST
