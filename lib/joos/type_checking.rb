@@ -83,7 +83,8 @@ In
 
     # rules for primitive assignment
     if lhs.basic_type? && rhs.basic_type?
-      return true # ....I dunno
+      return true if lhs.numeric_type? == rhs.numeric_type?
+      raise Mismatch.new(left, right, left)
     end
 
     if lhs.is_a?(Joos::Token::Void) || rhs.is_a?(Joos::Token::Void)
