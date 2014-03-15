@@ -34,6 +34,8 @@ In
   end
 
   ##
+  # @todo Deer lord, please refactor this
+  #
   # Check if something that is type of `right` is allowed to be assigned
   # to something of that is type of `left`.
   #
