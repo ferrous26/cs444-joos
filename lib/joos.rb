@@ -197,6 +197,10 @@ class Joos::Compiler
 
   def type_check
     @compilation_units.each(&:type_check)
+
+    classes.each do |klass|
+      klass.fields.each(&:check_forward_references)
+    end
   end
 
 end
