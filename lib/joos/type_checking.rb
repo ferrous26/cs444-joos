@@ -56,6 +56,12 @@ In
     if lhs.array_type? && rhs.array_type?
       lhs = lhs.type
       rhs = rhs.type
+
+      # on special case we have here is that primitive types must match
+      # exactly in this case (so that an impl. can optimize run time size)
+      if lhs.basic_type? && lhs != rhs
+        raise Mismatch.new(left, right, left)
+      end
     end
 
     # we cannot assign non-arrays into an array reference
@@ -88,6 +94,14 @@ In
       end
       if lhs.numeric_type? && lhs.length < rhs.length
         raise Mismatch.new(left, right, left)
+      end
+      if lhs.is_a?(Joos::BasicType::Char) || rhs.is_a?(Joos::BasicType::Char)
+        if lhs.is_a?(Joos::BasicType::Short) ||
+            rhs.is_a?(Joos::BasicType::Short) ||
+            lhs.is_a?(Joos::BasicType::Byte) ||
+            rhs.is_a?(Joos::BasicType::Byte)
+          raise Mismatch.new(left, right, left)
+        end
       end
       return true
     end
