@@ -135,7 +135,6 @@ class Joos::Entity::Field < Joos::Entity
   def check_forward_refs_visit node, leftmost_selector=true
     case node
     when Joos::AST::Assignment
-      puts node.inspect
       check_forward_refs_visit node.nodes[0], false
       check_forward_refs_visit node.nodes[2]
     when Joos::AST::Selectors
@@ -161,7 +160,7 @@ class Joos::Entity::Field < Joos::Entity
       raise ForwardReference.new(self, entity, node)
     end
   end
-  
+
   def wrap_initializer expr
     return unless expr
     ast = Joos::AST
