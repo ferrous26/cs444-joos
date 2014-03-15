@@ -20,11 +20,11 @@ class Joos::AST::Block
   private
 
   def rescopify
-    statement_seen = false
+    decl_seen = false
 
     statements = self.BlockStatements.to_a
     statements.each_with_index do |node, index|
-      if node.LocalVariableDeclarationStatement && statement_seen
+      if node.LocalVariableDeclarationStatement && decl_seen
         bs = make(:BlockStatement,
                   make(:Statement,
                        make(:Block,
@@ -33,8 +33,8 @@ class Joos::AST::Block
         statements.pop(statements.size - index)
         statements[index] = bs
         return # we just fucked with the array we are enumerating, so bail!
-      elsif node.Statement
-        statement_seen = true
+      elsif node.LocalVariableDeclarationStatement
+        decl_seen = true
       end
     end
   end
