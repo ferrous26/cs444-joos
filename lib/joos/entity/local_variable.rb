@@ -7,6 +7,13 @@ require 'joos/entity/type_resolution'
 class Joos::Entity::LocalVariable < Joos::Entity
   include TypeResolution
 
+  class ForwardDeclaration < Joos::CompilerException
+    def initialize offender
+      msg = "#{offender.inspect} references itself during initialization"
+      super msg, offender
+    end
+  end
+
   # @return [Joos::AST::Expression]
   attr_reader :initializer
 
@@ -47,6 +54,29 @@ class Joos::Entity::LocalVariable < Joos::Entity
 
   def type_check
     Joos::TypeChecking.assignable? self, @initializer
+  end
+
+  ##
+  # Given how we rescope things, the only possible case to check for is
+  # if the variable forward references itself
+  #
+  def check_no_forward_references
+    # first, find all the references that we might care about
+    ids = []
+    @initializer.visit do |_, node|
+      if node.is_a?(Joos::AST::QualifiedIdentifier) &&
+          !(node.parent.is_a?(Joos::AST::Type) ||
+            node.parent.is_a?(Joos::AST::ArrayType))
+        ids << node
+      end
+    end
+
+    # then, eliminate those which cannot be local variable forward refs
+    entities = ids.map { |id| id.entity_chain.first }
+    entities.select! { |e| e.is_a? Joos::Entity::LocalVariable }
+
+    # if any variables refer to self, then we have a problem
+    raise ForwardDeclaration.new(self) if entities.include? self
   end
 
   # @!endgroup

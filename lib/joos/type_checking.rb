@@ -548,6 +548,7 @@ Type mismatch. Epected #{BOOL} but got #{expr.type.type_inspect} for
     def check_type
       declarations.map(&:type_check)
       check_void_method_has_only_empty_returns
+      declarations.each(&:check_no_forward_references)
     end
 
 
