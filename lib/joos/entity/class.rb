@@ -286,17 +286,24 @@ class Joos::Entity::Class < Joos::Entity
 
     # Create fields
     @fields = field_nodes.map do |node|
-      field = Field.new node, self
-      field.link_declarations
-      field
+      Field.new node, self
+    end
+    static_fields, instance_fields = fields.partition(&:static?)
+    static_fields.each_with_index do |field, index|
+      field.order = index
+    end
+    instance_fields.each_with_index do |field, index|
+      field.order = index
     end
 
     # Create constructors
     @constructors = constructor_nodes.map do |node|
-      c = Constructor.new node, self
-      c.link_declarations
-      c
+      Constructor.new node, self
     end
+
+    static_fields.each(&:link_declarations)
+    instance_fields.each(&:link_declarations)
+    constructors.each(&:link_declarations)
   end
 
   # Check that the class/interface hierarchy is correct.
