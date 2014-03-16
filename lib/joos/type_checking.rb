@@ -2,6 +2,8 @@ require 'joos/exceptions'
 require 'joos/ast'
 require 'joos/scope'
 
+##
+# Type checking extensions to various {Joos::AST} classes
 module Joos::TypeChecking
 
   ##
@@ -51,16 +53,13 @@ In
     end
 
     # @note some of these checks are order sensitive (i.e. arrays)
-
-    # can always assign null to a reference type
-    return true if lhs.reference_type? && rhs.is_a?(Joos::NullReference)
-
     # arrays depend on the the inner types...recursion without recursion!
     if lhs.array_type? && rhs.array_type?
+      return true if rhs.null_type? # fuuuu, one last special case...
       lhs = lhs.type
       rhs = rhs.type
 
-      # on special case we have here is that primitive types must match
+      # one special case we have here is that primitive types must match
       # exactly in this case (so that an impl. can optimize run time size)
       if lhs.basic_type? && lhs != rhs
         raise Mismatch.new(left, right, left)
@@ -197,7 +196,7 @@ In
 
     class ArrayLength < Joos::CompilerException
       def initialize assign
-        super "Cannot assign a new value to length of an array", assign
+        super 'Cannot assign a new value to length of an array', assign
       end
     end
 
@@ -214,219 +213,8 @@ In
     end
   end
 
-  module SubExpression
-    include Joos::TypeChecking
-
-    STRING = ['java', 'lang', 'String']
-
-    class BadInstanceof < Joos::CompilerException
-      def initialize expr
-        super 'instanceof operand must check a reference type', expr
-      end
-    end
-
-    def resolve_type
-      # we have no operators, so type is just the Terms type
-      return first_subexpr.type unless self.Infixop
-
-      if boolean_op? || comparison_op? || relational_op?
-        Joos::BasicType.new :Boolean
-
-      elsif self.Infixop.Plus
-
-        if first_subexpr.type.reference_type? &&
-            first_subexpr.type.fully_qualified_name == STRING
-          first_subexpr.type
-
-        elsif last_subexpr.type.reference_type? &&
-            last_subexpr.type.fully_qualified_name == STRING
-          last_subexpr.type
-
-        else
-          Joos::BasicType.new :Int
-        end
-
-      elsif arithmetic_op?
-        Joos::BasicType.new :Int
-
-      else
-        raise 'unknown operator type'
-
-      end
-    end
-
-    def check_type
-      return unless self.Infixop
-
-      left  = first_subexpr.type
-      right = last_subexpr.type
-
-      if self.Infixop.Instanceof
-        raise BadInstanceof.new(first_subexpr) unless left.reference_type?
-
-      elsif boolean_op?
-        unless left == right && left.is_a?(Joos::BasicType::Boolean)
-          raise Joos::TypeChecking::Mismatch.new(first, last, self)
-        end
-
-      elsif comparison_op?
-        if left.basic_type? && right.basic_type?
-          return if left.numeric_type? == right.numeric_type?
-
-        elsif left.reference_type? && right.reference_type?
-          # they cannot possibly be equal unless one is a kind_of the other
-          if left.is_a?(Joos::NullReference)   ||
-              right.is_a?(Joos::NullReference) ||
-              right.kind_of_type?(left)        ||
-              left.kind_of_type?(right)
-            return
-          end
-        end
-
-        raise Joos::TypeChecking::Mismatch.new(first, last, self)
-
-      elsif self.Infixop.Plus && type.reference_type? # string concat
-        if left.is_a?(Joos::JoosType) || right.is_a?(Joos::JoosType) ||
-            left.is_a?(Joos::Token::Void) || right.is_a?(Joos::Token::Void)
-          raise Joos::TypeChecking::Mismatch.new(first, last, self)
-        end
-
-      elsif arithmetic_op? || relational_op?
-        unless left.basic_type? && right.basic_type? &&
-            left.numeric_type? && right.numeric_type?
-          raise Joos::TypeChecking::Mismatch.new(first, last, self)
-        end
-
-      else
-        raise "no type rule for:\n#{inspect}\nfrom #{source.red}"
-
-      end
-    end
-
-
-    private
-
-    def boolean_op?
-      op = self.Infixop
-      op.LazyOr || op.LazyAnd || op.EagerOr || op.EagerAnd
-    end
-
-    def comparison_op?
-      op = self.Infixop
-      op.Equality || op.NotEqual
-    end
-
-    def arithmetic_op?
-      op = self.Infixop
-      op.Plus || op.Minus || op.Multiply || op.Divide || op.Modulo
-    end
-
-    def relational_op?
-      op = self.Infixop
-      op.LessThan || op.GreaterThan || op.LessOrEqual || op.GreaterOrEqual ||
-        op.Instanceof
-    end
-  end
-
-  module Term
-    include Joos::TypeChecking
-
-    class IllegalCast < Joos::CompilerException
-      def initialize cast, term, src
-        super "Cannot cast #{term.type_inspect} to a #{cast.type_inspect}", src
-      end
-    end
-
-    class ComplementError < Joos::CompilerException
-      def initialize term
-        super 'The complement operator can only be used with booleans', term
-      end
-    end
-
-    class UnaryMinus < Joos::CompilerException
-      def initialize term
-        super 'Unary minus can only apply to a numeric type', term
-      end
-    end
-
-    attr_reader :upcast
-    alias_method :upcast?, :upcast
-
-    def downcast?
-      !upcast?
-    end
-
-    def resolve_type
-      if self.Primary
-        self.Selectors.type || self.Primary.type
-
-      elsif self.Type # casting
-        self.Type.resolve
-        self.Type.type
-
-      elsif self.Term # the lonesome Term case
-        self.Term.type
-
-      elsif self.QualifiedIdentifier
-        (self.Selectors && self.Selectors.type) ||
-          self.QualifiedIdentifier.type
-
-      else
-        raise "someone fucked up the AST with a #{inspect}"
-
-      end
-    end
-
-    def check_type
-      if self.TermModifier
-        check_term_modifier
-      elsif self.Type && self.Term
-        check_casting self.Type.type, self.Term.type, self
-      end
-    end
-
-
-    private
-
-    def check_term_modifier
-      if self.TermModifier.Not &&
-          !self.Term.type.is_a?(Joos::BasicType::Boolean)
-        raise ComplementError.new(self)
-      end
-
-      if self.TermModifier.Minus &&
-          !(self.Term.type.basic_type? && self.Term.type.numeric_type?)
-        raise UnaryMinus.new(self)
-      end
-    end
-
-    def check_casting cast, term, src
-      if cast.array_type?
-        # always allowed to cast an object into an array;
-        # totally unsafe, but whatevs
-        return if term.reference_type? && term.top_class?
-        raise IllegalCast.new(cast, term, src) unless term.array_type?
-        check_casting cast.type, term.type, src
-
-      elsif cast.basic_type?
-        raise IllegalCast.new(cast, term, src) unless term.basic_type?
-
-      else # just a plain old reference type
-        raise IllegalCast.new(cast, term, src) if term.basic_type?
-
-        # determine if it is an upcast or downcast
-        @upcast = if term.is_a? Joos::NullReference # fuuuu, Java
-                    true
-                  elsif term.kind_of_type? cast
-                    true
-                  elsif cast.kind_of_type? term
-                    false
-                  else
-                    raise IllegalCast.new(cast, term, src)
-                  end
-      end
-    end
-  end
+  require 'joos/type_checking/sub_expression'
+  require 'joos/type_checking/term'
 
   module Primary
     include Joos::TypeChecking
@@ -489,90 +277,14 @@ In
     end
 
     def check_type
-      # @todo do we actually want to force widening on smaller types?
       expr = self.Expression
-      unless expr.type.basic_type? && expr.type.numeric_type?
+      unless expr.type.numeric_type?
         raise Joos::TypeChecking::Mismatch.new(self, expr, expr)
       end
     end
   end
 
-  module Statement
-    include Joos::TypeChecking
-
-    ##
-    # Exception raised when a static type check fails
-    class GuardTypeMismatch < Joos::CompilerException
-
-      BOOL = Joos::BasicType.new(:Boolean).type_inspect
-
-      def initialize expr
-        msg = <<-EOS
-Type mismatch. Epected #{BOOL} but got #{expr.type.type_inspect} for
-#{expr.inspect 1}
-        EOS
-        super msg, expr
-      end
-    end
-
-    def resolve_type
-      if self.Return && self.Expression
-        self.Expression.type
-      else
-        Joos::Token.make(:Void, 'void')
-      end
-    end
-
-    def check_type
-      return unless self.If || self.While
-
-      expected_type = Joos::BasicType.new :Boolean
-      unless expected_type == self.Expression.type
-        raise GuardTypeMismatch.new self.Expression
-      end
-    end
-  end
-
-  module Block
-    include Joos::TypeChecking
-
-    class ReturnExpression < Joos::CompilerException
-      def initialize statement
-        super 'void methods cannot return an expression', statement
-      end
-    end
-
-    def resolve_type
-      unify_return_type
-    end
-
-    def check_type
-      check_void_method_has_only_empty_returns
-      declaration.type_check if declaration
-    end
-
-
-    private
-
-    def unify_return_type
-      if return_statements.empty?
-        Joos::Token.make(:Void, 'void')
-
-      else
-        return_statements.each do |rhs|
-          Joos::TypeChecking.assignable? top_block.parent_scope, rhs
-        end
-
-        return_statements.first.type
-      end
-    end
-
-    def check_void_method_has_only_empty_returns
-      return unless return_type.is_a? Joos::Token::Void
-      statement = return_statements.find(&:Expression)
-      raise ReturnExpression.new(statement) if statement
-    end
-
-  end
+  require 'joos/type_checking/statement'
+  require 'joos/type_checking/block'
 
 end

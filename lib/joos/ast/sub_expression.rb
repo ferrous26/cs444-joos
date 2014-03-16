@@ -31,7 +31,30 @@ class Joos::AST::SubExpression
   end
 
   alias_method :first_subexpr, :first
+  alias_method :left_subexpr,  :first
   alias_method :last_subexpr,  :last
+  alias_method :right_subexpr, :last
+
+  def boolean_op?
+    op = self.Infixop
+    op.LazyOr || op.LazyAnd || op.EagerOr || op.EagerAnd
+  end
+
+  def comparison_op?
+    op = self.Infixop
+    op.Equality || op.NotEqual
+  end
+
+  def arithmetic_op?
+    op = self.Infixop
+    op.Plus || op.Minus || op.Multiply || op.Divide || op.Modulo
+  end
+
+  def relational_op?
+    op = self.Infixop
+    op.LessThan || op.GreaterThan || op.LessOrEqual || op.GreaterOrEqual ||
+      op.Instanceof
+  end
 
 
   private
