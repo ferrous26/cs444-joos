@@ -35,8 +35,40 @@ class Joos::NullReference
     true
   end
 
+  def kind_of_type? other
+    other.reference_type?
+  end
+
+  def top_class?
+    false
+  end
+
+  def string_class?
+    false
+  end
+
+  def static_type?
+    false
+  end
+
   def array_type?
     true
+  end
+
+  def null_type?
+    true
+  end
+
+  def void_type?
+    false
+  end
+
+  def numeric_type?
+    false
+  end
+
+  def boolean_type?
+    false
   end
 
   def type_inspect

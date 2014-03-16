@@ -15,7 +15,15 @@ class Joos::BasicType::Char < Joos::BasicType
   end
 
   def length
-    1
+    2
+  end
+
+  def wider? other
+    length >= other.length && !other.is_a?(Joos::BasicType::Short)
+  end
+
+  def narrower? other
+    !wider?(other)
   end
 
 end

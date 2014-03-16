@@ -18,4 +18,12 @@ class Joos::BasicType::Int < Joos::BasicType
     4
   end
 
+  def wider? other
+    length >= other.length
+  end
+
+  def narrower? other
+    !wider?(other)
+  end
+
 end

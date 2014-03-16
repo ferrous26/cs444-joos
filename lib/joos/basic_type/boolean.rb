@@ -10,4 +10,8 @@ class Joos::BasicType::Boolean < Joos::BasicType
     'boolean'.magenta
   end
 
+  def boolean_type?
+    true
+  end
+
 end

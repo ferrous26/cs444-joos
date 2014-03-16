@@ -128,15 +128,11 @@ class Joos::Entity::Interface < Joos::Entity
     true
   end
 
-  def top_class?
-    false
-  end
-
   alias_method :ancestors, :ancestor_interfaces
 
   # @param klass [Joos::Entity::Interface]
   def kind_of_type? interface
-    ancestors.include? interface
+    ancestors.include?(interface) || interface.null_type?
   end
 
   alias_method :is_type?, :==

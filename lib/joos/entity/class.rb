@@ -198,6 +198,8 @@ class Joos::Entity::Class < Joos::Entity
     @node = compilation_unit
     decl  = compilation_unit.TypeDeclaration
     super decl.ClassDeclaration.Identifier, decl.Modifiers
+    define_string_class_method
+    define_top_class_method
   end
 
   def to_sym
@@ -215,12 +217,20 @@ class Joos::Entity::Class < Joos::Entity
     ensure_mutually_exclusive_modifiers(:Final, :Abstract)
   end
 
+  # Is the receiver the string class, java.lang.String?
+  # @return [Bool]
+  def define_string_class_method
+    if STRING_CLASS == fully_qualified_name
+      define_singleton_method(:string_class?) { true }
+    end
+  end
+
   # Is the receiver the top class, java.lang.Object?
   # @return [Bool]
-  def top_class?
-    # Don't do this: == is not defined to be reflexive
-    # fully_qualified_name == BASE_CLASS
-    BASE_CLASS == fully_qualified_name
+  def define_top_class_method
+    if BASE_CLASS == fully_qualified_name
+      define_singleton_method(:top_class?) { true }
+    end
   end
 
   # The QualifiedIdentifier of the receiver's superclass, as taken from the AST.
@@ -456,7 +466,7 @@ class Joos::Entity::Class < Joos::Entity
 
   # @param klass [Joos::Entity::Class, Joos::Entity::Interface]
   def kind_of_type? klass
-    ancestors.include? klass
+    ancestors.include?(klass) || klass.null_type?
   end
 
   alias_method :is_type?, :==
@@ -467,6 +477,13 @@ class Joos::Entity::Class < Joos::Entity
   # @return [Joos::AST::QualifiedIdentifier]
   BASE_CLASS = Joos::AST.make :QualifiedIdentifier,
     *['java', 'lang', 'Object'].map { |s| Joos::Token.make :Identifier, s }
+
+  ##
+  # The string class for Java
+  #
+  # @return [Joos::AST::QualifiedIdentifier]
+  STRING_CLASS = Joos::AST.make :QualifiedIdentifier,
+    *['java', 'lang', 'String'].map { |s| Joos::Token.make :Identifier, s }
 
 
   # @!group Assignment 3

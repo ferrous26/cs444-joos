@@ -120,6 +120,26 @@ class Joos::Token
       false
     end
 
+    def void_type?
+      true
+    end
+
+    def static_type?
+      false
+    end
+
+    def boolean_type?
+      false
+    end
+
+    def numeric_type?
+      false
+    end
+
+    def null_type?
+      false
+    end
+
     def type_inspect
       'void'.blue
     end

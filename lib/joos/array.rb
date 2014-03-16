@@ -19,7 +19,7 @@ class Joos::Array
     self.type == other.type if other.respond_to? :type
   end
 
-  # @todo MAKE THIS WAY LESS OF A HACK
+  # @todo make this less of a hack
   FIELD = Object.new
   FIELD.define_singleton_method(:name) { Joos::Token.make :Identifier, 'length' }
   FIELD.define_singleton_method(:type) { Joos::BasicType.new :Int }
@@ -28,6 +28,21 @@ class Joos::Array
 
   def all_fields
     [FIELD]
+  end
+
+  def ancestors
+    root = if type.basic_type?
+             type.token.scope.type_environment.root_package
+          else
+            type.type_environment.root_package
+          end
+    [
+     ['java', 'lang', 'Object'],
+     ['java', 'io',   'Serializable'],
+     ['java', 'lang', 'Cloneable']
+    ].map do |qid|
+      root.find qid
+    end
   end
 
 
@@ -39,26 +54,27 @@ class Joos::Array
     false
   end
 
-  def ancestors
-    root = if type.basic_type?
-             type.token.scope.type_environment.root_package
-          else
-            type.type_environment.root_package
-          end
-    [
-     ['java', 'lang', 'Object'],
-     ['java', 'io', 'Serializable'],
-     ['java', 'lang', 'Cloneable']
-    ].map do |qid|
-      root.find qid
-    end
+  def string_class?
+    false
+  end
+
+  def static_type?
+    false
   end
 
   def kind_of_type? type
-    ancestors.include? type
+    ancestors.include?(type) || type.null_type?
   end
 
   def basic_type?
+    false
+  end
+
+  def numeric_type?
+    false
+  end
+
+  def boolean_type?
     false
   end
 
@@ -68,6 +84,14 @@ class Joos::Array
 
   def array_type?
     true
+  end
+
+  def void_type?
+    false
+  end
+
+  def null_type?
+    false
   end
 
   def type_inspect

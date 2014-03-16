@@ -18,4 +18,12 @@ class Joos::BasicType::Byte < Joos::BasicType
     1
   end
 
+  def wider? other
+    length >= other.length
+  end
+
+  def narrower? other
+    !wider?(other)
+  end
+
 end

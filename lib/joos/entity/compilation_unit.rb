@@ -138,15 +138,43 @@ module Joos::Entity::CompilationUnit
 
   # @!group Type API
 
+  def top_class?
+    false
+  end
+
+  def string_class?
+    false
+  end
+
+  def static_type?
+    false
+  end
+
   def reference_type?
     true
+  end
+
+  def null_type?
+    false
   end
 
   def basic_type?
     false
   end
 
+  def numeric_type?
+    false
+  end
+
+  def boolean_type?
+    false
+  end
+
   def array_type?
+    false
+  end
+
+  def void_type?
     false
   end
 

@@ -67,6 +67,10 @@ class Joos::BasicType
 
   # @!group Type API
 
+  def static_type?
+    false
+  end
+
   def basic_type?
     true
   end
@@ -84,6 +88,18 @@ class Joos::BasicType
   end
 
   def numeric_type?
+    false
+  end
+
+  def boolean_type?
+    false
+  end
+
+  def void_type?
+    false
+  end
+
+  def null_type?
     false
   end
 

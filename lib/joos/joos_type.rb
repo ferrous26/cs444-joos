@@ -33,11 +33,23 @@ class Joos::JoosType
 
   # @!group Type API
 
+  def static_type?
+    true
+  end
+
   def reference_type?
     false
   end
 
   def basic_type?
+    false
+  end
+
+  def numeric_type?
+    false
+  end
+
+  def boolean_type?
     false
   end
 
