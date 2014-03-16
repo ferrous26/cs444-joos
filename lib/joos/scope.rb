@@ -4,6 +4,7 @@ require 'joos/exceptions'
 ##
 # Scope extensions to the base AST class
 class Joos::AST
+
   ##
   # Find the closest enclosing scope of the AST node.
   #
@@ -39,8 +40,13 @@ class Joos::AST
       end
     end
 
-    # @return [Array<Joos::Entity::LocalVariable>]
-    attr_reader :declarations
+    ##
+    # The declaration that belongs to the this scope
+    #
+    # If no declaration is made in this scope, then the value will be `nil`.
+    #
+    # @return [Joos::Entity::LocalVariable, nil]
+    attr_reader :declaration
 
     # @return [Array<Joos::AST::Statement>]
     attr_reader :statements
@@ -56,10 +62,20 @@ class Joos::AST
       @type_environment = entity.type_environment
       @parent_scope     = entity
       @children_scopes  = []
-      @declarations     = []
       @statements       = []
       parent_scope.children_scopes << self
-      sort_decls
+      sort_statements
+    end
+
+    ##
+    # Find the closest enclosing scope of the AST node.
+    #
+    # In the case of a {Joos::Scope}, the closest enclosing scope is
+    # `self`.
+    #
+    # @return [Joos::Scope]
+    def scope
+      self
     end
 
 
@@ -83,6 +99,10 @@ class Joos::AST
     end
     alias_method :this, :type_environment
 
+    ##
+    # Find the outermost block in the current execution context.
+    #
+    # In the context of a method, this would be the method body block.
     def top_block
       if parent_scope.kind_of? Scope
         parent_scope.top_block
@@ -92,21 +112,48 @@ class Joos::AST
     end
 
     ##
+    # Find the entity (method or field) which owns this scope
+    #
+    # @return [Joos::Entity::Method, Joos::Entity::Field]
+    def owning_entity
+      top_block.parent_scope
+    end
+
+    ##
     # Given a qualified identifier, this method will search up the hierarchy
     # for a local variable declaration or parameter whose name matches.
     #
     # @param qid [Joos::AST::QualifiedIdentifier]
     # @return [Joos::Entity, nil]
     def find_declaration qid
-      @declarations.find { |member| member.name == qid } ||
-        parent_scope.find_declaration(qid)
+      if @declaration && (@declaration.name == qid)
+        @declaration
+      else
+        parent_scope.find_declaration qid
+      end
+    end
+
+    ##
+    # All the return statements declared in this scope, including those
+    # statements which may be in nested scopes.
+    #
+    # @return [Array<Joos::AST::Statement>]
+    def return_statements
+      @returns ||= (statements.select(&:Return)
+                    .concat(children_scopes.map(&:return_statements)
+                            .reduce([]) { |a, e| a.concat e }))
     end
 
     # @!endgroup
 
 
     def check_no_overlapping_variables other_declarations
-      vars = @declarations + other_declarations # don't mutate other_declarations
+      vars = if @declaration
+               other_declarations.dup << @declaration
+             else
+               other_declarations
+             end
+
       vars.each do |var1|
         dupes = vars.select { |var2| var1.name == var2.name }
         raise DuplicateLocalVariables.new(dupes) if dupes.size > 1
@@ -118,40 +165,29 @@ class Joos::AST
     end
 
     ##
-    # Find the closest enclosing scope of the AST node.
+    # Override the default `inspect` so that we can hide some of the
+    # noise of what a block normally looks like.
     #
-    # In the case of a {Joos::Scope}, the closest enclosing scope is
-    # `self`.
-    #
-    # @return [Joos::Scope]
-    def scope
-      self
-    end
-
-    ##
-    # All the return statements declared in this scope, including those
-    # statements which may be in nested scopes.
-    #
-    # @return [Array<Joos::AST::Statement>]
-    def return_statements
-      @returns ||= (statements.select { |statement| statement.Return }
-                    .concat(children_scopes.map(&:return_statements)
-                            .reduce([]) { |a, e| a.concat e }))
+    # @param tab [Fixnum]
+    def inspect tab = 0
+      base = "#{taby tab}#{to_sym}\n"
+      @statements.each do |node|
+        base << node.inspect(tab + 1) << "\n"
+      end
+      base.chomp!
     end
 
 
     private
 
-    # Instruct the scope to construct itself
-    #
-    # @param block [Joos::AST::Scope, Joos::Entity::Method, Joos::Entity::Field]
-    def sort_decls
+    # Instruct the scope to construct itself by sorting out the statements
+    def sort_statements
       return unless self.BlockStatements
       self.BlockStatements.each do |block_statement|
         statement = block_statement.first
 
         if statement.to_sym == :LocalVariableDeclarationStatement
-          @declarations << Joos::Entity::LocalVariable.new(statement, self)
+          @declaration = Joos::Entity::LocalVariable.new(statement, self)
         else
           @statements << statement
           statement.build self

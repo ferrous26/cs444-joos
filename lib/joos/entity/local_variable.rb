@@ -54,6 +54,7 @@ class Joos::Entity::LocalVariable < Joos::Entity
 
   def type_check
     Joos::TypeChecking.assignable? self, @initializer
+    check_no_forward_references
   end
 
   ##

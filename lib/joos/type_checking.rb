@@ -1,5 +1,6 @@
 require 'joos/exceptions'
 require 'joos/ast'
+require 'joos/scope'
 
 module Joos::TypeChecking
 
@@ -546,9 +547,8 @@ Type mismatch. Epected #{BOOL} but got #{expr.type.type_inspect} for
     end
 
     def check_type
-      declarations.map(&:type_check)
       check_void_method_has_only_empty_returns
-      declarations.each(&:check_no_forward_references)
+      declaration.type_check if declaration
     end
 
 
