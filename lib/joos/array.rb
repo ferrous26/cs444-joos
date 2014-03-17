@@ -16,7 +16,7 @@ class Joos::Array
   end
 
   def == other
-    self.type == other.type if other.respond_to? :type
+    self.type == other.type if other.is_a? Joos::Array
   end
 
   # @todo make this less of a hack

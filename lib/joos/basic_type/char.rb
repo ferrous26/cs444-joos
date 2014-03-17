@@ -18,12 +18,6 @@ class Joos::BasicType::Char < Joos::BasicType
     2
   end
 
-  def wider? other
-    length >= other.length && !other.is_a?(Joos::BasicType::Short)
-  end
-
-  def narrower? other
-    !wider?(other)
-  end
+  alias_method :wider?, :==
 
 end

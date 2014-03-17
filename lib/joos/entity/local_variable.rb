@@ -53,7 +53,9 @@ class Joos::Entity::LocalVariable < Joos::Entity
   # @!group Assignment 3
 
   def type_check
-    Joos::TypeChecking.assignable? self, @initializer
+    unless Joos::TypeChecking.assignable? self.type, initializer.type
+      raise Joos::TypeChecking::Mismatch.new(self, initializer, self)
+    end
     check_no_forward_references
   end
 

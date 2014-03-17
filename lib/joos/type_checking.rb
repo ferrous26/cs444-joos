@@ -57,92 +57,104 @@ In
   end
 
   ##
-  # @todo Deer lord, please refactor this
+  # @note these checks are somewhat order sensitive (i.e. arrays)
   #
   # Check if something that is type of `right` is allowed to be assigned
   # to something of that is type of `left`.
   #
-  # @param left  [#type] should return  respond to the Type API
-  # @param right [#type] should respond to the Type API
+  # @param left  should respond to the Type API
+  # @param right should respond to the Type API
+  # @return [Boolean]
   def self.assignable? left, right
-    lhs = left.type
-    rhs = right.type
-
     if $DEBUG
-      $stderr.puts "checking #{lhs.type_inspect} == #{rhs.type_inspect}"
+      $stderr.puts "checking #{left.type_inspect} = #{right.type_inspect}"
     end
 
-    # @note some of these checks are order sensitive (i.e. arrays)
-    # arrays depend on the the inner types...recursion without recursion!
-    if lhs.array_type? && rhs.array_type?
-      return true if rhs.null_type? # fuuuu, one last special case...
-      lhs = lhs.type
-      rhs = rhs.type
+    if left == right # exact same type is always allowed to do assignment...
+      true
+
+    elsif left.void_type? # void only compatible with void...
+      right.void_type?
+
+    elsif left.array_type?
+      array_assignable? left, right
+
+    # if we pass over this case, then we know we have same class of
+    # types to deal with (i.e. Reference-Reference, Basic-Basic)
+    elsif different_class_of_type? left, right
+      false
+
+    elsif left.reference_type?
+      reference_assignable? left, right
+
+    elsif left.basic_type? # we must be looking at basic types
+      basic_type_assignable? left, right
+
+    else # we missed a case...
+      raise "no assignability rule for #{lhs.inspect} and #{rhs.inspect}" <<
+        " at #{left.source.red}"
+    end
+  end
+
+  def self.array_assignable? left, right
+    if right.null_type? # null is always assignable to a ref type...
+      true
+
+    # we cannot assign non-arrays into an array reference
+    elsif !right.array_type?
+      false
+
+    else
+      left  = left.type
+      right = right.type
 
       # one special case we have here is that primitive types must match
       # exactly in this case (so that an impl. can optimize run time size)
-      if lhs.basic_type? && lhs != rhs
-        raise Mismatch.new(left, right, left)
+      if left.basic_type? && left != right
+        false
+
+      else # otherwise, we determine assignability recursively
+        assignable? left, right
+
       end
     end
-
-    # we cannot assign non-arrays into an array reference
-    if lhs.array_type?
-      raise Mismatch.new(left, right, left)
-    end
-
-    # exact same type is always allowed...only after array checks
-    return true if lhs == rhs
-
-    if (lhs.reference_type? && rhs.basic_type?) ||
-       (lhs.basic_type? && rhs.reference_type?) ||
-       (lhs.array_type? && !rhs.array_type?)
-
-      raise Mismatch.new(left, right, left)
-    end
-
-    if lhs.reference_type? && rhs.reference_type?
-      return true if rhs.kind_of_type? lhs.type
-    end
-
-    if lhs.reference_type? && rhs.array_type?
-      raise Mismatch.new(left, right, left)
-    end
-
-    # rules for primitive assignment
-    if lhs.basic_type? && rhs.basic_type?
-      unless lhs.numeric_type? == rhs.numeric_type?
-        raise Mismatch.new(left, right, left)
-      end
-      if lhs.numeric_type? && lhs.length < rhs.length
-        raise Mismatch.new(left, right, left)
-      end
-      if lhs.is_a?(Joos::BasicType::Char) || rhs.is_a?(Joos::BasicType::Char)
-        if lhs.is_a?(Joos::BasicType::Short) ||
-            rhs.is_a?(Joos::BasicType::Short) ||
-            lhs.is_a?(Joos::BasicType::Byte) ||
-            rhs.is_a?(Joos::BasicType::Byte)
-          raise Mismatch.new(left, right, left)
-        end
-      end
-      return true
-    end
-
-    if lhs.is_a?(Joos::Token::Void) || rhs.is_a?(Joos::Token::Void)
-      raise Mismatch.new(left, right, left)
-    end
-
-    # both are reference types but we haven't matched a rule yet
-    # so they must be incompatible types
-    if lhs.reference_type? && rhs.reference_type?
-      raise Mismatch.new(left, right, left)
-    end
-
-    # we missed a case...
-    raise "no assignability rule for #{lhs.inspect} and #{rhs.inspect}" <<
-      " at #{left.source.red}"
   end
 
+  ##
+  # Ask whether the types are not both reference types or both basic
+  # types, which are the two major class of types in Joos.
+  def self.different_class_of_type? left, right
+    (left.reference_type? && !right.reference_type?) ||
+    (left.basic_type?     && !right.basic_type?)
+  end
+
+  # @param left  [#reference_type? == true]
+  # @param right [#reference_type? == true]
+  def self.reference_assignable? left, right
+    if right.kind_of_type?(left)
+      true
+    elsif right.array_type? # array cannot possibly match left side now
+      false
+    elsif left.reference_type? # ref cannot possibly match left side now
+      false
+    end
+  end
+
+  # @param left  [#basic_type? == true]
+  # @param right [#basic_type? == true]
+  def self.basic_type_assignable? left, right
+    if left.numeric_type? != right.numeric_type?
+      false
+    elsif left.boolean_type? && right.boolean_type?
+      true
+    else # both must be numeric types, so test if we can widen
+      left.wider? right
+    end
+  end
+
+  def assignable? left, right
+    Joos::TypeChecking.assignable? left, right
+  end
 
   # @return [Joos::BasicType, Joos::Entity::CompilationUnit, Joos::Array, Joos::Token::Void, Joos::JoosType]
   attr_reader :type
@@ -235,7 +247,9 @@ In
       raise NonLValue.new(self)   unless left && left.lvalue?
       raise ArrayLength.new(self) if left == Joos::Array::FIELD
 
-      Joos::TypeChecking.assignable? self.SubExpression, self.Expression
+      unless assignable? self.SubExpression.type, self.Expression.type
+        raise Joos::TypeChecking::Mismatch.new(first, last, self)
+      end
     end
   end
 

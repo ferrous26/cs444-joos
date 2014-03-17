@@ -29,8 +29,11 @@ module Joos::TypeChecking::Block
       Joos::Token.make(:Void, 'void')
 
     else
+      method = top_block.parent_scope
       return_statements.each do |rhs|
-        Joos::TypeChecking.assignable? top_block.parent_scope, rhs
+        unless assignable? return_type, rhs.type
+          raise Joos::TypeChecking::Mismatch.new(method, rhs, self)
+        end
       end
 
       return_statements.first.type

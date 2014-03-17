@@ -167,7 +167,9 @@ class Joos::Entity::Method < Joos::Entity
     return unless @body
     check_no_static_this
     @body.type_check
-    Joos::TypeChecking.assignable? self, @body
+    unless Joos::TypeChecking.assignable? self.type, body.type
+      raise Joos::TypeChecking::Mismatch.new(self, body, self)
+    end
   end
 
 

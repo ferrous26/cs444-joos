@@ -22,8 +22,4 @@ class Joos::BasicType::Int < Joos::BasicType
     length >= other.length
   end
 
-  def narrower? other
-    !wider?(other)
-  end
-
 end
