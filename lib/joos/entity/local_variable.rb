@@ -57,6 +57,10 @@ class Joos::Entity::LocalVariable < Joos::Entity
     check_no_forward_references
   end
 
+  def lvalue?
+    true
+  end
+
   ##
   # Given how we rescope things, the only possible case to check for is
   # if the variable forward references itself

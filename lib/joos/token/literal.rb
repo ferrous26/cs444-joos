@@ -13,10 +13,6 @@ class Joos::Token
   # value which has been written 'literally' into the code.
   #
   module Literal
-    def entity
-      self
-    end
-
     # @param tab [Fixnum] number of leading spaces (*2)
     def inspect tab = 0
       "#{taby tab}#{value.magenta} from #{source.red}"

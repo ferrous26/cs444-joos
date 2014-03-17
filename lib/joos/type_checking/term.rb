@@ -31,16 +31,46 @@ module Joos::TypeChecking::Term
     !downcast?
   end
 
+  def casting_expression?
+    self.Type
+  end
+
+  def resolve_name
+    if self.Primary
+      self.Selectors.entity || self.Primary.entity
+
+    elsif casting_expression?
+      # result of a cast is a value, but not a variable
+
+    elsif self.TermModifier
+      # result of a unary operator is a value, not a variable
+
+    elsif self.QualifiedIdentifier
+      (self.Selectors && self.Selectors.entity) ||
+        self.QualifiedIdentifier.entity
+
+    else
+      raise "unknown term\n#{inspect}"
+
+    end
+  end
+
   def resolve_type
     if self.Primary
       self.Selectors.type || self.Primary.type
 
-    elsif self.Type # casting
+    elsif casting_expression?
       self.Type.resolve # may need to force this...
       self.Type.type
 
-    elsif self.Term # the lonesome Term case
-      self.Term.type
+    elsif self.TermModifier # the lonesome Term case
+      if self.TermModifier.Not
+        Joos::BasicType.new :Boolean
+      elsif self.TermModifier.Minus
+        Joos::BasicType.new :Int
+      else
+        raise "unknown term modifier\n#{inspect}"
+      end
 
     elsif self.QualifiedIdentifier
       (self.Selectors && self.Selectors.type) ||

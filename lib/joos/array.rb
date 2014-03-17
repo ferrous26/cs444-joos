@@ -25,6 +25,7 @@ class Joos::Array
   FIELD.define_singleton_method(:type) { Joos::BasicType.new :Int }
   FIELD.define_singleton_method(:static?) { false }
   FIELD.define_singleton_method(:public?) { true  }
+  FIELD.define_singleton_method(:lvalue?) { true  }
 
   def all_fields
     [FIELD]

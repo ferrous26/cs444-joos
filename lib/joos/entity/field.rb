@@ -43,10 +43,6 @@ class Joos::Entity::Field < Joos::Entity
     @unit            = klass
   end
 
-  def field?
-    true
-  end
-
   def to_sym
     :Field
   end
@@ -92,6 +88,10 @@ class Joos::Entity::Field < Joos::Entity
     check_no_static_this
     @initializer.type_check
     Joos::TypeChecking.assignable? self, real_initializer
+  end
+
+  def lvalue?
+    true
   end
 
   def real_initializer

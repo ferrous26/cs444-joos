@@ -24,6 +24,10 @@ module Joos::TypeChecking::SubExpression
     right_subexpr.type
   end
 
+  def resolve_name
+    self.Infixop ? nil : first.entity
+  end
+
   ##
   # Resolve the overall type of the subexpression
   def resolve_type

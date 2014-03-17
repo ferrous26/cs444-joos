@@ -27,6 +27,14 @@ class Joos::Entity::FormalParameter < Joos::Entity
     @type = resolve_type @type_identifier
   end
 
+
+  # @!group Assignment 3
+
+  def lvalue?
+    true
+  end
+
+
   # @!endgroup
 
 

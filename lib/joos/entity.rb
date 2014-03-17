@@ -20,10 +20,6 @@ class Joos::Entity
     @name = name
   end
 
-  def field?
-    false
-  end
-
   ##
   # Check that internal state of the entity is consistent with the
   # language specification.
@@ -31,6 +27,10 @@ class Joos::Entity
   # An error will be raised if the entity is not valid.
   def validate
     # nop
+  end
+
+  def lvalue?
+    false
   end
 
   ##

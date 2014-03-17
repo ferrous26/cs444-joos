@@ -143,6 +143,7 @@ class Joos::Token
   end
 
   def entity
+    # nop
   end
 
   # @!endgroup

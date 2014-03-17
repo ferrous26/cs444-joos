@@ -52,7 +52,8 @@ module Joos::TypeChecking::Creator
                      find_constructor
                    end
 
-    nil # @todo hmmmm
+    nil # technically, a creator is not an lvalue,
+        # but we wanted to cache constructor anyways
   end
 
   # because we already resolved the type during the #build phase
@@ -72,10 +73,8 @@ module Joos::TypeChecking::Creator
   private
 
   def find_array_constructor
-    if type.type.basic_type?
-      # this is gonna be kinda fucked up...
-      return :PrimitiveConstructor, nil
-    end
+    # this is gonna be kinda fucked up...
+    return if type.type.basic_type?
 
     signature   = [type.type.name, []]
     constructor = type.type.constructors.find { |c| c.signature == signature }

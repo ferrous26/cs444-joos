@@ -1,6 +1,26 @@
 require 'joos/exceptions'
 require 'joos/ast'
-require 'joos/scope'
+
+class Joos::AST
+  ##
+  # Resolve the type of the children nodes and check that they conform
+  # to what the AST node expects.
+  #
+  # That is, this is a two step procedure:
+  #
+  #  1) recursively resolve the type of children nodes
+  #  2) check that the types of the children follow the rules
+  #
+  def type_check
+    @nodes.each(&:type_check)
+  end
+
+  ##
+  # The lvalue of an expression, if it exists
+  #
+  # @return [Joos::Entity, nil]
+  attr_reader :entity
+end
 
 ##
 # Type checking extensions to various {Joos::AST} classes
@@ -61,6 +81,7 @@ In
 
       # one special case we have here is that primitive types must match
       # exactly in this case (so that an impl. can optimize run time size)
+      puts left.source.red
       if lhs.basic_type? && lhs != rhs
         raise Mismatch.new(left, right, left)
       end
@@ -134,10 +155,6 @@ In
     check_type
   end
 
-  def entity
-    @entity || find(&:entity).entity # deer lord, the inefficiency
-  end
-
   ##
   # The responsibility of this method is to resolve any names which may
   # need to be resolved in the AST node. This is relevant for any rules
@@ -186,6 +203,10 @@ In
   module Expression
     include Joos::TypeChecking
 
+    def resolve_name
+      first.entity
+    end
+
     def resolve_type
       first.type
     end
@@ -200,14 +221,20 @@ In
       end
     end
 
+    class NonLValue < Joos::CompilerException
+      def initialize assign
+        super 'Left side of assignment must be a variable', assign
+      end
+    end
+
     def resolve_type
       self.SubExpression.type
     end
 
     def check_type
-      if self.SubExpression.entity == Joos::Array::FIELD
-        raise ArrayLength.new(self)
-      end
+      left = first.entity
+      raise NonLValue.new(self)   unless left && left.lvalue?
+      raise ArrayLength.new(self) if left == Joos::Array::FIELD
 
       Joos::TypeChecking.assignable? self.SubExpression, self.Expression
     end
@@ -222,6 +249,25 @@ In
     class StaticName < Joos::CompilerException
       def initialize prim
         super 'A parenthesized expression cannot name a type', prim
+      end
+    end
+
+    def resolve_name
+      if self.OpenParen
+        self.Expression.entity
+
+      elsif self.This
+        # "this" is a value, but not an lvalue
+
+      elsif self.New
+        # new object is a value, not an lvalue
+
+      elsif self.Literal
+        # literals are not lvalues
+
+      else
+        raise "unknown primary expression\n#{inspect}"
+
       end
     end
 
@@ -251,6 +297,10 @@ In
   module Selectors
     include Joos::TypeChecking
 
+    def resolve_name
+      last ? last.entity : nil
+    end
+
     def resolve_type
       last ? last.type : nil
     end
@@ -262,6 +312,7 @@ In
     include Joos::TypeChecking
 
     # @note this is the one case where the type is actually a tuple
+    #       and that is OK
     def resolve_type
       self.Expressions.to_a.map(&:type)
     end

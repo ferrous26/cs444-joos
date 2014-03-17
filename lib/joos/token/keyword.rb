@@ -149,12 +149,4 @@ class Joos::Token
     end
   end
 
-  ##
-  # Token representing a pseudo-literal reference to the receiver.
-  class This
-    def entity
-      self
-    end
-  end
-
 end
