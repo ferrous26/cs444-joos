@@ -33,16 +33,16 @@ class Joos::Array
   def ancestors
     root = if type.basic_type?
              type.token.scope.type_environment.root_package
-          else
-            type.type_environment.root_package
-          end
+           else
+             type.type_environment.root_package
+           end
     [
      ['java', 'lang', 'Object'],
      ['java', 'io',   'Serializable'],
      ['java', 'lang', 'Cloneable']
     ].map do |qid|
       root.find qid
-    end
+    end << self
   end
 
 
