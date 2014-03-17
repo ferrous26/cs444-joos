@@ -116,19 +116,20 @@ class Joos::Compiler
   # @return [Array<Joos::Entity::Class>]
   def classes
     return nil unless @compilation_units
-    @compilation_units.select {|unit| unit.is_a? Joos::Entity::Class}
+    @compilation_units.select { |unit| unit.is_a? Joos::Entity::Class }
   end
 
   # @return [Array<Joos::Entity::Interface>]
   def interfaces
     return nil unless @compilation_units
-    @compilation_units.select {|unit| unit.is_a? Joos::Entity::Interface}
+    @compilation_units.select { |unit| unit.is_a? Joos::Entity::Interface }
   end
 
   # @return [Joos::Entity::CompilationUnit]
   def get_unit name
-    @compilation_units.detect {|unit| unit.fully_qualified_name.join('.') == name}
+    @compilation_units.detect { |unit| unit.fully_qualified_name.join('.') == name }
   end
+
 
   private
 
