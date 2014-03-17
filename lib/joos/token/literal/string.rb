@@ -9,35 +9,6 @@ class Joos::Token::String < Joos::Token
   include Joos::Token::Literal
   include Joos::Token::StringHelpers
 
-  ##
-  # Global array of all string literals that will be in the final program
-  #
-  # @return [Hash{ Array<Fixnum> => Joos::Token::String }]
-  STRINGS = {}
-  @strings_lock = Mutex.new
-
-  ##
-  # Override the default instantiation method in order to perform literal
-  # string de-duplication.
-  #
-  # That is, literal strings which are repeated in source code will all
-  # refer to the same memory address in the final program.
-  #
-  # @param token [String]
-  # @param file [String]
-  # @param line [Fixnum]
-  # @param column [Fixnum]
-  # @return [Joos::Token::String]
-  def self.new token, file, line, column
-    string = allocate
-    string.send :initialize, token[1..-2], file, line, column
-    @strings_lock.synchronize do
-      STRINGS.fetch string.to_binary do |_|
-        STRINGS[string.to_binary] = string
-      end
-    end
-  end
-
   # @return [Array<Fixnum>]
   attr_reader :to_binary
 
@@ -46,7 +17,7 @@ class Joos::Token::String < Joos::Token
   # string.
   #
   def initialize token, file, line, column
-    super
+    super token[1..-2], file, line, column
     @to_binary = validate!
   end
 
