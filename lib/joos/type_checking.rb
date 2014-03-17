@@ -81,7 +81,6 @@ In
 
       # one special case we have here is that primitive types must match
       # exactly in this case (so that an impl. can optimize run time size)
-      puts left.source.red
       if lhs.basic_type? && lhs != rhs
         raise Mismatch.new(left, right, left)
       end

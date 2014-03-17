@@ -144,18 +144,6 @@ class Joos::AST
     "#{head} [#{tail}]"
   end
 
-  ##
-  # Resolve the type of the children nodes and check that they conform
-  # to what the AST node expects.
-  #
-  # That is, this is a two step procedure:
-  #
-  #  1) recursively resolve the type of children nodes
-  #  2) check that the types of the children follow the rules
-  #
-  def type_check
-    @nodes.each(&:type_check)
-  end
 
   # @!group Source Info compatability
 

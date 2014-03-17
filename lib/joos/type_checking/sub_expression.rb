@@ -56,7 +56,7 @@ module Joos::TypeChecking::SubExpression
   # Check that the resolved type is valid for the subexpression
   def check_type
     if self.Infixop.Instanceof
-      raise BadInstanceof.new(left_subexpr) unless left_type.reference_type?
+      check_instanceof_op
 
     elsif boolean_op?
       check_boolean_op
@@ -76,6 +76,11 @@ module Joos::TypeChecking::SubExpression
 
 
   private
+
+  def check_instanceof_op
+    raise BadInstanceof.new(left_subexpr) unless left_type.reference_type?
+    # @todo if not assignable, then provably false at compile time
+  end
 
   def check_boolean_op
     unless left_type == right_type && left_type.is_a?(Joos::BasicType::Boolean)

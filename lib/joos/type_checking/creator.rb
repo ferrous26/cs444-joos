@@ -31,6 +31,16 @@ module Joos::TypeChecking::Creator
     end
   end
 
+  ##
+  # Returns the reference to the constructor used in the receivers
+  # creation expression.
+  #
+  # If the receiver creates an array of primitive objects, this attribute
+  # will be `nil`.
+  #
+  # @return [Joos::Entity::Constructor, nil]
+  attr_reader :constructor
+
   def build scope
     super
 
@@ -45,7 +55,10 @@ module Joos::TypeChecking::Creator
   end
 
   def resolve_name
-    check_type # we actually have to do this now, in case type is an interface
+    # we actually have to do this now, in case type is an interface
+    # which does not have any constructors associated with it...
+    check_type
+
     @constructor = if self.ArrayCreator
                      find_array_constructor
                    else
@@ -95,6 +108,8 @@ module Joos::TypeChecking::Creator
     constructor
   end
 
+  # constructor visibility rules are a bit different from the regular rules
+  # because Java
   def check_constructor_visibility constructor
     return if constructor.public? ||
       scope.type_environment.package == constructor.type_environment.package
