@@ -57,6 +57,10 @@ class Joos::JoosType
     false
   end
 
+  def lvalue?
+    false # static_type? cannot be an lvalue in Joos
+  end
+
   def == other
     if other.respond_to? :wrap
       self.wrap == other.wrap

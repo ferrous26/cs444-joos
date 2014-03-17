@@ -15,25 +15,24 @@ module Joos::TypeChecking::Selector
 
   def resolve_name
     if self.OpenStaple # array index
-      previous_entity # technically, we are referring to the previous entity...
+      previous_entity
     else # not array index :)
       find_named_entity
     end
   end
 
   def resolve_type
-    if self.OpenStaple
-      entity.type.type
+    if self.OpenStaple # is an array read/write
+      check_array_type # we actually have to do this here in order to be safe
+      previous_type.type
     else
       entity.type
     end
   end
 
-  def check_type
-    if self.OpenStaple # is an array read/write
-      unless entity.type.array_type?
-        raise InvalidArrayAccess.new(previous_type, self)
-      end
+  def check_array_type
+    unless previous_type.array_type?
+      raise InvalidArrayAccess.new(previous_type, self)
     end
   end
 
