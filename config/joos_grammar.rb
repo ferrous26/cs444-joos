@@ -52,6 +52,8 @@ GRAMMAR = {
       # as if the only two rules would be:
       # [SubExpression]
       # [SubExpression, Infixop, SubExpression]
+      # except that there will still have to be the terminating case of a Term
+      # at some point
       [:Term],
       [:Term, :Infixop, :SubExpression],
 
