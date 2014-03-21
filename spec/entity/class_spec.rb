@@ -42,21 +42,23 @@ describe Joos::Entity::Class do
     expect(klass.constructors).to be_nil
   end
 
-  it 'sets the default superclass to be Object' do
-    pending "Load multiple compilation units in tests"
-    ast   = get_ast 'J1_minusminusminus'
-    klass = Joos::Entity::Class.new ast, @root
-    expect(klass.superclass).to be_a Joos::Entity::Class
-  end
+  context do
+    compiler = test_compiler 'a1/J1_minusminusminus'
+    compiler.compile_to 2
+    klass = compiler.classes[0]
+    object_klass = compiler.classes.detect {|k| k.top_class? }
 
-  it 'sets the default interfaces to be empty' do
-    pending "Load multiple compilation units in tests"
-    ast   = get_ast 'J1_minusminusminus'
-    klass = Joos::Entity::Class.new ast, @root
-    expect(klass.superinterfaces).to be_nil
-    klass.resolve_hierarchy
-    klass.check_hierarchy
-    expect(klass.superinterfaces).to be []
+    it 'sets the default superclass to be Object' do
+      expect(klass.superclass).to be object_klass
+    end
+
+    it 'sets java.lang.Object superclass to nil' do
+      expect(object_klass.superclass).to be_nil
+    end
+
+    it 'sets the default interfaces to be empty' do
+      expect(klass.superinterfaces).to be == []
+    end
   end
 
   it 'sets the default modifiers to be empty' do
@@ -78,16 +80,9 @@ describe Joos::Entity::Class do
   end
 
   it 'raises an error when no constructor' do
-    pending "Load multiple compilation units in tests"
-    ast   = get_ast 'Je_noConstructor'
-    klass = Joos::Entity::Class.new ast, @root
     expect {
-      klass.check_members
+      test_compiler('a1/Je_noConstructor').compile
     }.to raise_error Joos::Entity::Class::NoConstructorError
-
-    ast   = get_ast 'J1_minusminusminus'
-    klass = Joos::Entity::Class.new ast, @root
-    expect { klass.validate }.to_not raise_error
   end
 
   it 'validates that protected, native, and static modifiers are not used' do
@@ -107,17 +102,6 @@ describe Joos::Entity::Class do
     }.to raise_error  Joos::Entity::Modifiable::MutuallyExclusiveModifiers
   end
 
-  it 'recursively validates class members' do
-    pending 'Need way to link java.lang.Object'
-    ast   = get_ast 'Je_allthefixings'
-    klass = Joos::Entity::Class.new ast, @root
-    expect {
-      klass.link_imports
-      klass.link_declarations
-      klass.check_declarations
-    }.to raise_error Joos::Entity::Modifiable::MissingVisibilityModifier
-  end
-
   it 'validates that java.lang.Object is the top_class? and others are not' do
     expect(Joos::Entity::Class::BASE_CLASS).to be == ['java', 'lang', 'Object']
 
@@ -128,7 +112,7 @@ describe Joos::Entity::Class do
   end
 
   it 'inherits methods from superclass' do
-    pending "Need some way of loading an entire class hiearchy"
+    pending "Looking for a suitable test case"
   end
 
 end

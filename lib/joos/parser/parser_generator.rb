@@ -34,7 +34,7 @@ class Joos::Parser::ParserGenerator
     build_start_state #bootstraps generation
 
     until @transition_queue.empty? #main loop
-      puts @transition_queue.size.inspect
+      #puts @transition_queue.size.inspect
       from_state, symbol = @transition_queue.shift
       items = @dfa.states[from_state].new_items_after_transition_on symbol
       next_state = build_state items
