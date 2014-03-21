@@ -5,15 +5,21 @@
 
 \titlemake{4}
 
-This document outlines the design of a name resolution, type checking,
-and other semantic analysis phases of the Joos 1W language and
+This document outlines the design of name resolution, type checking,
+and other static analysis phases of the Joos 1W language as
 implemented in our compiler. It also discusses some challenges faced
 while implementing these phases.
 
 
 \section{Design}
 
-Various components of the class were designed by augmenting or
+All components of the compiler implemented for name resolution, type
+checking, and static analysis are centered around the AST. Either by
+transforming the AST, replacing portions of the AST with more
+conveinent non-tree structures, or injecting functionality.
+
+
+, transforming, post parsing, are Various components of the thingy were designed by augmenting or
 replacing the ASTs that were generated from parsing. We have one AST
 for each compilation unit that we are compiling. For the first
 assignment there was only ever one AST, but as of the second
