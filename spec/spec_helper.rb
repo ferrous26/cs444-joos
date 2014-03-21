@@ -39,6 +39,19 @@ def get_std_ast qualified_name
   Joos::Parser.new(Joos::Scanner.scan_file job).parse
 end
 
+def test_compiler name
+  path = "test/#{name}"
+  if File.directory? path
+    compiler = Joos::Compiler.load_directory path
+  else
+    compiler = Joos::Compiler.new (path + '.java')
+  end
+  compiler.set_top_level false
+  compiler.add_stdlib
+
+  compiler
+end
+
 class String
   include Joos::SourceInfo
 end
