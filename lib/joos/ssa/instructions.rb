@@ -156,7 +156,7 @@ class CallStatic < Instruction
   attr_reader :entity
 
   def initialize target, method, *args
-    super target, args
+    super target, *args
     @entity = method
   end
 end
