@@ -104,7 +104,7 @@ GRAMMAR = {
 
       [:Primary, :Selectors],
 
-      # Type does not normall belong here, but in the case of an instanceof
+      # [:Type] does not normally belong here, but in the case of an instanceof
       # call, the right hand operator of instance (which is a Type) will be
       # pushed down into here
       # [:Type]
