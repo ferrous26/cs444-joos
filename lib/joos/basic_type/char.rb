@@ -15,7 +15,7 @@ class Joos::BasicType::Char < Joos::BasicType
   end
 
   def length
-    2
+    1
   end
 
   alias_method :wider?, :==
