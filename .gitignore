@@ -20,4 +20,5 @@ marmoset.zip
 .idea
 *.synctex.gz
 *.class
+output/
 
