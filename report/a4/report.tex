@@ -64,13 +64,43 @@ Resolving type names
 
 \subsubsection{Hierarchy Checking}
 
-Linking declarations\ldots
+Linking classes and interfaces occurs in essentially two passes. In the first
+pass, we link superclasses and superinterfaces and check simple constraints. One
+of the most important checks is the circularity check, which is done in the
+obvious way by recursively traversing up the class hierarchy. This check ensures
+that the second pass terminates.
+
+In the second pass, we link members to their class or interface. We also link
+overridden methods to their parent and compute the contains set (called
+\ttt{all\_methods}) for each class and interface. To do this, we traverse first
+the interface hierarchy, then the class hierarchy in breadth-first order,
+starting with \ttt{java.lang.Object}, then its sub-classes, their sub-classes,
+and so on. The contains set of a class / interface (a simple array of
+\ttt{Method} or \ttt{Field} objects) is computed by taking an outer join of the
+class' own members with the contains set of its parent, joining by method name
+and argument types. Because of the ordering, the contains sets of the superclass
+and superinterfaces are guaranteed to be complete.
+
+Finally, as part of the second pass, non-abstract classes check their contains
+set to ensure that they have no abstract methods and all their interfaces are
+implemented. Other checks are done along the way in the obvious fashion.
+
 
 Environment building\ldots
 
 
 Linking identifiers\ldots
 
+
+\subsubsection{Forward Reference Checks}
+
+Forward reference checks on field initializers are done by structural recursion
+on the initializer's AST. For every field reference that belongs to the same
+class and has the same staticness as the field, we checks whether or not it is
+the same or appears later in the class declaration. One tricky case is when the
+initialized field is the target of an assignment. We handle this by checking a
+flag that is set on the left branch of an assignment, and cleared for any
+sub-expression that is not a simple identifier.
 
 
 \section{Challenges}
