@@ -19,12 +19,6 @@ describe Joos::Token::String do
     end
   end
 
-  it 'maintains a global array of all strings and avoids duplication' do
-    token1 = Joos::Token::String.new('"hi"', '', 4, 5)
-    token2 = Joos::Token::String.new('"hi"', '', 4, 5)
-    expect(token1).to be token2
-  end
-
   it 'validates all character escape sequences' do
     escapes = ['b', 't', 'n', 'f', 'r', '"', "'", '\\'].map { |char|
       "\\#{char}"
@@ -72,18 +66,6 @@ describe Joos::Token::String do
   it 'returns :StringLiteral from #to_sym' do
     token = Joos::Token::String.new('"e"', 'be', 3, 4)
     expect(token.to_sym).to be == :StringLiteral
-  end
-
-  it 'should de-dupe in a thread-safe way' do
-    strs = Array.new(100)
-    thrd = Array.new
-    100.times do |idx|
-      thrd << Thread.new do
-        strs[idx] = Joos::Token::String.new('kill noobs', 'noobs.c', 9, 3)
-      end
-    end
-    thrd.each(&:join)
-    expect(strs.uniq).to be == [strs.first]
   end
 
   it '#inspect wraps the string in quotes' do
