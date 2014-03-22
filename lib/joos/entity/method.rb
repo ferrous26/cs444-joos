@@ -194,10 +194,6 @@ class Joos::Entity::Method < Joos::Entity
     end
   end
 
-  def path_to _
-    []
-  end
-
   def statements
     []
   end

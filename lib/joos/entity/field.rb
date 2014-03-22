@@ -117,10 +117,6 @@ class Joos::Entity::Field < Joos::Entity
     check_forward_refs_visit initializer
   end
 
-  def path_to _
-    []
-  end
-
 
   # @!group Inspect
 

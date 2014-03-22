@@ -45,15 +45,6 @@ module Joos::TypeChecking::Block
   end
 
   ##
-  # Return the path from any descendant statement to the given block
-  #
-  # @param block [Joos::AST::Block]
-  # @return [Array<Joos::AST::Block>]
-  def path_to block
-    (self == block ? [] : parent_scope.path_to(block)) << self
-  end
-
-  ##
   # Apply Java's conservative flow analysis to the receiver block
   # and return the result.
   def analyze_flow
