@@ -29,6 +29,8 @@ module Joos::TypeChecking::Block
     unify_return_type
   end
 
+  attr_reader :reachability
+
   def check_type
     check_void_method_has_only_empty_returns
     declaration.type_check if declaration
@@ -93,7 +95,7 @@ module Joos::TypeChecking::Block
         blocks = last.nodes.select { |n| n.to_sym == :Block }
         stmts  = blocks.map(&:finishing_statement)
         stmts.compact.first
-      elsif last.Block
+      elsif last.Block && !last.If
         last.Block.finishing_statement
       end
     end
