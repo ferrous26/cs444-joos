@@ -23,7 +23,8 @@ describe Joos::SSA::Segment do
 
     expect( seg.flow_blocks.length ).to be == 1
     expect( seg.start_block ).to be seg.flow_blocks[0]
-    expect( seg.variable_count ).to be == 4
+    expect( seg.variable_count ).to be == 3
+    expect( seg.instructions.to_a.length ).to be == 4
     expect( seg.find_var 1 ).to be_a Joos::SSA::Const
     expect( seg.start_block.continuation ).to be_a Joos::SSA::Return
   end
