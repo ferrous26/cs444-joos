@@ -48,6 +48,17 @@ class Joos::AST
     self
   end
 
+  def visit_reduce &block
+    reduced = nodes.map do |node|
+      if node.is_a? Joos::Token
+        yield node, nil
+      else
+        node.visit_reduce &block
+      end
+    end
+    yield self, reduced
+  end
+
   ##
   # Search for a node of the given type at the current AST level
   #

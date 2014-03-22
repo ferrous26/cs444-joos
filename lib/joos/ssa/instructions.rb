@@ -28,6 +28,16 @@ class Instruction
     @target = target
     @arguments = arguments
   end
+
+  def to_s
+    ret = ""
+    ret << "#{target} = " if target
+    ret << self.class.name.split(/::/).last.bold_green
+    ret << "[#{entity}]" if respond_to? :entity
+    ret << "[#{token.type.type_inspect} #{token.value}]" if respond_to? :token
+    ret << "  "
+    ret << arguments.join(', ')
+  end
 end
 
 
@@ -74,6 +84,19 @@ class BinOr   < BinOp; end
 
 # Get the receiver
 class This < Instruction
+end
+
+# Load a literal into an SSA variable
+class Const < Instruction
+  # Token that represents the literal
+  # @return [Joos::Token]
+  attr_reader :token
+
+  def initialize target, literal
+    super target
+    @target_type = literal.type
+    @token = literal
+  end
 end
 
 # Get a local variable, param, or static field
@@ -123,6 +146,9 @@ class GetField < Instruction
   alias_method :receiver, :operand
 
   def initialize target, field, receiver
+    unless field.is_a? Joos::Entity::Field
+      raise "You messed up types / order of arguments, noob" 
+    end
     super target, receiver
     @entity = field
   end
@@ -130,6 +156,7 @@ class GetField < Instruction
   def target_type
     @entity.type
   end
+
 end
 
 # Set value of an instance field

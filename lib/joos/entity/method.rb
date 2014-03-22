@@ -176,6 +176,11 @@ class Joos::Entity::Method < Joos::Entity
 
 
   # @!group Assignment 3
+  
+  # True iff the method returns `void`
+  def void_return?
+    return_type.nil?
+  end
 
   def type_check
     return unless @body

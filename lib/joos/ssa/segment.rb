@@ -1,4 +1,6 @@
 
+require 'joos/ssa/compile_ast'
+
 module Joos::SSA
 
 # Segment of SSA code.
@@ -6,6 +8,11 @@ module Joos::SSA
 # A Segment represents an entire block of code, either a field initializer or a
 # method / constructor body.
 class Segment
+  include CompileAST
+
+  # Entry point of the segment
+  # @return [FlowBlock]
+  attr_accessor :start_block
 
   # {FlowBlock}s that appear in this code segment.
   # @return [Array<FlowBlock>]
@@ -21,8 +28,32 @@ class Segment
   # @return [Fixnum]
   attr_reader :next_variable
   
+
   def initialize
     @flow_blocks = []
+    @first_variable = 0
+    @next_variable = 0
+  end
+
+  # Create a segment from a method
+  # @return [Segment]
+  def self.from_method method
+    new.tap do |ret|
+      # TODO: add stuff for formal params, etc.
+      ret.start_block = FlowBlock.new
+      ret.compile ret.start_block, method.body
+      ret.flow_blocks = ret.start_block.dominates.to_a
+    end
+  end
+
+  # Create a segment from a field initializer
+  # @return segment
+  def self.from_field field
+    new.tap do |ret|
+      ret.start_block = FlowBlock.new
+      ret.compile start_block, field.initializer
+      ret.flow_blocks = ret.start_block.dominates.to_a
+    end
   end
 
 
@@ -47,20 +78,6 @@ class Segment
     ret
   end
 
-  # Entry point of the segment
-  # @return [FlowBlock]
-  def start_block
-    flow_blocks[0]
-  end
-
-  # Add a [FlowBlock} to the Segment and return it
-  # @param flow_block [FlowBlock]
-  # @return [FlowBlock]
-  def add_block flow_block
-    @flow_blocks.push flow_block
-    flow_block
-  end
-
   # Number of SSA variables created in this segment
   # @return [Fixnum]
   def variable_count
@@ -75,17 +92,23 @@ class Segment
     end
   end
 
+  # Create an Enumerator over all instructions in each FlowBlock
+  # @return [Enumerator<Instruction>]
+  def instructions
+    Enumerator.new do |gen|
+      flow_blocks.each do |block|
+        block.instructions.each do |ins|
+          gen.yield ins
+        end
+      end
+    end
+  end
+
   # Find the instruction that defines a variable
   # @param var [Fixnum]
   # @return [Instruction, nil]
   def find_var var
-    flow_blocks.each do |block|
-      block.instructions.each do |instruction|
-        return instruction if instruction.target == var
-      end
-    end
-
-    nil
+    instructions.detect {|ins| ins.target == var}
   end
 end
 
