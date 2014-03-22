@@ -156,18 +156,18 @@ important checks is the circularity check, which is done in the
 obvious way by recursively traversing up the class hierarchy. This
 check ensures that the second pass of hierarchy checking terminates.
 
-In the second pass, we link members to their class or interface. We
-also link overridding methods to their parent and compute the contains
-set (called \ttt{all\_methods}) for each class and interface. To do
-this, we traverse the interface hierarchy, and then the class
-hierarchy in breadth-first order, starting with
-\ttt{java.lang.Object}, then its subclasses, their subclasses, and
-so on. The contains set of a class or interface (a simple array of
-\ttt{Method} or \ttt{Field} objects) is computed by taking an outer
-join of the class' own members with the contains set of its parent,
-joining by the signature of the member. Because of the ordering,
-the contains sets of the superclass and superinterfaces are guaranteed
-to be complete.
+In the second pass, we link members to their class or interface. We also link
+overridden methods to their parent and compute the contains set (called
+\ttt{all\_methods} and \ttt{all\_fields}) for each class and interface. To do
+this, we traverse the interface hierarchy, and then the class hierarchy in
+breadth-first order: we sort by an attribute \ttt{depth}, which is 0 for
+\ttt{java.lang.Object} and \ttt{superclass.depth + 1} (resp. \ttt{max
+superinterfaces.depth + 1}) for every other class (interface). The contains set
+of a class or interface (a simple array of \ttt{Method} or \ttt{Field} objects)
+is actually computed by taking an outer join of the class' own members with the
+contains set of its parent, joining by the signature of the member.  Visiting
+each class / interface ordered by depth means that the contains sets of the
+superclass and superinterfaces are guaranteed to be complete.
 
 Finally, as part of the second pass, non-abstract classes check their
 contains set to ensure that they have no abstract methods and all
