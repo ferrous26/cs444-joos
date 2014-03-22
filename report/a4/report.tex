@@ -178,31 +178,63 @@ in the obvious fashion.
 
 Once hierachy checking is completed, we build entities for
 \ttt{LocalVariableDeclaration}s, resolving their type using the type
-environment, and resolve types for allocation expressions that use
-\ttt{new}. Though there are other parts of an expression or expression
-statement which must refer to a type, we defer resolving those types
-until type checking.
+environment, and resolve types for allocation expressions. Though
+there are other parts of an expression or expression statement which
+must refer to a type, we defer resolving those types until type
+checking.
 
 The decision to separate some of the type resolution phase was the
 result of how the Marmoset test suites are split up between assignment
 3 and assignment, and our desire to use the Marmoset test suite for
 additional regression tests.
 
+
 \subsection{Type Checking}
 
+Type checking is performed once hierarchy checking is completed and it
+is possible to resolve the names of identifiers used in
+\ttt{Method}/\ttt{Constructor} bodies and \ttt{Field} initializers to
+be resolved correctly. We also use this compilation phase to perform
+constant folding and the conservative flow analysis.
+
+Type checking is implemented recursively for every AST class. The
+leaves of the AST are \ttt{Token} objects, and serve as the base case
+for the recursive checking. A \ttt{Token} in the AST will always pass
+type checking because it is either impossible to define type checking
+for a token, as is the case for certain keywords which remain in the
+AST; or the token is trivially type correct, as will be the case for
+any literals.
+
+Type checking starts with the compilation units, which will then ask
+their members to type check, and then each member will ask their body
+to type check. For convenience of propagating the type checking
+context, we treat \ttt{Field} initializers as if they were wrapped in
+a block.
+
+The type checking context, which is the return type for the member
+being checked, the type environment for the compilation unit, and an
+ordered list of \ttt{LocalVariable}s and \ttt{FormalParameter}s
+defined for a given block, is propagated through the AST by appending
+the information to the \ttt{Block} AST node, and giving AST node a
+method for finding their direct parent \ttt{Block}.
+
+To simplify the behaviour of scope information in a \ttt{Block}, we
+perform various transformations on the AST as a pre-type checking
+procedure which we hope will also simplify code generation.
 
 
 \subsection{AST Transformations}
 
 Due to the limitations of our LR(1) grammar, an AST may have some
-peculiarities in its structure. This is necessary for creating an
-unambiguous and more simple grammar, but also makes post-parsing
-operations on the tree more difficult due the many different
-structures that are created to model very similar concepts.
+peculiarities in its structure. This was necessary for creating an
+unambiguous and more simple grammar, but makes post-parsing operations
+on the tree more difficult due the many different structures that are
+created to model very similar concepts.
 
 To get around this obstacle, we perform simple transformations on each
-AST while it is being built, and then afterward during validation of
-the ASTs.
+AST while it is being built, and then some more transformations
+afterward during the weeding of the ASTs.
+
 
 \subsubsection{\ttt{for-while} Transformation}
 
@@ -210,15 +242,15 @@ The simplest transformations is transforming every intance of a
 \ttt{for} loop to a \ttt{while} loop.
 
 The initialization of the \ttt{for} loop is transformed into a \ttt{Statement}
-(if one exists) and is placed as the first statement of the \ttt{Block} of
-the new \ttt{while} loop. Since newly declared variables in the initialization
-should only be in the scope of the following \ttt{Block}, we are easily able
-to cover that behaviour with this method.
+(if one exists) and is placed as the first statement of a new
+\ttt{Block} which will wrap the new \ttt{while} loop. The \ttt{Block}
+to wrap the \ttt{Statement} and loop is meant to limit the scope of
+variable declared in the \ttt{for} initializer.
 
-The update of the \ttt{for} loop is also transformed into a \ttt{Statement},
-and is placed as the last statement of the \ttt{while} loop's \ttt{Block},
-allowing that update to occur at the end of each iteration of the loop, as
-expected.
+The update expression of the \ttt{for} loop is also transformed into a
+\ttt{Statement}, and is placed as the last statement of the
+\ttt{while} loop's body \ttt{Block}, allowing that update to occur at the
+end of each iteration of the loop, as expected.
 
 The condition of the \ttt{for} loop is placed directly into the condition of
 the \ttt{while} loop to preserve behaviour. Since \ttt{while} loops require a
@@ -229,7 +261,7 @@ update clause.
 The \ttt{Block} or \ttt{Statement} following the \ttt{for} loop is converted
 into a \ttt{Block} (if applicable), and has the initialization and update
 added to it (again, if applicable). This new block is used as the \ttt{while}
-loop's following \ttt{Block}.
+loop's body.
 
 \subsubsection{Inner Block Scoping}
 
@@ -238,77 +270,83 @@ that \ttt{Block}. However, this leads to an odering problem, as we are making
 the assumption that each declaration in the \ttt{Block} occurs before the
 corresponding identifier is referenced within the \ttt{Block}.
 
-To deal with this, we add more inner \ttt{Blocks} to the \ttt{Block} in
+To deal with this, we add more inner \ttt{Block}s to the \ttt{Block} in
 question. We iterate over each statement in the \ttt{Block}, and if we see a
-declaration occur after a statement, we wrap the declaration and all following
-statements in a new block. This way, there is only ever one declaration per
-block (all others are inside inner blocks), and any identifier that is
-declared in one block should only be referenced in an inner block.
+declaration occur after an expression statement, or a second
+declaration in the same \ttt{Block}, we wrap the declaration and all
+following statements in the block in a new sub-\ttt{Block}. This way,
+there is only ever one declaration per block (all others are inside
+inner blocks), and any identifier that is declared in one block will
+still be in scope only for the \ttt{Block} in which it is declared in
+the original source code.
 
 \subsubsection{Order of Operations}
 
-Since our grammar does not preserve Joos's operator precedence, we need to
-restructure any \ttt{SubExpression} to follow order of operations.
+Since our grammar does not preserve all Java operator precedence
+rules, we need to restructure \ttt{SubExpression}s to follow order of
+operations.
 
 Each valid Joos operation is given a priority, with multiplication, division,
 and modulus receiving highest priority (parentheses are taken care of by the
-grammar), and lazy-or having the lowest priority. We pass over the
+grammar), and lazy-or having the lowest priority. We pass over each
 \ttt{SubExpression} from right to left, performing a simple rotation if
-the operator precedence requires it, and recursively checking precedence on the
-new subtree created.
+the operator precedence requires it, and recursively checking
+precedence on the new subtree AST created.
 
-After this pass, the \ttt{SubExpression} tree is in the correct shape for
-following Joos's operator precedence.
+After this pass, the \ttt{SubExpression} tree is in the correct shape to
+follow Java operator precedence.
 
 \subsubsection{Constant Folding}
 
-We fold constant expressions into a single constant at the same time we perform
-type analysis (see below).
+We fold constant expressions into a single constant as the final step
+in type checking an AST node (described below).
 
-As a preface, a \ttt{SubExpression}, in our AST, is either a \ttt{Term} containing some value, or two more \ttt{SubExpressions} with an operator in
-between.
+Each \ttt{SubExpression} in the AST, is either a \ttt{Term} containing
+some value, or two more \ttt{SubExpressions} with an \ttt{Infixop}
+operator in between.
 
 Each \ttt{SubExpression} has a \ttt{literal\_value} denoting the its literal
-value, if it has one. This literal value is either the literal value of its
-\ttt{Term} (if that's its structure), or recursively defined as the literal
-value of its two \ttt{SubExpression} children acted upon by the operator. If
-a \ttt{SubExpression} or \ttt{Term} does not contain a literal value, then
-\ttt{literal\_value} is denoted to us by the Ruby \ttt{nil}.
+value, if it has one according to the expression evaluation rules of
+Java. If the \ttt{SubExpression} on both sides of the operator would
+produce a constant expression then we can fold the
+\ttt{SubExpression}s into a \ttt{Term} representing a new constant
+expression. If either \ttt{SubExpression} is not a constant
+expression, then \ttt{literal\_value} is denoted to us by the Ruby
+\ttt{nil} and constant folding is not performed for the AST node.
 
-Once we have the \ttt{literal\_value} of a \ttt{SubExpression}, we replace the
-inside of that \ttt{SubExpression} with a \ttt{Term} containing that literal
-value.
-
-Environment building\ldots
-
-
-Linking identifiers\ldots
+With constant folding casting expressions, we had to be careful to not
+throw away type information when folding numeric types, as Java
+behaviour expects overflow to be handled correctly for the result of
+an operation.
 
 
 \subsubsection{Forward Reference Checks}
 
-Forward reference checks on field initializers are done by structural recursion
-on the initializer's AST. For every field reference that belongs to the same
-class and has the same staticness as the field, we checks whether or not it is
-the same or appears later in the class declaration. One tricky case is when the
-initialized field is the target of an assignment. We handle this by checking a
-flag that is set on the left branch of an assignment, and cleared for any
-sub-expression that is not a simple identifier.
+As part of type checking, we check forward references of field
+declarations and local variables. This is also part of the
+pre-processing phase of type checking, and part of type checking
+due to assignment specifications, deadlines, and our desire to use the
+Marmoset tests as additional regression tests.
 
+Due to our rescoping of \ttt{Block}s, forward references of local
+variables are handled by the normal name resolution code that is used
+for ambiguous names (described below). Checking that a local variable
+does not reference itself in its initializer is done now as well, even though
+it is part of assignment 4, as it did not fit in anywhere else.
 
-\section{Challenges}
+Forward reference checks for \ttt{Field} initializers are done by
+structural recursion on the \ttt{Field} initializer's AST. For every
+field reference that belongs to the same class and has the same
+staticness as the field, we checks whether or not it is the same field
+or if the named field appears later in the class declaration.
 
-This phase of the compiler implementation presented many
-challenges, some of which led to interesting solutions.
+One tricky case is when the initialized field is the target of an
+assignment. We handle this by checking a flag that is set on the left
+branch of an assignment, and cleared for any sub-expression that is
+not a simple identifier.
 
-AST transformations
+\subsubsection{The Type Checking Algorithm}
 
-
-\subsection{Hacks}
-
-Lots and lots of hacks\ldots
-
-AST transformations
 
 
 \end{document}
