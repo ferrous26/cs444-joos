@@ -14,6 +14,10 @@ class Joos::AST::Statement
     transform_while
   end
 
+  def Blocks
+    select { |node| node.to_sym == :Block }
+  end
+
 
   private
 

@@ -57,6 +57,14 @@ class Joos::AST
     # @return [Array<Joos::Scope>]
     attr_reader :children_scopes
 
+    ##
+    # Whether or not the last statement of the block must contain a return
+    # statement or another block which recursively has the same requirements.
+    #
+    # @return [Boolean]
+    attr_reader :must_end
+    alias_method :must_end?, :must_end
+
     # @param entity [Joos::Entity::Method, Joos::Entity::Field, Joos::Scope]
     def build entity
       @type_environment = entity.type_environment
@@ -111,6 +119,10 @@ class Joos::AST
       end
     end
 
+    def top_block?
+      top_block == self
+    end
+
     ##
     # Find the entity (method or field) which owns this scope
     #
@@ -142,6 +154,22 @@ class Joos::AST
       @returns ||= (statements.select(&:Return)
                     .concat(children_scopes.map(&:return_statements)
                             .reduce([]) { |a, e| a.concat e }))
+    end
+
+    ##
+    # If the block is in the last statement of the parent block, and that
+    # statement is just a Block, or an if-else, then it must end
+    def determine_if_end_of_code_path
+      @must_end =
+        if top_block?
+          true
+        elsif parent_scope.must_end? # inherit parent scopes value if false
+          last = parent_scope.statements.last
+          last.Blocks.include?(self) &&
+            (last.Else || last.first.is_a?(Joos::AST::Block))
+        end
+
+      children_scopes.each(&:determine_if_end_of_code_path)
     end
 
     # @!endgroup

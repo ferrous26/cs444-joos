@@ -148,7 +148,10 @@ class Joos::Entity::Method < Joos::Entity
   def link_declarations
     @type ||= resolve_type @type_identifier
     @parameters.each(&:link_declarations)
-    @body.build(self) if @body
+    if @body
+      @body.build(self)
+      @body.determine_if_end_of_code_path
+    end
   end
 
   def check_hierarchy
@@ -191,12 +194,16 @@ class Joos::Entity::Method < Joos::Entity
     end
   end
 
+  def path_to _
+    []
+  end
+
   def statements
     []
   end
 
-  def path_to _
-    []
+  def must_end?
+    true
   end
 
 
