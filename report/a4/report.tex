@@ -16,7 +16,7 @@ while implementing these phases.
 All components of the compiler implemented for name resolution, type
 checking, and static analysis are centered around the AST. Either by
 transforming the AST, replacing portions of the AST with more
-conveinent data structures, or by appending functionality to classes
+convenient data structures, or by appending functionality to classes
 which are already part of the AST. After parsing was completed, the
 compiler had an AST for each compilation unit (file) which was named
 on the command line. We then begin building up entity structures for
@@ -176,7 +176,7 @@ in the obvious fashion.
 
 \subsection{Completing The Entity Hierarchy}
 
-Once hierachy checking is completed, we build entities for
+Once hierarchy checking is completed, we build entities for
 \ttt{LocalVariableDeclaration}s, resolving their type using the type
 environment, and resolve types for allocation expressions. Though
 there are other parts of an expression or expression statement which
@@ -238,7 +238,7 @@ afterward during the weeding of the ASTs.
 
 \subsubsection{\ttt{for-while} Transformation}
 
-The simplest transformations is transforming every intance of a
+The simplest transformations is transforming every instance of a
 \ttt{for} loop to a \ttt{while} loop.
 
 The initialization of the \ttt{for} loop is transformed into a \ttt{Statement}
@@ -266,7 +266,7 @@ loop's body.
 \subsubsection{Inner Block Scoping}
 
 For each \ttt{Block}, we maintain a list of all identifiers declared in
-that \ttt{Block}. However, this leads to an odering problem, as we are making
+that \ttt{Block}. However, this leads to an ordering problem, as we are making
 the assumption that each declaration in the \ttt{Block} occurs before the
 corresponding identifier is referenced within the \ttt{Block}.
 
@@ -429,6 +429,12 @@ Once the body of a \ttt{Method} is type checked, we check that all
 \ttt{Method}. Similarly, we check if the result of a \ttt{Field}
 initializer expression is assignable to the type of the \ttt{Field}.
 
+The final step of type checking, was to try and fold any constant
+expressions, if that was relevant to the AST node. This could only be
+done safely after the rest of type checking, and is done as part of
+type checking because it was required for reachability analysis, and
+reachability analysis augments type checking for \ttt{Method}s.
+
 \subsection{Assignment Checking}
 
 As Joos does not allow final fields, parameters, or local variables to
@@ -455,8 +461,20 @@ If we do get an \ttt{lvalue}, then we check that it is not the
 
 \subsection{Reachability Analysis}
 
-Reachability analysis, as defined in the JLS,
+Reachability analysis, as defined in the JLS, seemed to make the most
+sense as an addition to \ttt{Method}, \ttt{Block}, and \ttt{Statement}
+type checking.
 
+Following the rules described for the analysis in the JLS, the
+analysis rules were added to the actual type checking step of
+\ttt{Method}s, and after type checking for \ttt{Block} and
+\ttt{Statement}. This is a result of the requirement that
+non-terminating \ttt{Method}s do not need to perform normal type
+checking.
+
+Otherwise, reachability analysis was implemented recursively, in a
+similar fashion to type checking and constant folding, and is a
+straightforward adaptation of the judgement rules defined in the JLS.
 
 \end{document}
 
