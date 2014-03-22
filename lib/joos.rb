@@ -94,6 +94,12 @@ class Joos::Compiler
     ret
   end
 
+  def self.debug name
+    c = load_dir_with_stdlib name
+    c.compile
+    c
+  end
+
   def add_stdlib
     @files += Dir.glob 'test/stdlib/5.0/**/*.java'
   end
