@@ -347,6 +347,115 @@ not a simple identifier.
 
 \subsubsection{The Type Checking Algorithm}
 
+The \ttt{type\_check} method is implemented for each type of AST node
+which is part of a \ttt{Method} block or \ttt{Field} initializer. Each
+type of AST node implements the rules which are relevant to the node.
+Each AST class splits up \ttt{type\_check} into four steps:
+
+\begin{enumerate}
+  \item Name resolution
+  \item Type resolution
+  \item Type checking
+  \item Constant folding
+\end{enumerate}
+
+The name resolution step only applies to nodes which might have a name
+to resolve. For example, an \ttt{Identifier} must resolve itself, so
+must a \ttt{Selector} naming a \ttt{Method}, \ttt{Field}, or
+performing an array access. In each case, name resolution must first
+determine the context which it can use to search for the name. This is
+done by navigating the AST to find the previous name in the
+expression. If there is no previous name, then we use the rules for
+resolving ambiguous names. In this case, we ask the owning \ttt{Block}
+for context information as described above.
+
+If there was a previous name resolved for the expression, then the
+entire \ttt{type\_check} phase is done for that identifier and we can
+ask for the \ttt{type} of that identifier. Using the \ttt{type} we can
+search the appropriate namespace to resolve the name.
+
+If the previous identifier named a \ttt{Package} then we will search the
+type hierarchy rooted at the named \ttt{Package}. If the previous
+identifier named a \ttt{Class}, then we search static \ttt{Field}s and
+\ttt{Method}s, depending on if the identifier belongs to a field
+access or method call. If the previous identifier names some other
+entity, then we search the non-static methods and fields as
+appropriate.
+
+If the name cannot be resolved, then an appropriate error is printed
+and compilation is aborted. However, if the name is resolved, then we
+cache the \ttt{Entity} to help with code generation.
+
+Once name resolution is complete, the expected type of the AST node
+can be resolved. This does not actually check that the children nodes
+of the AST are type correct, only what the type of the AST node should
+be. This was done to simplify some of the type checking rules, such as
+those for infix operators. In the case of a \ttt{SubExpression}, we
+can look at the operator to determine the expected type for the
+overall \ttt{SubExpression}. The only exception in this case is the
+\ttt{+} operator, which has to handle string concatenation. This step
+of type checking simply follows the type rules as outlined in lecture
+and the JLS.
+
+After the expected type for an AST node is resolved, the actual check
+to see if the types of the children AST nodes are in concert with the
+expected type as defined by the JLS and assignment specification.
+
+A notable challenge for checking types was determining if types could
+be converted for assignment and comparison. In order to check
+assignability for references, we implemented the notion of
+\ttt{ancestors} for a type. The \ttt{ancestors} of a type is
+recursive set of superclasses and superinterfaces for compilation
+unit. If the right side of an assignability check has an ancestor
+which is the left side of the assignability check, then the assignment
+or comparison was allowed. Additionally, for casting and
+\ttt{instanceof}, we tested the reverse case of assignability if the
+first case failed. If the reverse case of assignability succeeded then
+the cast or \ttt{instanceof} check was allowed.
+
+We also take this opportunity to mark a casting statement as either an
+up cast or a down cast, so that we know if a runtime casting check
+will be needed. If the reverse assignability check was needed, and
+succeeded, then we know that the runtime down casting check is
+required.
+
+Checking assignability of basic types was strange due to how Joos and
+Java treat the \ttt{char} type as numeric with a size of 2 bytes. We
+thought that it would be assignment compatible with \ttt{short} types,
+but the JLS specifies otherwise and we handle it as a special case.
+
+Once the body of a \ttt{Method} is type checked, we check that all
+\ttt{return} statements in the body are assignable to the type of the
+\ttt{Method}. Similarly, we check if the result of a \ttt{Field}
+initializer expression is assignable to the type of the \ttt{Field}.
+
+\subsection{Assignment Checking}
+
+As Joos does not allow final fields, parameters, or local variables to
+be declared, we avoided checking if the left side of an assignment was
+allowed, with the exception of array \ttt{length}.
+
+In order to test the left side of an assignment, we needed to
+recursively propagate the \ttt{lvalue}/\ttt{variable} of the
+\ttt{SubExpression} on the left side of the assignment. Much like with
+the rest of type checking, we define an \ttt{entity} method for each
+relevant AST class which can determine, based on JLS rules, if the AST
+would produce an \ttt{lvalue}. If no \ttt{lvalue} is produced, then
+\ttt{nil} is the result.
+
+When type checking an assignment AST node, we ask for the \ttt{lvalue}
+of the left side. If we get \ttt{nil} then the code is not valid and
+the compiler exits with an appropriate message. We found that this
+case is not tested by any particular Marmoset test, or at least not a
+test that would not fail for another reason.
+
+If we do get an \ttt{lvalue}, then we check that it is not the
+\ttt{length} field of an array.
+
+
+\subsection{Reachability Analysis}
+
+Reachability analysis, as defined in the JLS,
 
 
 \end{document}
