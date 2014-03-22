@@ -112,46 +112,60 @@ compilation unit, and is used to resolve names which must name a
 type. It is also used to help disambiguate ambiguous names during name
 resolution and type checking.
 
-\subsection{Compilation Unit Entities}
+\subsection{Building The Entity Hierarchy Skeleton}
 
 Once the package hierarchy and type environment are built, we proceed
-with building the entity hierarchy for each compilation unit.
+with building the entity hierarchy for each compilation unit, which
+will replace parts of the AST.
 
+For each \ttt{Class}, we parse the \ttt{extends} and \ttt{implements}
+clauses of the declaration header, and link the names using the type
+environment.  We then proceed to build an entity for each
+\ttt{Constructor}, \ttt{Method}, and \ttt{Field} declared in the body
+of the \ttt{Class}, maintaining an ordered list for each type of
+entity.
 
-\subsection{Name Resolution}
+For each class member, we resolve the return type to either a basic
+type, an array of a basic type, or we must search the type environment
+of the compilation unit to resolve the named type or named type
+array. If the type name cannot resolve then we print an appropriate
+error message and abort compilation. One exception to this process is
+that we treat the return type of a constructor to be \ttt{void}, as
+that is equivalent to the semantics required by the JLS and allows
+more code reuse between entities.
 
-After initially parsing the AST into the entity models, we can build
-the type environment by building the package hierarchy and linking
-imported types and packages into the compilation units that request
-them.
+\ttt{Interface} declarations follow the same process for building
+their entity hierarchy, with the obvious exception that there will not
+be any \ttt{Field} or \ttt{Constructor} declarations for an
+\ttt{Interface}.
 
-Creating the package hierarchy\ldots
-
-Importing\ldots
-
-Resolving type names
-
-
+Then, for each \ttt{FormalParameter} of a \ttt{Method} or
+\ttt{Constructor}, we follow the same process for resolving the
+type. Resolving the types of local variable declarations and
+allocations is deferred until after hierarchy checking.
 
 \subsubsection{Hierarchy Checking}
 
-Linking classes and interfaces occurs in essentially two passes. In
-the first pass, we link superclasses and superinterfaces and check
-simple constraints. One of the most important checks is the
-circularity check, which is done in the obvious way by recursively
-traversing up the class hierarchy. This check ensures that the second
-pass terminates.
+We perform hierarchy checking as soon as enough of the hierarchy is
+constructed, which is described in the previous section.
+
+Linking classes and interfaces in the hierarchy occurs in essentially
+two passes. In the first pass, we link superclasses and
+superinterfaces and check simple constraints. One of the most
+important checks is the circularity check, which is done in the
+obvious way by recursively traversing up the class hierarchy. This
+check ensures that the second pass of hierarchy checking terminates.
 
 In the second pass, we link members to their class or interface. We
-also link overridden methods to their parent and compute the contains
+also link overridding methods to their parent and compute the contains
 set (called \ttt{all\_methods}) for each class and interface. To do
-this, we traverse first the interface hierarchy, then the class
+this, we traverse the interface hierarchy, and then the class
 hierarchy in breadth-first order, starting with
-\ttt{java.lang.Object}, then its sub-classes, their sub-classes, and
-so on. The contains set of a class / interface (a simple array of
+\ttt{java.lang.Object}, then its subclasses, their subclasses, and
+so on. The contains set of a class or interface (a simple array of
 \ttt{Method} or \ttt{Field} objects) is computed by taking an outer
 join of the class' own members with the contains set of its parent,
-joining by method name and argument types. Because of the ordering,
+joining by the signature of the member. Because of the ordering,
 the contains sets of the superclass and superinterfaces are guaranteed
 to be complete.
 
@@ -159,6 +173,22 @@ Finally, as part of the second pass, non-abstract classes check their
 contains set to ensure that they have no abstract methods and all
 their interfaces are implemented. Other checks are done along the way
 in the obvious fashion.
+
+\subsection{Completing The Entity Hierarchy}
+
+Once hierachy checking is completed, we build entities for
+\ttt{LocalVariableDeclaration}s, resolving their type using the type
+environment, and resolve types for allocation expressions that use
+\ttt{new}. Though there are other parts of an expression or expression
+statement which must refer to a type, we defer resolving those types
+until type checking.
+
+The decision to separate some of the type resolution phase was the
+result of how the Marmoset test suites are split up between assignment
+3 and assignment, and our desire to use the Marmoset test suite for
+additional regression tests.
+
+\subsection{Type Checking}
 
 
 
