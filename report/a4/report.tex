@@ -26,6 +26,92 @@ assignment there was only ever one AST, but as of the second
 assignment the compiler handles an arbitrary number of ASTs being
 created and processed.
 
+\subsection{AST Transformations}
+
+Due to the limitations of our LR(1) grammar, an AST may have some peculiarities
+in its structure. This is necessary for creating an unambiguous and more
+simple grammar, but also makes post-parsing operations on the tree more
+difficult due the many different structures that are created to model very
+similar concepts.
+
+To get around this obstacle, we perform simple transformations on each AST
+while it is being built, and then afterward during validation of the ASTs.
+
+\subsubsection{\ttt{for-while} Transformation}
+
+One of the most simple transformations is transforming every intance of a
+\ttt{for} loop to a \ttt{while} loop.
+
+The initialization of the \ttt{for} loop is transformed into a \ttt{Statement}
+(if one exists) and is placed as the first statement of the \ttt{Block} of
+the new \ttt{while} loop. Since newly declared variables in the initialization
+should only be in the scope of the following \ttt{Block}, we are easily able
+to cover that behaviour with this method.
+
+The update of the \ttt{for} loop is also transformed into a \ttt{Statement},
+and is placed as the last statement of the \ttt{while} loop's \ttt{Block},
+allowing that update to occur at the end of each iteration of the loop, as
+expected.
+
+The condition of the \ttt{for} loop is placed directly into the condition of
+the \ttt{while} loop to preserve behaviour. Since \ttt{while} loops require a
+condition, and \ttt{for} loops do not, we place the \ttt{true} condition into
+the \ttt{while} loop automatically if the \ttt{for} loop does not have an
+update clause.
+
+The \ttt{Block} or \ttt{Statement} following the \ttt{for} loop is converted
+into a \ttt{Block} (if applicable), and has the initialization and update
+added to it (again, if applicable). This new block is used as the \ttt{while}
+loop's following \ttt{Block}.
+
+\subsubsection{Inner Block Scoping}
+
+For each \ttt{Block}, we maintain a list of all identifiers declared in
+that \ttt{Block}. However, this leads to an odering problem, as we are making
+the assumption that each declaration in the \ttt{Block} occurs before the
+corresponding identifier is referenced within the \ttt{Block}.
+
+To deal with this, we add more inner \ttt{Blocks} to the \ttt{Block} in
+question. We iterate over each statement in the \ttt{Block}, and if we see a
+declaration occur after a statement, we wrap the declaration and all following
+statements in a new block. This way, there is only ever one declaration per
+block (all others are inside inner blocks), and any identifier that is
+declared in one block should only be referenced in an inner block.
+
+\subsubsection{Order of Operations}
+
+Since our grammar does not preserve Joos's operator precedence, we need to
+restructure any \ttt{SubExpression} to follow order of operations.
+
+Each valid Joos operation is given a priority, with multiplication, division,
+and modulus receiving highest priority (parentheses are taken care of by the
+grammar), and lazy-or having the lowest priority. We pass over the
+\ttt{SubExpression} from right to left, performing a simple rotation if
+the operator precedence requires it, and recursively checking precedence on the
+new subtree created.
+
+After this pass, the \ttt{SubExpression} tree is in the correct shape for
+following Joos's operator precedence.
+
+\subsubsection{Constant Folding}
+
+We fold constant expressions into a single constant at the same time we perform
+type analysis (see below).
+
+As a preface, a \ttt{SubExpression}, in our AST, is either a \ttt{Term} containing some value, or two more \ttt{SubExpressions} with an operator in
+between.
+
+Each \ttt{SubExpression} has a \ttt{literal_value} denoting the its literal
+value, if it has one. This literal value is either the literal value of its
+\ttt{Term} (if that's its structure), or recursively defined as the literal
+value of its two \ttt{SubExpression} children acted upon by the operator. If
+a \ttt{SubExpression} or \ttt{Term} does not contain a literal value, then
+\ttt{literal_value} is denoted to us by the Ruby \ttt{nil}.
+
+Once we have the \ttt{literal_value} of a \ttt{SubExpression}, we replace the
+inside of that \ttt{SubExpression} with a \ttt{Term} containing that literal
+value.
+
 \subsection{Name Resolution}
 
 The first step in name resolution was to parse each AST and create

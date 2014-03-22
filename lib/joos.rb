@@ -55,6 +55,13 @@ class Joos::Compiler
   def initialize *files
     @files  = files.flatten
     @result = SUCCESS
+    @top_level = true
+  end
+
+  # Call this with `false` when runing inside tests, to re-raise exceptions
+  # instead of dumping them
+  def set_top_level top_level
+    @top_level = top_level
   end
 
   def self.load_directory name
@@ -97,20 +104,28 @@ class Joos::Compiler
   # For each {#files}, a `.s` file will be created with the appropriate
   # assembly code.
   def compile
-    scan_and_parse_and_weed     # Assignment 1
-    resolve_names               # Assignment 2
-    type_check                  # Assignment 3
-    # static analysis           # Assignment 4
-    # generate_code             # Assignment 5
+    compile_to 4
+  end
 
-  rescue Joos::CompilerException => exception
-    @result = ERROR
-    $stderr.puts exception.message
-    $stderr.puts exception.backtrace if $DEBUG
+  # Compiles up to a given assignment number
+  def compile_to assignment
+    scan_and_parse_and_weed     if assignment >= 1
+    resolve_names               if assignment >= 2
+    type_check                  if assignment >= 3
+    #static_analysis             if assignment >= 4
+    #generate_code               if assignment >= 5
+
   rescue Exception => exception
-    @result = FATAL
+    raise exception unless @top_level
+
     $stderr.puts exception.message
-    $stderr.puts exception.backtrace
+    if exception.is_a? Joos::CompilerException
+      @result = ERROR
+      $stderr.puts exception.backtrace if $DEBUG
+    else
+      @result = FATAL
+      $stderr.puts exception.backtrace
+    end
   end
 
   # @return [Array<Joos::Entity::Class>]
