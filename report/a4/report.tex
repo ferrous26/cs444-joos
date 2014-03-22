@@ -438,8 +438,8 @@ reachability analysis augments type checking for \ttt{Method}s.
 \subsection{Assignment Checking}
 
 As Joos does not allow final fields, parameters, or local variables to
-be declared, we avoided checking if the left side of an assignment was
-allowed, with the exception of array \ttt{length}.
+be declared, we mostly avoided checking if the left side of an
+assignment was allowed, with the exception of array \ttt{length}.
 
 In order to test the left side of an assignment, we needed to
 recursively propagate the \ttt{lvalue}/\ttt{variable} of the
@@ -465,10 +465,10 @@ Reachability analysis, as defined in the JLS, seemed to make the most
 sense as an addition to \ttt{Method}, \ttt{Block}, and \ttt{Statement}
 type checking.
 
-Following the rules described for the analysis in the JLS, the
-analysis rules were added to the actual type checking step of
-\ttt{Method}s, and after type checking for \ttt{Block} and
-\ttt{Statement}. This is a result of the requirement that
+Following the rules described for the analysis from the JLS, the
+analysis rules were added to the type checking step of type checking
+\ttt{Method}s, and after type checking step for type checking
+\ttt{Block}s and \ttt{Statement}s. This is a result of the requirement that
 non-terminating \ttt{Method}s do not need to perform normal type
 checking.
 
