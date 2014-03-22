@@ -4,8 +4,12 @@ require 'joos/ast'
 # Code blocks in Joos (statements between braces)
 class Joos::AST::Block
 
+  attr_reader :leftmost_terminal
+
   def initialize nodes
     super
+
+    @leftmost_terminal = nodes.first
 
     # trim braces
     if self.BlockStatements
@@ -31,8 +35,8 @@ class Joos::AST::Block
                             make(:BlockStatements, *statements[index..-1]))))
 
         statements.pop(statements.size - index)
-        statements[index] = bs
-        return # we just fucked with the array we are enumerating, so bail!
+        self.BlockStatements.reparent bs, at_index: index
+        return # we are done here
       elsif node.LocalVariableDeclarationStatement || node.Statement
         decl_or_statement_seen = true
       end

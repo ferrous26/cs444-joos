@@ -20,6 +20,10 @@ class Joos::AST
   #
   # @return [Joos::Entity, nil]
   attr_reader :entity
+
+  def literal_value
+    # nop
+  end
 end
 
 ##
@@ -156,14 +160,22 @@ In
     Joos::TypeChecking.assignable? left, right
   end
 
-  # @return [Joos::BasicType, Joos::Entity::CompilationUnit, Joos::Array, Joos::Token::Void, Joos::JoosType]
+  # @return [Joos::BasicType, Joos::Entity::CompilationUnit, Joos::Array, Joos::Token::Void, Joos::JoosType, Joos::NullReference]
   attr_reader :type
+
+  ##
+  # If a constant expression can propagate a literal value, it will be cached
+  # here after type checking, otherwise this attribute contains `nil`.
+  #
+  # @return [Joos::Token::Literal, nil]
+  attr_reader :literal
 
   def type_check
     super
-    @entity = resolve_name
-    @type   = resolve_type
+    @entity  = resolve_name
+    @type    = resolve_type
     check_type
+    @literal = literal_value
   end
 
   ##
@@ -201,6 +213,10 @@ In
     def resolve_type
       first.type
     end
+
+    def literal_value
+      first.literal_value
+    end
   end
 
   module BooleanLiteral
@@ -208,6 +224,10 @@ In
 
     def resolve_type
       first.type
+    end
+
+    def literal_value
+      first.literal_value
     end
   end
 
@@ -220,6 +240,10 @@ In
 
     def resolve_type
       first.type
+    end
+
+    def literal_value
+      self.SubExpression && self.SubExpression.literal_value
     end
   end
 
@@ -303,6 +327,14 @@ In
       else
         raise "someone fucked up the AST with a #{inspect}"
 
+      end
+    end
+
+    def literal_value
+      if self.Expression
+        self.Expression.literal_value
+      elsif self.Literal
+        self.Literal.literal_value
       end
     end
   end

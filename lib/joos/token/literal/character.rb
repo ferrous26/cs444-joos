@@ -27,6 +27,11 @@ class Joos::Token::Character < Joos::Token
     raise InvalidLength.new(self) unless @to_binary.length == 1
   end
 
+  def to_i
+    token.ord
+  end
+  alias_method :ruby_value, :to_i
+
   ##
   # The one character that is not allowed to appear in a literal
   # char token without being escaped

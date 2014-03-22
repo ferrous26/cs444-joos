@@ -146,6 +146,10 @@ class Joos::Token
     # nop
   end
 
+  def literal_value
+    # nop
+  end
+
   # @!endgroup
 
 

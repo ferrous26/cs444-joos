@@ -23,4 +23,8 @@ class Joos::Token::Null < Joos::Token
     Joos::NullReference.new self
   end
 
+  def ruby_value
+    'null'
+  end
+
 end

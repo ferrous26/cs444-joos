@@ -4,6 +4,9 @@ require 'joos/ast'
 # AST node representing a Joos method statement.
 class Joos::AST::Statement
 
+  attr_accessor :was_for_loop
+  alias_method  :was_for_loop?, :was_for_loop
+
   def initialize nodes
     super
     transform_for_loop
@@ -33,13 +36,15 @@ class Joos::AST::Statement
   end
 
   def while_loop
-    make(:BlockStatement,
-         make(:Statement,
-              Joos::Token.make(:While, 'while'),
-              Joos::Token.make(:OpenParen, '('),
-              while_condition,
-              Joos::Token.make(:CloseParen, ')'),
-              while_body))
+    loop = make(:BlockStatement,
+                make(:Statement,
+                     Joos::Token.make(:While, 'while'),
+                     Joos::Token.make(:OpenParen, '('),
+                     while_condition,
+                     Joos::Token.make(:CloseParen, ')'),
+                     while_body))
+    loop.Statement.was_for_loop = true
+    loop
   end
 
   def while_condition

@@ -75,6 +75,7 @@ class Joos::Token::Integer < Joos::Token
   def to_i
     token.to_i
   end
+  alias_method :ruby_value, :to_i
 
   ##
   # Flip the polarity of the integer
@@ -91,7 +92,7 @@ class Joos::Token::Integer < Joos::Token
   end
 
   def type
-    Joos::BasicType::Int.new self
+    @type ||= Joos::BasicType::Int.new self
   end
 
   # @!group Validation

@@ -73,6 +73,20 @@ class Joos::Entity::Method < Joos::Entity
     end
   end
 
+  class NonFinalReturn < Joos::CompilerException
+    def initialize statement
+      msg = "Unreachable statement detected after #{statement.inspect}"
+      super msg, statement
+    end
+  end
+
+  class MissingReturn < Joos::CompilerException
+    def initialize block
+      msg = "Return statement missing from non-void method #{block.inspect}"
+      super msg, block
+    end
+  end
+
   # @!endgroup
 
 
@@ -167,9 +181,22 @@ class Joos::Entity::Method < Joos::Entity
     return unless @body
     check_no_static_this
     @body.type_check
+
+    # if body ends in infinite loop, we do not do type checking
+    # why? ask the JLS
+    return if @body.finishing_statement.While
+
     unless Joos::TypeChecking.assignable? self.type, body.type
       raise Joos::TypeChecking::Mismatch.new(self, body, self)
     end
+  end
+
+  def statements
+    []
+  end
+
+  def path_to _
+    []
   end
 
 
