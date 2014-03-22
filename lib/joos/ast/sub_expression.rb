@@ -32,8 +32,10 @@ class Joos::AST::SubExpression
 
   alias_method :first_subexpr, :first
   alias_method :left_subexpr,  :first
+  alias_method :left,          :first
   alias_method :last_subexpr,  :last
   alias_method :right_subexpr, :last
+  alias_method :right,         :last
 
   def boolean_op?
     op = self.Infixop

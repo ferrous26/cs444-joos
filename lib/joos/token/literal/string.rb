@@ -21,6 +21,8 @@ class Joos::Token::String < Joos::Token
     @to_binary = validate!
   end
 
+  alias_method :ruby_value, :token
+
   ##
   # The one character that is not allowed to appear in a literal
   # string token without being escaped

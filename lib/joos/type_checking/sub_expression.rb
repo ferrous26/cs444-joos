@@ -24,6 +24,18 @@ module Joos::TypeChecking::SubExpression
     right_subexpr.type
   end
 
+  ##
+  # The `#literal_value` of the left subexpression
+  def left_literal
+    @left_literal ||= left_subexpr.literal_value
+  end
+
+  ##
+  # The `#literal_value` of the right subexpression
+  def right_literal
+    @right_literal ||= right_subexpr.literal_value
+  end
+
   def resolve_name
     self.Infixop ? nil : first.entity
   end
@@ -74,8 +86,80 @@ module Joos::TypeChecking::SubExpression
     end
   end
 
+  def literal_value
+    if self.Term
+      self.Term.literal_value
+
+    elsif boolean_op?
+      if left_literal && right_literal
+        l = left_literal.ruby_value
+        r = right_literal.ruby_value
+        v = eval "#{l} #{self.Infixop.first.token} #{r}"
+        klass = Joos::Token::CLASSES[v.to_s]
+        v = klass.new v.to_s, 'internal', 0, 0
+        wrap_literal v
+        literal_value
+
+      elsif self.Infixop.LazyOr && left.literal_value
+        if left_literal.ruby_value
+          v = Joos::Token.make :True, 'true'
+          wrap_literal v
+          literal_value
+        end
+
+      elsif self.Infixop.LazyAnd && left.literal_value
+        unless left_literal.ruby_value
+          v = Joos::Token.make :False, 'false'
+          wrap_literal v
+          literal_value
+        end
+      end
+
+    elsif left_literal && right_literal
+      if comparison_op? ||
+          (relational_op? && !self.Infixop.Instanceof)
+
+        l = left_type.null_type? ?  nil : left_literal.ruby_value
+        r = right_type.null_type? ? nil : right_literal.ruby_value
+        v = l.send self.Infixop.first.token, r
+        klass = Joos::Token::CLASSES[v.to_s]
+        v = klass.new v.to_s, 'internal', 0, 0
+        wrap_literal v
+        literal_value
+
+      elsif arithmetic_op? && type.reference_type? # && type.string_class?
+        p = ->(lit) {
+          if lit.type.is_a? Joos::BasicType::Char
+            lit.ruby_value.chr
+          else
+            lit.ruby_value.to_s
+          end
+        }
+        l = p[left_literal]
+        r = p[right_literal]
+        wrap_literal Joos::Token.make(:String, "\"#{l + r}\"")
+        literal_value
+
+      elsif arithmetic_op?
+        l = left_literal.ruby_value
+        r = right_literal.ruby_value
+        v = l.send self.Infixop.first.token, r
+        wrap_literal Joos::Token.make :Integer, v.to_s
+        literal_value
+      end
+    end
+  end
+
 
   private
+
+  def wrap_literal literal
+    @nodes.clear
+    term = make(:Term,
+                make(:Primary, make(:Literal, literal)),
+                make(:Selectors))
+    reparent term, at_index: 0
+  end
 
   def check_instanceof_op
     raise BadInstanceof.new(left_subexpr) unless left_type.reference_type?

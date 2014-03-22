@@ -90,8 +90,79 @@ module Joos::TypeChecking::Term
     end
   end
 
+  def literal_value
+    if self.Primary
+      self.Primary.literal_value if self.Selectors.empty?
+
+    elsif self.Type && self.Term
+      if type.numeric_type? && self.Term.literal_value
+        value  = self.Term.literal_value.ruby_value.ord
+        value %= 2**(8 * type.length)
+        literal =
+          if type.is_a? Joos::BasicType::Char
+            Joos::Token.make(:Character, "'#{value.chr}'")
+          else
+            int = Joos::Token.make(:Integer, value.to_s)
+            int.instance_variable_set :@type, type
+            int
+          end
+
+        fuck_shit_up literal
+        literal_value
+
+      elsif type.boolean_type?
+        term = self.Term
+        @nodes.clear
+        term.nodes.each_with_index do |node, index|
+          reparent node, at_index: index
+        end
+        literal_value
+      end
+
+    elsif self.TermModifier # the lonesome Term case
+      if self.TermModifier.Not
+        if self.Term.literal_value
+          bool  = !self.Term.literal_value.ruby_value
+          klass = Joos::Token::CLASSES[bool.to_s]
+          fool  = klass.new bool.to_s, 'internal', 0, 0
+
+          fuck_shit_up fool
+          literal_value
+        end
+
+      elsif self.TermModifier.Minus
+        if self.Term.literal_value
+          int = self.Term.literal_value
+          int.flip_sign
+
+          fuck_shit_up int
+          literal_value
+        end
+
+      else
+        raise "unknown term modifier\n#{inspect}"
+      end
+
+    elsif self.QualifiedIdentifier
+      # nop
+
+    elsif self.Type
+      # nop
+
+    else
+      raise "someone fucked up the AST at #{source.red}\nwith a\n#{inspect}"
+
+    end
+  end
+
 
   private
+
+  def fuck_shit_up literal
+    @nodes.clear
+    reparent make(:Primary, make(:Literal, literal)), at_index: 0
+    reparent make(:Selectors), at_index: 1
+  end
 
   def check_term_modifier
     if self.TermModifier.Not

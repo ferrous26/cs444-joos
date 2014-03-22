@@ -29,6 +29,10 @@ class Joos::Token
       :True
     end
 
+    def ruby_value
+      true
+    end
+
     CLASSES['true'] = self
   end
 
@@ -45,6 +49,10 @@ class Joos::Token
 
     def to_sym
       :False
+    end
+
+    def ruby_value
+      false
     end
 
     CLASSES['false'] = self
