@@ -57,13 +57,8 @@ Type mismatch. Epected #{BOOL} but got #{expr.type.type_inspect} for
 
     elsif self.If && self.Else
       if_clause, else_clause = select { |node| node.to_sym == :Block }
-      passable = lambda { |clause|
-        clause.can_complete? &&
-        !(clause.finishing_statement &&
-          clause.finishing_statement.Return)
-      }
+      if_clause.can_complete? || else_clause.can_complete?
 
-      passable[if_clause] || passable[else_clause]
     elsif self.If
       true
 
@@ -74,7 +69,7 @@ Type mismatch. Epected #{BOOL} but got #{expr.type.type_inspect} for
       elsif condition.is_a? Joos::Token::False
         raise Unreachable.new(self)
       else
-        true  # even if block cannot complete, it might not be taken
+        true # even if block cannot complete, it might not be taken
       end
 
     elsif self.Return

@@ -38,7 +38,9 @@ module Joos::TypeChecking::Block
     @reachability = analyze_flow
 
     unless can_complete?
-      raise NonFinalReturn.new(finishing_statement)
+      unless finishing_statement == statements.last
+        raise NonFinalReturn.new(finishing_statement)
+      end
     end
   end
 
@@ -67,37 +69,13 @@ module Joos::TypeChecking::Block
   #
   # @return [Boolean]
   def can_complete?
-    if statements.empty? || finishing_statement.blank?
-      true
-    else
-      # if there is some statement that stops reachability it must be the last
-      # and it must be a return statement
-      block_chain = finishing_statement.path_to(self)
-      if block_chain.size == 1
-        # then it must be the last statement
-        statements.last == finishing_statement
-
-      else # chain must be more than one deep
-        block  = block_chain.second
-        blocks = statements.last.select { |node| node.to_sym == :Block }
-        blocks.index block
-      end
-    end
+    @reachability.empty? || @reachability.last
   end
 
   def finishing_statement
     unreachable = @reachability.find_index(false)
     if unreachable
       statements[unreachable]
-    elsif !statements.empty?
-      last = statements.last
-      if last.Else
-        blocks = last.nodes.select { |n| n.to_sym == :Block }
-        stmts  = blocks.map(&:finishing_statement)
-        stmts.compact.first
-      elsif last.Block && !last.If
-        last.Block.finishing_statement
-      end
     end
   end
 
@@ -129,24 +107,23 @@ module Joos::TypeChecking::Block
   ##
   # Two checks here:
   # 1) If there are return statements, they need to be at the end
-  # 2) If there are no nested blocks, this in the end of an execution path
-  #    and we MUST have a return statement (except for void methods)
+  # 2) If this is block is the end of an execution path, then it MUST
+  #    contain a return statement (except void methods)
   #
   def check_last_statement_is_return
-    # this is supposed to cover case 2, but does not work
-    # unless statements.any? { |s| s.Block }          ||
-    #        return_type.void_type?                   ||
-    #        owning_entity.is_a?(Joos::Entity::Field) ||
-    #        !(!parent_scope.statements.empty? &&
-    #          parent_scope.statements.last.nodes.include?(self))
-    #   if statements.last.Return.blank?
-    #     puts statements.last.inspect
-    #     raise MissingReturn.new(self)
-    #   end
-    # end
+    final = true
+    path  = path_to(owning_entity).reverse
+    path.each_with_index do |block, index|
+      next if index.zero?
+      if block.statements.last.include? path[index - 1]
+        final = final && true
+      else
+        final = false
+      end
+    end
+    MissingReturn.new(self) if final && !statements.last.Return
 
-    # if there are no nested blocks
-    # then there must be a return statement here
+    # if there are return statements, they MUST be at the end
     return_statement = statements.find { |s| s.Return }
     if return_statement
       unless statements.index(return_statement) == (statements.size - 1)
