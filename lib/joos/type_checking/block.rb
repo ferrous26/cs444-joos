@@ -29,8 +29,6 @@ module Joos::TypeChecking::Block
     unify_return_type
   end
 
-  attr_reader :reachability
-
   def check_type
     check_void_method_has_only_empty_returns
     declaration.type_check if declaration
