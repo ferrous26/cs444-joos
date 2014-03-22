@@ -57,16 +57,13 @@ Type mismatch. Epected #{BOOL} but got #{expr.type.type_inspect} for
 
     elsif self.If && self.Else
       if_clause, else_clause = select { |node| node.to_sym == :Block }
-      if if_clause.can_complete? || else_clause.can_complete?
-        # but not if they are both returns
-        if_finisher   = if_clause.finishing_statement
-        else_finisher = else_clause.finishing_statement
-        !((if_finisher && if_finisher.Return) &&
-          (else_finisher && else_finisher.Return))
-      else
-        false
-      end
+      passable = lambda { |clause|
+        clause.can_complete? &&
+        !(clause.finishing_statement &&
+          clause.finishing_statement.Return)
+      }
 
+      passable[if_clause] || passable[else_clause]
     elsif self.If
       true
 
