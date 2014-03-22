@@ -130,10 +130,7 @@ module Joos::TypeChecking::Block
       end
 
     elsif statement.Block
-      # hmm...
-      unless statement.Block.must_end?
-        raise MissingReturn.new(self)
-      end
+      # nop
 
     else
       raise MissingReturn.new(self)
