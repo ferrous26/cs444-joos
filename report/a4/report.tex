@@ -17,12 +17,150 @@ All components of the compiler implemented for name resolution, type
 checking, and static analysis are centered around the AST. Either by
 transforming the AST, replacing portions of the AST with more
 conveinent data structures, or by appending functionality to classes
-which are already part of the AST.
+which are already part of the AST. After parsing was completed, the
+compiler had an AST for each compilation unit (file) which was named
+on the command line. We then begin building up entity structures for
+each compilation unit in order to simplify environment building
+and name resolution.
 
-After parsing was completed, the compiler had an AST for each
-compilation unit (file) which was named on the command line. Name
-resolution begins by replacing the top portion of every AST with
-entity objects.
+\subsection{Entities}
+
+The first step in building the type environment was to create an
+\ttt{Entity} class to represent each type of declared Java entity. We
+define an entity in the same way that the JLS does:
+
+\begin{quote}
+A declared entity is a \tbf{package}, \tbf{class} type,
+\tbf{interface} type, member (class,interface, \tbf{field}, or
+\tbf{method}) of a reference type, \tbf{parameter} (to a method,
+constructor, or exception handler), or \tbf{local variable}.
+\end{quote}
+
+For the entities which Joos supports; \ttt{Package}, \ttt{Class},
+\ttt{Interface}, \ttt{Field}, \ttt{Method}, \ttt{Parameter}, and
+\ttt{LocalVariable}; we have created classes that make accessing the
+metadata of the entity easier and more efficient than repeatedly
+navigating an AST, and share a common superclass of \ttt{Entity}.
+
+The \ttt{Compiler} object keeps a reference to each \ttt{Class} or
+\ttt{Interface} compilation unit that is being declared, as well as
+the root pseudo \ttt{Package}.
+
+\subsection{Package Hierarchy}
+
+The root package is only a pseudo package; it has no name, and is not
+equivalent to the unnamed default package specified by the JLS. The
+root pseudo package exists only to provide a convenient container for
+packages which do not have a parent package. For instance,
+the \ttt{java.lang.Object} class declares that it belongs to package
+\ttt{java.lang}; which would create a \ttt{Package} named \ttt{java}
+that is a member of the root pseudo package. \ttt{java.lang}
+would also create a \ttt{Package} named \ttt{lang} which is a member
+of the \ttt{java} package. Finally, the \ttt{Class} named
+\ttt{Object} whose compilation unit declared the package, will be
+added as a member of the \ttt{lang} package.
+
+Each \ttt{Package}, \ttt{Class}, and \ttt{Interface} will become a
+member of some \ttt{Package}, and all be part of the same namespace.
+In this manner, we can iterate over each compilation unit
+and, if the compilation unit declares a package, we can create the
+required hierarchy of packages and then add the compilation unit to
+the package.
+
+If a compilation unit does not declare a package, it will be added to
+the special default package, as specified in the JLS. Though the JLS
+allows for multiple default packages, we found it necessary to have
+only a single default package in order to pass Marmoset tests.
+
+If a package declaration names a package which clashes with an already
+declared compilation unit, then an error is printed and compilation is
+aborted. A similar result occurs if a compilation unit's fully
+qualified name would be the same as the fully qualified name of a
+package. For instance, if a compilation unit declared
+\ttt{package java.lang.Object;} as its package, there would be an
+error because a compilation unit, \ttt{Class java.lang.Object},
+already exists.
+
+\subsubsection{Type Environment}
+
+To complete the type environment, for each compilation unit, we parsed
+the \ttt{import} statements from each compilation unit and searched
+through the package hierarchy starting from the root pseudo
+package. Since \ttt{import} is required to use fully qualified names,
+we know that if a single-type import names a \ttt{Package} then that
+is an error, and if a package import names a \ttt{Class} or
+\ttt{Interface}, then it is also an error. If nothing is found in the
+package hierarchy, then that is also an error.
+
+For single-type imports, we keep an ordered list of compilation unit
+entities that were named by single-type import statements. Duplicate
+single type imports are considered errors and will cause compilation
+to abort with an error message. Similarly, single type imports where
+the simple name of the compilation clashes with a previous single type
+import, or the simple name of the compilation unit, will also be
+treated as an error in the source code.
+
+For package imports, we keep a list of \ttt{Package} entities that
+were named by package import statements. The implicit
+\ttt{java.lang.*} package import is done first, and then any other
+package imports follow.
+
+Each compilation unit then gets its own list of single type imports
+and package imports, and shares a reference to the root pseudo
+package. This tuple of information forms the type environment for a
+compilation unit, and is used to resolve names which must name a
+type. It is also used to help disambiguate ambiguous names during name
+resolution and type checking.
+
+\subsection{Compilation Unit Entities}
+
+Once the package hierarchy and type environment are built, we proceed
+with building the entity hierarchy for each compilation unit.
+
+
+\subsection{Name Resolution}
+
+After initially parsing the AST into the entity models, we can build
+the type environment by building the package hierarchy and linking
+imported types and packages into the compilation units that request
+them.
+
+Creating the package hierarchy\ldots
+
+Importing\ldots
+
+Resolving type names
+
+
+
+\subsubsection{Hierarchy Checking}
+
+Linking classes and interfaces occurs in essentially two passes. In
+the first pass, we link superclasses and superinterfaces and check
+simple constraints. One of the most important checks is the
+circularity check, which is done in the obvious way by recursively
+traversing up the class hierarchy. This check ensures that the second
+pass terminates.
+
+In the second pass, we link members to their class or interface. We
+also link overridden methods to their parent and compute the contains
+set (called \ttt{all\_methods}) for each class and interface. To do
+this, we traverse first the interface hierarchy, then the class
+hierarchy in breadth-first order, starting with
+\ttt{java.lang.Object}, then its sub-classes, their sub-classes, and
+so on. The contains set of a class / interface (a simple array of
+\ttt{Method} or \ttt{Field} objects) is computed by taking an outer
+join of the class' own members with the contains set of its parent,
+joining by method name and argument types. Because of the ordering,
+the contains sets of the superclass and superinterfaces are guaranteed
+to be complete.
+
+Finally, as part of the second pass, non-abstract classes check their
+contains set to ensure that they have no abstract methods and all
+their interfaces are implemented. Other checks are done along the way
+in the obvious fashion.
+
+
 
 \subsection{AST Transformations}
 
@@ -110,66 +248,6 @@ a \ttt{SubExpression} or \ttt{Term} does not contain a literal value, then
 Once we have the \ttt{literal\_value} of a \ttt{SubExpression}, we replace the
 inside of that \ttt{SubExpression} with a \ttt{Term} containing that literal
 value.
-
-\subsection{Name Resolution}
-
-The first step in name resolution was to parse each AST and create
-entity objects for each type of declared entity. We define an entity
-in the same way that the JLS does:
-
-\begin{quote}
-A declared entity is a \tbf{package}, \tbf{class} type,
-\tbf{interface} type, member (class,interface, \tbf{field}, or
-\tbf{method}) of a reference type, \tbf{parameter} (to a method,
-constructor, or exception handler), or \tbf{local variable}.
-\end{quote}
-
-For the entities that Joos supports; \ttt{Package}, \ttt{Class},
-\ttt{Interface}, \ttt{Field}, \ttt{Method}, \ttt{Parameter}, and
-\ttt{LocalVariable}; we have created classes that make accessing the
-metadata of the entity easier and more efficient than repeatedly
-navigating an AST.
-
-
-\subsubsection{Type Environment}
-
-After initially parsing the AST into the entity models, we can build
-the type environment by building the package hierarchy and linking
-imported types and packages into the compilation units that request
-them.
-
-Creating the package hierarchy\ldots
-
-Importing\ldots
-
-Resolving type names
-
-
-
-
-\subsubsection{Hierarchy Checking}
-
-Linking classes and interfaces occurs in essentially two passes. In the first
-pass, we link superclasses and superinterfaces and check simple constraints. One
-of the most important checks is the circularity check, which is done in the
-obvious way by recursively traversing up the class hierarchy. This check ensures
-that the second pass terminates.
-
-In the second pass, we link members to their class or interface. We also link
-overridden methods to their parent and compute the contains set (called
-\ttt{all\_methods}) for each class and interface. To do this, we traverse first
-the interface hierarchy, then the class hierarchy in breadth-first order,
-starting with \ttt{java.lang.Object}, then its sub-classes, their sub-classes,
-and so on. The contains set of a class / interface (a simple array of
-\ttt{Method} or \ttt{Field} objects) is computed by taking an outer join of the
-class' own members with the contains set of its parent, joining by method name
-and argument types. Because of the ordering, the contains sets of the superclass
-and superinterfaces are guaranteed to be complete.
-
-Finally, as part of the second pass, non-abstract classes check their contains
-set to ensure that they have no abstract methods and all their interfaces are
-implemented. Other checks are done along the way in the obvious fashion.
-
 
 Environment building\ldots
 
