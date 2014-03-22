@@ -16,30 +16,29 @@ while implementing these phases.
 All components of the compiler implemented for name resolution, type
 checking, and static analysis are centered around the AST. Either by
 transforming the AST, replacing portions of the AST with more
-conveinent non-tree structures, or injecting functionality.
+conveinent data structures, or by appending functionality to classes
+which are already part of the AST.
 
-
-, transforming, post parsing, are Various components of the thingy were designed by augmenting or
-replacing the ASTs that were generated from parsing. We have one AST
-for each compilation unit that we are compiling. For the first
-assignment there was only ever one AST, but as of the second
-assignment the compiler handles an arbitrary number of ASTs being
-created and processed.
+After parsing was completed, the compiler had an AST for each
+compilation unit (file) which was named on the command line. Name
+resolution begins by replacing the top portion of every AST with
+entity objects.
 
 \subsection{AST Transformations}
 
-Due to the limitations of our LR(1) grammar, an AST may have some peculiarities
-in its structure. This is necessary for creating an unambiguous and more
-simple grammar, but also makes post-parsing operations on the tree more
-difficult due the many different structures that are created to model very
-similar concepts.
+Due to the limitations of our LR(1) grammar, an AST may have some
+peculiarities in its structure. This is necessary for creating an
+unambiguous and more simple grammar, but also makes post-parsing
+operations on the tree more difficult due the many different
+structures that are created to model very similar concepts.
 
-To get around this obstacle, we perform simple transformations on each AST
-while it is being built, and then afterward during validation of the ASTs.
+To get around this obstacle, we perform simple transformations on each
+AST while it is being built, and then afterward during validation of
+the ASTs.
 
 \subsubsection{\ttt{for-while} Transformation}
 
-One of the most simple transformations is transforming every intance of a
+The simplest transformations is transforming every intance of a
 \ttt{for} loop to a \ttt{while} loop.
 
 The initialization of the \ttt{for} loop is transformed into a \ttt{Statement}
@@ -101,14 +100,14 @@ type analysis (see below).
 As a preface, a \ttt{SubExpression}, in our AST, is either a \ttt{Term} containing some value, or two more \ttt{SubExpressions} with an operator in
 between.
 
-Each \ttt{SubExpression} has a \ttt{literal_value} denoting the its literal
+Each \ttt{SubExpression} has a \ttt{literal\_value} denoting the its literal
 value, if it has one. This literal value is either the literal value of its
 \ttt{Term} (if that's its structure), or recursively defined as the literal
 value of its two \ttt{SubExpression} children acted upon by the operator. If
 a \ttt{SubExpression} or \ttt{Term} does not contain a literal value, then
-\ttt{literal_value} is denoted to us by the Ruby \ttt{nil}.
+\ttt{literal\_value} is denoted to us by the Ruby \ttt{nil}.
 
-Once we have the \ttt{literal_value} of a \ttt{SubExpression}, we replace the
+Once we have the \ttt{literal\_value} of a \ttt{SubExpression}, we replace the
 inside of that \ttt{SubExpression} with a \ttt{Term} containing that literal
 value.
 
