@@ -50,10 +50,10 @@ class Joos::AST
 
   def visit_reduce &block
     reduced = nodes.map do |node|
-      if node.is_a? Joos::Token
-        yield node, nil
-      else
+      if node.respond_to? :visit_reduce
         node.visit_reduce &block
+      else
+        yield node, nil
       end
     end
     yield self, reduced

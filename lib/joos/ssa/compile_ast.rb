@@ -1,6 +1,6 @@
 
-require 'joos/ssa/flow_block.rb'
-require 'joos/ssa/instructions.rb'
+require 'joos/ssa/flow_block'
+require 'joos/ssa/instructions'
 
 module Joos::SSA
 
