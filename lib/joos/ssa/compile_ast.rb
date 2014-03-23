@@ -57,16 +57,16 @@ module CompileAST
   end
 
   def compile_statement flow_block, node
+    if node.if_statement?
+      return compile_if flow_block, node
+    elsif node.while_loop?
+      return compile_while flow_block, node
+    end
+
     child = node.nodes
     case child.map(&:to_sym)
     when [:Block]
       compile flow_block, child[0]
-    when [:If, :OpenParen, :Expression, :CloseParen, :Statement]
-      compile_if compile(flow_block, child[2]), child[4], nil
-    when [:If, :OpenParen, :Expression, :CloseParen, :Statement, :Else, :Statement]
-      compile_if compile(flow_block, child[2]), child[4], child[6]
-    when [:While, :OpenParen, :Expression, :CloseParen, :Statement]
-      raise "Not implemented - while"
     when [:Return, :Semicolon]
       flow_block.continuation = Return.new nil
       flow_block
@@ -79,19 +79,31 @@ module CompileAST
       compile(flow_block, child[0]).tap do |ret|
         ret.continuation = nil
       end
-    when [:Semicolon]
-      flow_block.continuation = nil
-      flow_block
     else
       raise "Match failed - #{node}"
     end
   end
 
-  # @param guard_block [FlowBlock]
-  # @param true_case [AST]
-  # @param false_case [AST, nil]
-  def compile_if guard_block, true_case, false_case
-    raise "Not implemented - if"
+  def compile_if flow_block, node
+    guard = compile flow_block, node.guard_block
+    true_case = compile FlowBlock.new(block_name "then"), node.true_case
+
+    next_block = FlowBlock.new block_name
+    true_case.continuation = Next.new next_block unless true_case.continuation.is_a? Return
+
+    if node.false_case
+      false_case = compile FlowBlock.new(block_name "else"), node.false_case
+      false_case.continuation = Next.new next_block unless false_case.continuation.is_a? Return
+      guard.continuation = Branch.new guard.result, true_case, false_case
+    else
+      guard.continuation = Branch.new guard.result, true_case, next_block
+    end
+
+    next_block
+  end
+
+  def compile_while flow_block, node
+    raise "Not implemented - while"
   end
 
   def compile_subexpression flow_block, node

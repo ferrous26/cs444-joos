@@ -40,9 +40,9 @@ class Segment
   def self.from_method method
     new.tap do |ret|
       # TODO: add stuff for formal params, etc.
-      ret.start_block = FlowBlock.new
+      ret.start_block = FlowBlock.new "enter"
       ret.compile ret.start_block, method.body
-      ret.flow_blocks = ret.start_block.dominates.to_a
+      ret.flow_blocks = ret.start_block.dominates.reverse
     end
   end
 
@@ -50,9 +50,9 @@ class Segment
   # @return segment
   def self.from_field field
     new.tap do |ret|
-      ret.start_block = FlowBlock.new
+      ret.start_block = FlowBlock.new "init"
       ret.compile start_block, field.initializer
-      ret.flow_blocks = ret.start_block.dominates.to_a
+      ret.flow_blocks = ret.start_block.dominates.reverse
     end
   end
 
@@ -65,17 +65,7 @@ class Segment
   #
   # @return [Array<FlowBlock>]
   def end_blocks
-    ret = []
-    flow_blocks.each do |block|
-      case block.continuation
-      when Return
-        ret << block
-      when Just
-        ret << block
-      end
-    end
-
-    ret
+    flow_blocks.select {|block| block.is_a?(Return) || block.is_a?(Just)}
   end
 
   # Number of SSA variables created in this segment
@@ -90,6 +80,15 @@ class Segment
     next_variable.tap do
       @next_variable += 1
     end
+  end
+
+  # Mint a new block name
+  # @return [String]
+  def block_name prefix="block"
+    @block_nums ||= -1
+    @block_nums += 1
+
+    "#{prefix}_#{@block_nums}"
   end
 
   # Create an Enumerator over all instructions in each FlowBlock
@@ -109,6 +108,10 @@ class Segment
   # @return [Instruction, nil]
   def find_var var
     instructions.detect {|ins| ins.target == var}
+  end
+
+  def inspect
+    flow_blocks.map(&:inspect).join("\n\n")
   end
 end
 
