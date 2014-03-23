@@ -48,14 +48,12 @@ abstract public class J1_returnGood {
   public int fors() {
     for (int i = 0; true; i = i + 1)
       return 8;
-    return 4;
   }
 
   public int fors2() {
-    for (int i = 0; false; i = i + 1) {
+    for (int i = 0; true; i = i + 1) {
       return 0;
     }
-    return 9;
   }
 
   public void voidTest() {
@@ -68,8 +66,6 @@ abstract public class J1_returnGood {
 
     while (true)
       return 32;
-    
-    return 4;
   }
 
   public J1_returnGood self() {

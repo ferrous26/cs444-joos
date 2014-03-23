@@ -29,12 +29,12 @@ module Joos::TypeChecking::Block
     unify_return_type
   end
 
-  attr_reader :reachability
-
   def check_type
     check_void_method_has_only_empty_returns
     declaration.type_check if declaration
-    check_last_statement_is_return
+    if owning_entity.kind_of?(Joos::Entity::Method)
+      check_last_statement_is_return
+    end
     @reachability = analyze_flow
 
     unless can_complete?
@@ -45,14 +45,8 @@ module Joos::TypeChecking::Block
   end
 
   ##
-  # Return the path from any descendant statement to the given block
-  #
-  # @param block [Joos::AST::Block]
-  # @return [Array<Joos::AST::Block>]
-  def path_to block
-    (self == block ? [] : parent_scope.path_to(block)) << self
-  end
-
+  # Apply Java's conservative flow analysis to the receiver block
+  # and return the result.
   def analyze_flow
     completable = true
     statements.map { |statement|
@@ -111,19 +105,40 @@ module Joos::TypeChecking::Block
   #    contain a return statement (except void methods)
   #
   def check_last_statement_is_return
-    final = true
-    path  = path_to(owning_entity).reverse
-    path.each_with_index do |block, index|
-      next if index.zero?
-      if block.statements.last.include? path[index - 1]
-        final = final && true
-      else
-        final = false
-      end
-    end
-    MissingReturn.new(self) if final && !statements.last.Return
+    check_end_of_execution_path_has_return_statement
+    check_that_return_statements_are_only_at_end_of_block
+  end
 
-    # if there are return statements, they MUST be at the end
+  def check_end_of_execution_path_has_return_statement
+    return unless must_end? && !return_type.void_type?
+    # does each block in the last statement have to end
+
+    statement = statements.last
+    if statement.While
+      # if infinite then it is allowed, otherwise not allowed
+      unless statement.Expression.literal_value.is_a? Joos::Token::True
+        raise MissingReturn.new(self)
+      end
+
+    elsif statement.Return
+      # nop, this is our base case
+
+    elsif statement.If
+      # it must have both branches, which both end
+      unless statement.Else && statement.Blocks.all?(&:must_end?)
+        raise MissingReturn.new(self)
+      end
+
+    elsif statement.Block
+      # nop
+
+    else
+      raise MissingReturn.new(self)
+
+    end
+  end
+
+  def check_that_return_statements_are_only_at_end_of_block
     return_statement = statements.find { |s| s.Return }
     if return_statement
       unless statements.index(return_statement) == (statements.size - 1)

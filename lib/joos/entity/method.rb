@@ -148,7 +148,10 @@ class Joos::Entity::Method < Joos::Entity
   def link_declarations
     @type ||= resolve_type @type_identifier
     @parameters.each(&:link_declarations)
-    @body.build(self) if @body
+    if @body
+      @body.build(self)
+      @body.determine_if_end_of_code_path
+    end
   end
 
   def check_hierarchy
@@ -187,10 +190,11 @@ class Joos::Entity::Method < Joos::Entity
     check_no_static_this
     @body.type_check
 
-    # if body ends in infinite loop, we do not do type checking
-    # why? ask the JLS
-    return if @body.finishing_statement.While
+    # if body ends in infinite loop, AND there are no return statements, then
+    # then we do not have do type checking; why? ask the JLS
+    return if @body.return_statements.empty? && @body.finishing_statement.While
 
+    # otherwise, we must actually check the return type of the block
     unless Joos::TypeChecking.assignable? self.type, body.type
       raise Joos::TypeChecking::Mismatch.new(self, body, self)
     end
@@ -200,8 +204,8 @@ class Joos::Entity::Method < Joos::Entity
     []
   end
 
-  def path_to _
-    []
+  def must_end?
+    true
   end
 
 

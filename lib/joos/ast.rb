@@ -80,6 +80,16 @@ class Joos::AST
     node.parent      = self
   end
 
+  # Whether this node is an if statment (override in AST::Statement)
+  def if_statement?
+    false
+  end
+
+  # Whether this node is a while loop (override in AST::Statement)
+  def while_loop?
+    false
+  end
+
 
   # @!group Enumerable
 

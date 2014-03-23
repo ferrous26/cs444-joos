@@ -61,6 +61,8 @@ Type mismatch. Epected #{BOOL} but got #{expr.type.type_inspect} for
 
     elsif self.If
       true
+      # We do not check for explicit true/false branches
+      # as the JLS requires that we ignore them
 
     elsif self.While
       condition = self.Expression.literal
@@ -75,7 +77,10 @@ Type mismatch. Epected #{BOOL} but got #{expr.type.type_inspect} for
     elsif self.Return
       false
 
-    else # it can always continue after other statements
+    elsif self.Block # it can always continue after other statements
+      self.Block.can_complete?
+
+    else
       true
 
     end
