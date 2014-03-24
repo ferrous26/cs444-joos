@@ -11,8 +11,9 @@ class Minitest::Test
 
   JOOSC = File.join(File.expand_path(File.dirname(__FILE__)), '../joosc')
 
-  def compile code, files
-    stdout, stderr, status = Open3.capture3("#{JOOSC} #{files.join(' ')}")
+  def compile code, files, output_dir = nil
+    env = { 'JOOS_OUTPUT' => output_dir }
+    stdout, stderr, status = Open3.capture3(env, "#{JOOSC} #{files.join(' ')}")
     assert_equal(code, status.exitstatus,
                  error_lambda(files, stdout, stderr, status))
   end
