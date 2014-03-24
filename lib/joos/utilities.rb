@@ -26,4 +26,16 @@ module Joos::Utilities
                end).to_i
   end
 
+  def os
+    `uname -s`.chomp
+  end
+
+  def darwin?
+    os == 'Darwin'
+  end
+
+  def linux?
+    os == 'Linux'
+  end
+
 end
