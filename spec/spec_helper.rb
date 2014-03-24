@@ -46,7 +46,7 @@ def test_compiler name
   else
     compiler = Joos::Compiler.new (path + '.java')
   end
-  compiler.set_top_level false
+  compiler.top_level = false
   compiler.add_stdlib
 
   compiler

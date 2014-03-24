@@ -43,6 +43,12 @@ class Joos::Compiler
   attr_reader :files
 
   ##
+  # Path to output all assembly files to
+  #
+  # @return [String]
+  attr_reader :output_directory
+
+  ##
   # The result code that the Joos front end should exit with
   #
   # The return value will be either {SUCCESS} or {ERROR} depending on
@@ -53,16 +59,19 @@ class Joos::Compiler
 
   # @param files [Array<String>]
   def initialize *files
-    @files  = files.flatten
-    @result = SUCCESS
-    @top_level = true
+    @files            = files.flatten
+    @result           = SUCCESS
+    @top_level        = true
+    @output_directory = ENV['JOOS_OUTPUT'] || File.expand_path('./output/')
   end
 
+  ##
   # Call this with `false` when runing inside tests, to re-raise exceptions
   # instead of dumping them
-  def set_top_level top_level
-    @top_level = top_level
-  end
+  #
+  # @return [Boolean]
+  attr_accessor :top_level
+  alias_method :top_level?, :top_level
 
   def self.load_directory name
     split = name.split('/')
@@ -110,7 +119,7 @@ class Joos::Compiler
   # For each {#files}, a `.s` file will be created with the appropriate
   # assembly code.
   def compile
-    compile_to 4
+    compile_to 5
   end
 
   # Compiles up to a given assignment number
@@ -118,11 +127,10 @@ class Joos::Compiler
     scan_and_parse_and_weed     if assignment >= 1
     resolve_names               if assignment >= 2
     type_check                  if assignment >= 3
-    #static_analysis             if assignment >= 4
     #generate_code               if assignment >= 5
 
   rescue Exception => exception
-    raise exception unless @top_level
+    raise exception unless top_level?
 
     $stderr.puts exception.message
     if exception.is_a? Joos::CompilerException
@@ -148,7 +156,9 @@ class Joos::Compiler
 
   # @return [Joos::Entity::CompilationUnit]
   def get_unit name
-    @compilation_units.detect { |unit| unit.fully_qualified_name.join('.') == name }
+    @compilation_units.find { |unit|
+      unit.fully_qualified_name.join('.') == name
+    }
   end
 
 
