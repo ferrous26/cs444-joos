@@ -48,6 +48,17 @@ class Joos::AST
     self
   end
 
+  def visit_reduce &block
+    reduced = nodes.map do |node|
+      if node.respond_to? :visit_reduce
+        node.visit_reduce &block
+      else
+        yield node, nil
+      end
+    end
+    yield self, reduced
+  end
+
   ##
   # Search for a node of the given type at the current AST level
   #
@@ -67,6 +78,16 @@ class Joos::AST
   def reparent node, at_index: nil
     @nodes[at_index] = node
     node.parent      = self
+  end
+
+  # Whether this node is an if statment (override in AST::Statement)
+  def if_statement?
+    false
+  end
+
+  # Whether this node is a while loop (override in AST::Statement)
+  def while_loop?
+    false
   end
 
 

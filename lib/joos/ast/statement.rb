@@ -18,6 +18,36 @@ class Joos::AST::Statement
     select { |node| node.to_sym == :Block }
   end
 
+  def if_statement?
+    !self.If.nil?
+  end
+
+  def while_loop?
+    !self.While.nil?
+  end
+
+  # Guard condition of an if statement or loop
+  # @return [AST]
+  def guard_block
+    return unless if_statement? || while_loop?
+    nodes[2]
+  end
+
+  # True case of an if statement
+  # @return [AST]
+  def true_case
+    # [:If, :OpenParen, :Expression, :CloseParen, :Statement]
+    return unless if_statement?
+    nodes[4]
+  end
+
+  # False case of an if-else statement
+  # @return [AST]
+  def false_case
+    # [:If, :OpenParen, :Expression, :CloseParen, :Statement, :Else, :Statement]
+    return unless if_statement?
+    nodes[6]
+  end
 
   private
 
