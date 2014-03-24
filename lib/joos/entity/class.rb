@@ -6,6 +6,8 @@ require 'joos/entity/has_interfaces'
 require 'joos/token/identifier'
 require 'joos/ast'
 require 'joos/exceptions'
+require 'joos/code_generator'
+
 
 ##
 # Entity representing the definition of a class.
@@ -461,7 +463,9 @@ class Joos::Entity::Class < Joos::Entity
   end
 
   def ancestors
-    ancestor_classes + ancestor_interfaces
+    ancestor_classes      +
+      ancestor_interfaces +
+      ancestor_classes.map(&:ancestor_interfaces)
   end
 
   # @param klass [Joos::Entity::Class, Joos::Entity::Interface]
@@ -512,11 +516,27 @@ class Joos::Entity::Class < Joos::Entity
   end
 
 
+  # @!group Assignment 5
+
+  def generate_code directory
+    @gen = Joos::CodeGenerator.new self, :i386, directory
+    @gen.generate_data
+    @gen.generate_text
+    @gen.finalize
+  end
+
+  def generate_main_code directory
+    @gen = Joos::CodeGenerator.new self, :i386, directory
+    @gen.generate_data
+    @gen.generate_text
+    @gen.generate_main
+    @gen.finalize
+  end
+
   # @!endgroup
 
 
   private
-
 
   # A tuple containing (constructor, field, method) AST nodes.
   def member_nodes

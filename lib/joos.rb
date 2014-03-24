@@ -127,7 +127,7 @@ class Joos::Compiler
     scan_and_parse_and_weed     if assignment >= 1
     resolve_names               if assignment >= 2
     type_check                  if assignment >= 3
-    #generate_code               if assignment >= 5
+    generate_code               if assignment >= 5
 
   rescue Exception => exception
     raise exception unless top_level?
@@ -232,6 +232,13 @@ class Joos::Compiler
 
     classes.each do |klass|
       klass.fields.each(&:check_forward_references)
+    end
+  end
+
+  def generate_code
+    @compilation_units.first.generate_main_code output_directory
+    @compilation_units[1..-1].each do |unit|
+      unit.generate_code output_directory
     end
   end
 
