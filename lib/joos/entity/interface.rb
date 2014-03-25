@@ -166,7 +166,7 @@ class Joos::Entity::Interface < Joos::Entity
   end
 
   def generate_main_code directory
-    raise "An interface cannot possibly have `public static test()'"
+    raise "An interface cannot possibly have `public static int test()'"
   end
 
   # @!endgroup
