@@ -95,13 +95,12 @@ extern __debexit
 
 global _start
 _start:
-    mov ebx, 42
+    mov eax, 123
     call __debexit
     EOC
   end
 
   def finalize
-    @fd.puts "extern _start" unless @main
     @fd.close
   end
 
