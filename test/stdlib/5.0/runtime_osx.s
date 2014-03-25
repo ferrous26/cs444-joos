@@ -26,33 +26,34 @@ ok:
     global __debexit
 __debexit:
     push dword eax ; set exit code to eax
+    push dword 0   ; add some pointless padding that is required
     mov  eax,  1   ; sys_exit system call
-    sub  esp,  12
     int  0x80
 
 ; Exceptional exit: ends the process with exit code 13.
 ; Call this in cases where the Joos code would throw an exception.
     global __exception
 __exception:
-    push dword 13 ; set exit code to 13
+    push dword 13  ; set exit code to 13
+    push dword 0   ; padding
     mov  eax,  1   ; sys_exit system call
-    sub  esp,  12
     int  0x80
 
 ; Implementation of java.io.OutputStream.nativeWrite method.
 ; Outputs the low-order byte of eax to standard output.
     global NATIVEjava.io.OutputStream.nativeWrite
 NATIVEjava.io.OutputStream.nativeWrite:
-    mov [char], al ; save the low order byte in memory
-    mov eax, 4     ; sys_write system call
-    mov ecx, char  ; address of bytes to write
-    mov ebx, 1     ; stdout
-    mov edx, 1     ; number of bytes to write
-    int 0x80
-    mov eax, 0     ; return 0
+    mov     [char], al   ; actually load char the char*
+    push    dword 1      ; push strlen (we always print 1 byte)
+    push    dword char   ; push char* onto stack
+    push    dword 1      ; push file descriptor onto stack
+    mov     eax, 4       ; setup system call
+    sub     esp, 4       ; align stack address
+    int     0x80         ; go go system call
+    add     esp, 16      ; pop the stack frame
+    mov     eax, 0       ; return 0
     ret
 
 section .data
 
-char:
-    dd 0
+char: dd 0
