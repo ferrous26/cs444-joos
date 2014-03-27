@@ -103,6 +103,9 @@ class Joos::Entity::Interface < Joos::Entity
   def link_interface_methods
     # Call HasInterfaces, then add in own methods
     super
+    if superinterfaces.empty?
+      @interface_methods = get_top_class.methods.select(&:public?)
+    end
     append_interface_methods @methods
   end
 
