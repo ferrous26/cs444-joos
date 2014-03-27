@@ -31,11 +31,15 @@ module Joos::TypeChecking::Term
     !downcast?
   end
 
+  def casting_expression?
+    self.Type && self.Term
+  end
+
   def resolve_name
     if self.Primary
       self.Selectors.entity || self.Primary.entity
 
-    elsif self.Type && self.Term
+    elsif self.casting_expression?
       # result of a cast is a value, but not a variable, except for arrays
       self.Term.entity
 
@@ -85,7 +89,7 @@ module Joos::TypeChecking::Term
   def check_type
     if self.TermModifier
       check_term_modifier
-    elsif self.Type && self.Term
+    elsif self.casting_expression?
       check_casting self.Type.type, self.Term.type, self
     end
   end
@@ -94,7 +98,7 @@ module Joos::TypeChecking::Term
     if self.Primary
       self.Primary.literal_value if self.Selectors.empty?
 
-    elsif self.Type && self.Term
+    elsif self.casting_expression?
       if type.numeric_type? && self.Term.literal_value
         value  = self.Term.literal_value.ruby_value.ord
         value %= 2**(8 * type.length)
@@ -107,7 +111,7 @@ module Joos::TypeChecking::Term
             int
           end
 
-        fuck_shit_up literal
+        wrap_literal literal
         literal_value
 
       elsif type.boolean_type?
@@ -126,7 +130,7 @@ module Joos::TypeChecking::Term
           klass = Joos::Token::CLASSES[bool.to_s]
           fool  = klass.new bool.to_s, 'internal', 0, 0
 
-          fuck_shit_up fool
+          wrap_literal fool
           literal_value
         end
 
@@ -139,7 +143,7 @@ module Joos::TypeChecking::Term
             int = Joos::Token::Integer.new int.to_i.to_s, 'internal', 0, 0
           end
           int.flip_sign
-          fuck_shit_up int
+          wrap_literal int
           literal_value
         end
 
@@ -162,7 +166,7 @@ module Joos::TypeChecking::Term
 
   private
 
-  def fuck_shit_up literal
+  def wrap_literal literal
     @nodes.clear
     reparent make(:Primary, make(:Literal, literal)), at_index: 0
     reparent make(:Selectors), at_index: 1
