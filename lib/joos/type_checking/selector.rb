@@ -66,7 +66,11 @@ module Joos::TypeChecking::Selector
                end
 
                sig = [id, self.Arguments.type]
-               previous_type.all_methods.find { |m| m.signature == sig }
+               # Find amethod matching the signature on the class. If none is
+               # found, try looking on interfaces (since these are implicitly
+               # abstract public - see Issue #143 part 2).
+               previous_type.all_methods.find { |m| m.signature == sig } ||
+                 previous_type.interface_methods.find { |m| m.signature == sig }
 
              else # field access
                unless previous_type.respond_to? :all_fields
