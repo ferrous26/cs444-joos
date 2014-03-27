@@ -44,7 +44,7 @@ class Assignment5Tests < Minitest::Test
 
     def link_program
       files = Dir.glob("#{output_dir}/*.o")
-      `ld -w -o #{main} -e _start #{files.join(' ')}`
+      `clang -m32 -Wl,-no_pie -o #{main} #{files.join(' ')}`
     end
 
     def runtime_s

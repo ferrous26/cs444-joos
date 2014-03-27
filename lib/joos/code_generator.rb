@@ -1,4 +1,5 @@
-require 'joos/version'
+require 'joos/utilities'
+
 
 ##
 # Code generating logic for Joos
@@ -77,6 +78,16 @@ class Joos::CodeGenerator
     @fd       = File.open "#{directory}/#{@file}", 'w'
   end
 
+  if Joos::Utilities.darwin?
+    def start_sym
+      '_main'
+    end
+  else
+    def start_sym
+      '_start'
+    end
+  end
+
   def generate_data
     # tag data
     # vtable
@@ -93,8 +104,8 @@ class Joos::CodeGenerator
     @fd.puts <<-EOC
 extern __debexit
 
-global _start
-_start:
+global #{start_sym}
+#{start_sym}:
     mov eax, 123
     call __debexit
     EOC
