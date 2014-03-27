@@ -36,9 +36,9 @@ module Joos::TypeChecking::Creator
   # creation expression.
   #
   # If the receiver creates an array of primitive objects, this attribute
-  # will be `nil`.
+  # will be the symbol `:primitive`.
   #
-  # @return [Joos::Entity::Constructor, nil]
+  # @return [Joos::Entity::Constructor, Symbol]
   attr_reader :constructor
 
   def build scope
@@ -65,8 +65,12 @@ module Joos::TypeChecking::Creator
                      find_constructor
                    end
 
-    nil # technically, a creator is not an lvalue,
-        # but we wanted to cache constructor anyways
+    # if we create an array, we need to propagate the array, otherwise
+    # a creator cannot possibly be an lvalue
+    if self.ArrayCreator
+      puts 'oh snap ' + @constructor.inspect
+      @constructor
+    end
   end
 
   # because we already resolved the type during the #build phase
@@ -87,7 +91,7 @@ module Joos::TypeChecking::Creator
 
   def find_array_constructor
     # this is gonna be kinda fucked up...
-    return if type.type.basic_type?
+    return :primitive if type.type.basic_type?
 
     signature   = [type.type.name, []]
     constructor = type.type.constructors.find { |c| c.signature == signature }

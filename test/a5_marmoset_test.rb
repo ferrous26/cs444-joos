@@ -1,21 +1,112 @@
 require 'helper'
+require 'fileutils'
+require 'joos/utilities'
 
 ##
 # Assignment 5 Marmoset tests
 class Assignment5Tests < Minitest::Test
   parallelize_me!
+  include FileUtils
+
+  MAIN = File.join(File.expand_path(File.dirname(__FILE__)), '../main')
 
   # only have to define this because we have so many tests
   def self.test_order
     :alpha
   end
 
+  def output_dir
+    @dir ||= name
+  end
+
+  def main
+    "#{MAIN}_#{name}"
+  end
+
+  def setup
+    rm_rf output_dir
+    mkdir_p output_dir
+    cp runtime_s, output_dir
+  end
+
+  def teardown
+    rm_rf output_dir
+    rm_rf main
+  end
+
+  ##
+  # Darwin specific impls of methods
+  if Joos::Utilities.darwin?
+    def assemble file
+      ofile = file.sub(/s$/, 'o')
+      `nasm -O1 -f macho #{file} -o #{ofile}`
+    end
+
+    def link_program
+      files = Dir.glob("#{output_dir}/*.o")
+      `ld -w -o #{main} -e _start #{files.join(' ')}`
+    end
+
+    def runtime_s
+      File.expand_path './test/stdlib/5.0/runtime_osx.s'
+    end
+
+    def runtime_o
+      File.expand_path './test/stdlib/5.0/runtime_osx.o'
+    end
+
+  ##
+  # Linux specific impls of methods
+  else # assume linux
+    def assemble file
+      ofile = file.sub(/s$/, 'o')
+      `nasm -O1 -f elf -g -F dwarf #{file} -o #{ofile}`
+    end
+
+    def link_program
+      files = Dir.glob("#{output_dir}/*.o")
+      `ld -o #{main} -melf_i386 #{files.join(' ')}`
+    end
+
+    def runtime_s
+      File.expand_path './test/stdlib/5.0/runtime_linux.s'
+    end
+
+    def runtime_o
+      File.expand_path './test/stdlib/5.0/runtime_linux.o'
+    end
+  end
+
+  def try_assemble_and_link
+    Dir.glob("#{output_dir}/*.s").each do |file|
+      assemble file
+    end
+    link_program
+  end
+
+  def assert_main_exit code
+    _, _, status = Open3.capture3 main
+    assert_equal(code, status.exitstatus)
+  end
+
+  def assert_run_success
+    assert_main_exit 123
+  end
+
+  def assert_run_failure
+    assert_main_exit 13
+  end
+
   def assert_compile *files
-    super(*files.concat(stdlib))
+    compile 0, files.concat(stdlib), output_dir
+    try_assemble_and_link
+    assert_run_success
   end
 
   def refute_compile *files
-    super(*files.concat(stdlib))
+    compile 0, files.concat(stdlib), output_dir
+    try_assemble_and_link
+    refute_run_success
   end
 
   def stdlib
@@ -25,6 +116,12 @@ class Assignment5Tests < Minitest::Test
   def self.make_directory_test dir
     define_method "test_#{dir.split('/').last}" do
       files = Dir.glob("#{dir}/**/*.java")
+
+      # put Main.java at the front
+      main  = files.select { |file| file.match(/Main.java$/) }
+      rest  = files - main
+      files = main + rest
+
       if dir.split('/').last =~ /\AJe/
         refute_compile files
       else

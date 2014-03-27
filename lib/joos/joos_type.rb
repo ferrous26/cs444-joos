@@ -18,6 +18,11 @@ class Joos::JoosType
     @methods ||= self.wrap.all_methods.select(&:static?)
   end
 
+  def interface_methods
+    # Interfaces can't define static methods
+    []
+  end
+
   def all_fields
     @fields ||= if self.wrap.respond_to? :all_fields
                   self.wrap.all_fields.select(&:static?)
