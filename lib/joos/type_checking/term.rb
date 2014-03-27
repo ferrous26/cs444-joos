@@ -31,10 +31,6 @@ module Joos::TypeChecking::Term
     !downcast?
   end
 
-  def casting_expression?
-    self.Type
-  end
-
   def resolve_name
     if self.Primary
       self.Selectors.entity || self.Primary.entity
@@ -63,7 +59,7 @@ module Joos::TypeChecking::Term
     if self.Primary
       self.Selectors.type || self.Primary.type
 
-    elsif casting_expression?
+    elsif self.Type # cast or instanceof operand
       self.Type.resolve # may need to force this...
       self.Type.type
 
@@ -137,8 +133,12 @@ module Joos::TypeChecking::Term
       elsif self.TermModifier.Minus
         if self.Term.literal_value
           int = self.Term.literal_value
+          # if it was actually a character (the other numeric type)
+          # then we need to turn it into an integer now...
+          if int.is_a? Joos::Token::Character
+            int = Joos::Token::Integer.new int.to_i.to_s, 'internal', 0, 0
+          end
           int.flip_sign
-
           fuck_shit_up int
           literal_value
         end
