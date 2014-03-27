@@ -34,6 +34,8 @@ class Assignment5Tests < Minitest::Test
     rm_rf main
   end
 
+  ##
+  # Darwin specific impls of methods
   if Joos::Utilities.darwin?
     def assemble file
       ofile = file.sub(/s$/, 'o')
@@ -53,6 +55,8 @@ class Assignment5Tests < Minitest::Test
       File.expand_path './test/stdlib/5.0/runtime_osx.o'
     end
 
+  ##
+  # Linux specific impls of methods
   else # assume linux
     def assemble file
       ofile = file.sub(/s$/, 'o')
@@ -100,7 +104,7 @@ class Assignment5Tests < Minitest::Test
   end
 
   def refute_compile *files
-    compile 42, files.concat(stdlib), output_directory
+    compile 0, files.concat(stdlib), output_dir
     try_assemble_and_link
     refute_run_success
   end
