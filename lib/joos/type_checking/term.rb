@@ -39,8 +39,9 @@ module Joos::TypeChecking::Term
     if self.Primary
       self.Selectors.entity || self.Primary.entity
 
-    elsif casting_expression?
-      # result of a cast is a value, but not a variable
+    elsif self.Type && self.Term
+      # result of a cast is a value, but not a variable, except for arrays
+      self.Term.entity
 
     elsif self.TermModifier
       # result of a unary operator is a value, not a variable
@@ -48,6 +49,9 @@ module Joos::TypeChecking::Term
     elsif self.QualifiedIdentifier
       (self.Selectors && self.Selectors.entity) ||
         self.QualifiedIdentifier.entity
+
+    elsif self.Type
+      # just a Type, argument of instanceof
 
     else
       raise "unknown term\n#{inspect}"

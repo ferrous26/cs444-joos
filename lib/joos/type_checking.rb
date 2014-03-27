@@ -262,13 +262,24 @@ In
       end
     end
 
+    def resolve_name
+      first.entity
+    end
+
     def resolve_type
       self.SubExpression.type
     end
 
     def check_type
       left = first.entity
-      raise NonLValue.new(self)   unless left && left.lvalue?
+
+      unless left &&
+          (left == :primitive                    || # primitive array constructor
+           left.is_a?(Joos::Entity::Constructor) || # other array constructor
+           left.lvalue?                          || # other lvalue
+           left.type.array_type?)                   # just an array
+        raise NonLValue.new(self)
+      end
       raise ArrayLength.new(self) if left == Joos::Array::FIELD
 
       unless assignable? self.SubExpression.type, self.Expression.type
@@ -294,10 +305,11 @@ In
         self.Expression.entity
 
       elsif self.This
-        # "this" is a value, but not an lvalue
+        # "this" is a value, but not an lvalue, and can never be an array
 
       elsif self.New
-        # new object is a value, not an lvalue
+        # new object is a value, not an lvalue, unless it is an array
+        self.Creator.entity
 
       elsif self.Literal
         # literals are not lvalues
