@@ -58,7 +58,7 @@ task :one, :name do |_, args|
 
   set = File.dirname(names.first).split('/').last
 
-  sh "ruby -Itest test/#{set}_marmoset_test.rb --name test_#{name}"
+  sh "ruby -Itest -Ilib -Iconfig test/#{set}_marmoset_test.rb --name test_#{name}"
 end
 
 require 'rspec/core/rake_task'
