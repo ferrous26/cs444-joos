@@ -141,11 +141,14 @@ module Joos::TypeChecking::SubExpression
         literal_value
 
       elsif arithmetic_op?
-        l = left_literal.ruby_value
-        r = right_literal.ruby_value
-        v = l.send self.Infixop.first.token, r
-        wrap_literal Joos::Token.make :Integer, v.to_s
-        literal_value
+        # avoid division by zero errors (leave them for the runtime)
+        unless self.Infixop.Divide && right_literal.ruby_value.zero?
+          l = left_literal.ruby_value
+          r = right_literal.ruby_value
+          v = l.send self.Infixop.first.token, r
+          wrap_literal Joos::Token.make :Integer, v.to_s
+          literal_value
+        end
       end
     end
   end
