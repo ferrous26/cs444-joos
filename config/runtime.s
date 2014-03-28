@@ -17,7 +17,7 @@ __division:
 	idiv   ebx
 	ret
 .divide_by_zero:
-	__exception
+	call __exception
 
 ;; kind_of_type
 ;; pre:  left type in eax, right type in ebx
