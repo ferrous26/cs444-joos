@@ -117,6 +117,10 @@ class Just < Continuation
   def initialize value
     @value = value
   end
+
+  def to_s
+    "#{super} #{value||'nil'.bold_red}"
+  end
 end
 
 # Forwards continuation. 
@@ -130,7 +134,7 @@ class Next < Continuation
   end
 
   def to_s
-    "#{super} #{block}"
+    "#{super} #{block||'nil'.bold_red}"
   end
 end
 
@@ -147,7 +151,7 @@ class Loop < Continuation
   end
 
   def to_s
-    "#{super} #{block}"
+    "#{super} #{block||'nil'.bold_red}"
   end
 end
 

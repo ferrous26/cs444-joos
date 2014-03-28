@@ -10,6 +10,10 @@ module Joos::SSA
 class Segment
   include CompileAST
 
+  # Label of the segment used in the generated assembly
+  # @return [String]
+  attr_accessor :label
+
   # Entry point of the segment
   # @return [FlowBlock]
   attr_accessor :start_block
@@ -40,18 +44,21 @@ class Segment
   def self.from_method method
     new.tap do |ret|
       # TODO: add stuff for formal params, etc.
-      ret.start_block = FlowBlock.new "enter"
+      ret.start_block = FlowBlock.new '.enter'
       ret.compile ret.start_block, method.body
       ret.flow_blocks = ret.start_block.dominates.reverse
     end
   end
 
-  # Create a segment from a field initializer
-  # @return segment
-  def self.from_field field
-    new.tap do |ret|
-      ret.start_block = FlowBlock.new "init"
-      ret.compile start_block, field.initializer
+  # Create a segment that initializes an array of fields
+  # @param fields [Array<Joos::Entity::Field>]
+  # @param label [String]
+  def self.from_fields fields
+    new.tap do|ret|
+      ret.start_block = FlowBlock.new '.enter'
+      fields.reduce ret.start_block do |block, field|
+        ret.compile block, field.initializer
+      end
       ret.flow_blocks = ret.start_block.dominates.reverse
     end
   end
@@ -88,7 +95,7 @@ class Segment
     @block_nums ||= -1
     @block_nums += 1
 
-    "#{prefix}_#{@block_nums}"
+    ".#{prefix}_#{@block_nums}"
   end
 
   # Create an Enumerator over all instructions in each FlowBlock

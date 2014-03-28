@@ -52,6 +52,15 @@ def test_compiler name
   compiler
 end
 
+def ssa_test name
+    compiler = test_compiler name
+    compiler.compile_to 4
+    main = compiler.classes[0].methods[0]
+    seg = Joos::SSA::Segment.from_method main
+
+    [main, seg]
+end
+
 class String
   include Joos::SourceInfo
 end

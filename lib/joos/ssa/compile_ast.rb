@@ -16,8 +16,10 @@ module CompileAST
       flow_block.make_result This.new(new_var)
     when Joos::Token
       flow_block
+    when Joos::AST::VariableDeclarator
+      compile_variable_initializer flow_block, node
     when Joos::AST::Assignment
-      raise "Not implemented - assignment"
+      compile_assignment flow_block, node
     when Joos::AST::SubExpression
       compile_subexpression flow_block, node
     when Joos::AST::Term
@@ -29,7 +31,9 @@ module CompileAST
     when Joos::AST::Selector
       compile_selector flow_block, node
     else
-      #puts node
+      # Default case is to just go through children, left to right.
+      # This handles blocks, parens, and other stuff that no longer has meaning
+      # at this point.
       node.nodes.reduce flow_block do |block, node|
         compile block, node
       end
@@ -72,8 +76,10 @@ module CompileAST
       flow_block
     when [:Return, :Expression, :Semicolon]
       compile(flow_block, child[1]).tap do |ret|
-        raise "Expression has no result" unless ret.continuation.is_a? Just
-        ret.continuation = Return.new ret.continuation.value
+        unless ret.continuation.is_a? Just
+          raise "Expression has no result" 
+        end
+        ret.continuation = Return.new ret.result
       end
     when [:Expression, :Semicolon]
       compile(flow_block, child[0]).tap do |ret|
@@ -110,8 +116,24 @@ module CompileAST
     if node.nodes.length == 1
       compile flow_block, node.nodes[0]
     elsif node.nodes.length == 3
-      raise "Not implemented - infix op"
+      # Infix binary operators
+      
+      if node.Instanceof
+        # The RHS of this is not a value
+        raise "Not implemented - instanceof"
+      elsif node.nodes[1].LazyAnd or node.nodes[1].LazyOr
+        # These need special branching logic
+        raise "Not implemented - short-circuiting operators"
+      end
+
+      block = compile flow_block, node.nodes[0]
+      left = block.result
+      block = compile block, node.nodes[2]
+      right = block.result
+
+      compile_infix block, left, node.nodes[1], right
     else
+      puts node.inspect
       raise "SubExpression has #{node.nodes.length} children"
     end
   end
@@ -135,6 +157,16 @@ module CompileAST
       compile block, child[2]
     when [:QualifiedIdentifier, :OpenStaple, :Expression,  :CloseStaple, :Selectors]
       raise "Not implemented - static array access"
+    when [:QualifiedIdentifier]
+      # Field / argument / variable access.
+      entity = node.QualifiedIdentifier.entity
+      if entity.is_a? Joos::Entity::Field and !entity.static?
+        this = This.new
+        flow_block << this
+        flow_block.make_result GetField.new(new_var, entity, this.target)
+      else
+        flow_block.make_result Get.new(new_var, entity)
+      end
     when [:QualifiedIdentifier, :Selectors]
       # This rule is the result of a transform somewhere
       static_member = child[0].entity
@@ -169,6 +201,56 @@ module CompileAST
   # @param method [Joos::Entity::Method]
   def compile_static_method flow_block, method, args
     raise "Not implemented - static method"
+  end
+
+  # Compile a variable's initializer.
+  # It would be nice to just call #compile_assignment, but due to AST nastyness
+  # the two cases look fundamentally different.
+  def compile_variable_initializer flow_block, node
+    # var = node.entity   # doesn't work
+    var = node.entity
+    raise "Not implemented - variable initializers"
+    block = compile flow_block, node.Expression
+    block << Set.new(var, block.result)
+    block.continuation = nil
+    block
+  end
+
+  def compile_assignment flow_block, node
+    # Compile an assignment x = y.
+    # x can have the form a, X.a, or X[Y] for rvalue terms X and Y
+    # The rule is to eval the LHS of the assignment first.
+    left = node.nodes[0]
+    right = node.nodes[2]
+
+    if left.Term.QualifiedIdentifier
+      # Simple field - compile the RHS, then assign it
+      block = compile flow_block, right
+      value = block.result
+      var = left.entity
+
+      if var.is_a? Joos::Entity::Field and !var.static?
+        receiver = This.new
+        block << receiver
+        block << SetField.new(receriver.target, value)
+      else
+        # Add the Set to the block as a side effect, but don't change the result
+        block << Set.new(var, value)
+      end
+    else
+      puts left.inspect
+      raise "Match failed - #{left}"
+    end
+  end
+
+  # @param left [Fixnum]
+  # @param operatior [Joos::AST]
+  # @param right [Fixnum]
+  def compile_infix flow_block, left, operator, right
+    op = INFIX_OPERATOR_TYPES[operator.nodes[0].to_sym]
+    raise "Match failed - #{operator}" unless op
+
+    flow_block.make_result op.new(new_var, left, right)
   end
 
   # Compile a list of arguments into a single FlowBlock, and return it with the

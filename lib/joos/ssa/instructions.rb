@@ -76,10 +76,35 @@ class Add     < BinOp; end
 class Sub     < BinOp; end
 class Mul     < BinOp; end
 class Div     < BinOp; end
+class Mod     < BinOp; end
 
 class BinAnd  < BinOp; end
 class BinOr   < BinOp; end
 
+class Equal         < BinOp; end
+class NotEqual      < BinOp; end
+class GreaterThan   < BinOp; end
+class LessThan      < BinOp; end
+class LessEqual     < BinOp; end
+class GreaterEqual  < BinOp; end
+
+# Map from infix ops in the grammar to instruction types.
+# Does not include instanceof or short-circuiting, since these are special.
+INFIX_OPERATOR_TYPES = {
+  EagerOr:  BinOr,
+  EagerAnd: BinAnd,
+  Equality: Equal,
+  NotEqual: NotEqual,
+  Plus:     Add,
+  Minus:    Sub,
+  Multiply: Mul,
+  Divide:   Div,
+  Modulo:   Mod,
+  LessThan: LessThan,
+  GreaterThan: GreaterThan,
+  LessOrEqual: LessEqual,
+  GreaterOrEqual: GreaterEqual
+}
 
 
 # Get the receiver
@@ -111,6 +136,7 @@ class Get < Instruction
   end
 
   def initialize target, variable
+    raise "Type error - #{variable} should be a var" unless variable.is_a? Joos::Entity
     super target
     @entity = variable
   end
@@ -126,7 +152,8 @@ class Set < Instruction
   #          Jooos::Entity::Field]
   attr_reader :entity
 
-  def initialize target, variable, value
+  def initialize variable, value
+    raise "Type error - #{variable} should be a var/field" unless variable.is_a? Joos::Entity
     super target, value
     @entity = variable
   end
@@ -171,7 +198,9 @@ class SetField < Instruction
 
   alias_method :receiver, :left
 
-  def initialize target, field, receiver, value
+  def initialize field, receiver, value
+    # SetField does not have a target
+    raise "Type assert - #{field} should be a var/field" unless Field.is_a? Joos::Entity
     super target, receiver, value
     @entity = field
   end
