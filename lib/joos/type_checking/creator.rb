@@ -67,10 +67,7 @@ module Joos::TypeChecking::Creator
 
     # if we create an array, we need to propagate the array, otherwise
     # a creator cannot possibly be an lvalue
-    if self.ArrayCreator
-      puts 'oh snap ' + @constructor.inspect
-      @constructor
-    end
+    @constructor if self.ArrayCreator
   end
 
   # because we already resolved the type during the #build phase
