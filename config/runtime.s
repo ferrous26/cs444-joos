@@ -12,11 +12,11 @@ extern __NATIVEjava.io.OutputStream.nativeWrite
 global __division
 __division:
 	cmp    ebx, 0           ; trying to divide is not allowed!
-	je     divide_by_zero
+	je     .divide_by_zero
 	cdq                     ; sign extend eax into edx
 	idiv   ebx
 	ret
-divide_by_zero:
+.divide_by_zero:
 	__exception
 
 ;; kind_of_type
@@ -39,11 +39,11 @@ __kind_of_type:
 global __instanceof
 __instanceof:
 	cmp    eax, 0          ; perform null check
-	je     instanceof_null
+	je     .null
 	mov    ebx, [ebx]      ; get the tag for the object
 	call __kind_of_type    ; delegate actual check
 	ret
-instanceof_null:
+.null:
 	mov    eax, 0          ; false
 	ret
 
@@ -58,10 +58,10 @@ global __downcast_check
 __downcast_check:
 	call __instanceof
 	cmp    eax, 0          ; if not instanceof, then we have a problem
-	je     bad_cast
+	je     .bad_cast
 	mov    eax, 1          ; true
 	ret
-instanceof_null:
+.bad_cast:
 	call __exception       ; bad cast exception
 
 
