@@ -31,7 +31,6 @@ describe Joos::SSA::Segment do
   end
 
   it 'constructs assignments' do
-    pending "variable initializer implementation"
     main, seg = ssa_test 'fixture/assignment_test'
 
     expect( seg.flow_blocks.length ).to be == 1

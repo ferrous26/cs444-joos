@@ -16,8 +16,13 @@ module CompileAST
       flow_block.make_result This.new(new_var)
     when Joos::Token
       flow_block
-    when Joos::AST::VariableDeclarator
-      compile_variable_initializer flow_block, node
+    when Joos::AST::LocalVariableDeclarationStatement
+      flow_block # handled by the Block case
+    when Joos::AST::Block
+      compile_variable_initializer flow_block, node if node.declaration
+      node.statements.reduce flow_block do |block, statement|
+        compile block, statement
+      end
     when Joos::AST::Assignment
       compile_assignment flow_block, node
     when Joos::AST::SubExpression
@@ -204,13 +209,10 @@ module CompileAST
   end
 
   # Compile a variable's initializer.
-  # It would be nice to just call #compile_assignment, but due to AST nastyness
-  # the two cases look fundamentally different.
+  # node should be a AST::Block
   def compile_variable_initializer flow_block, node
-    # var = node.entity   # doesn't work
-    var = node.entity
-    raise "Not implemented - variable initializers"
-    block = compile flow_block, node.Expression
+    var = node.declaration
+    block = compile flow_block, var.initializer
     block << Set.new(var, block.result)
     block.continuation = nil
     block
