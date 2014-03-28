@@ -114,7 +114,21 @@ module CompileAST
   end
 
   def compile_while flow_block, node
-    raise "Not implemented - while"
+    # Compile the guard in its own block, so we can loop back to it
+    guard_block = FlowBlock.new block_name('while')
+    flow_block.continuation = Next.new guard_block
+    guard_block_end = compile guard_block, node.guard_block
+    
+    # Compile the loop body, with a Loop continuation back to the guard
+    loop_block = FlowBlock.new block_name('loop')
+    loop_block_end = compile loop_block, node.loop_body
+    loop_block.continuation = Loop.new guard_block
+
+    # Create a post-loop block for the false case of the guard
+    next_block = FlowBlock.new block_name('block')
+    guard_block_end.continuation = Branch.new guard_block_end.result, loop_block, next_block
+
+    next_block
   end
 
   def compile_subexpression flow_block, node

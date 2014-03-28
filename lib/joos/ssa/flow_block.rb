@@ -134,7 +134,7 @@ class Next < Continuation
   end
 
   def to_s
-    "#{super} #{block||'nil'.bold_red}"
+    "#{super} #{block.name||'nil'.bold_red}"
   end
 end
 
@@ -151,7 +151,7 @@ class Loop < Continuation
   end
 
   def to_s
-    "#{super} #{block||'nil'.bold_red}"
+    "#{super} #{block.name||'nil'.bold_red}"
   end
 end
 

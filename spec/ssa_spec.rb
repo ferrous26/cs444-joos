@@ -5,7 +5,7 @@ require 'joos/ssa/segment'
 describe Joos::SSA::Segment do
   if false
     it 'has a spec that dumps output for debugging' do
-      main, seg = ssa_test 'fixture/assignment_test'
+      main, seg = ssa_test 'fixture/while_test'
       puts seg.inspect
     end
   end
@@ -35,10 +35,18 @@ describe Joos::SSA::Segment do
 
     expect( seg.flow_blocks.length ).to be == 1
     expect( seg.instructions.to_a.length ).to be == 7
+    expect( seg.variable_count ).to be == 5
   end
 
   it 'constructs while loops' do
-    pending "not implemented"
     main, seg = ssa_test 'fixture/while_test'
+
+    expect( seg.flow_blocks.length ).to be == 4
+    expect( seg.instructions.to_a.length ).to be == 10
+    expect( seg.variable_count ).to be == 8
+
+    expect(
+      seg.flow_blocks.find {|b| b.continuation.is_a? Joos::SSA::Loop}
+    ).to_not be_nil
   end
 end
