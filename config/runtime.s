@@ -11,10 +11,10 @@ extern __NATIVEjava.io.OutputStream.nativeWrite
 ;; post: quotient in eax, remainder in edx
 global __division
 __division:
-	cmp    ebx, 0           ; trying to divide is not allowed!
-	je     .divide_by_zero
-	cdq                     ; sign extend eax into edx
-	idiv   ebx
+	cmp     ebx, 0           ; trying to divide is not allowed!
+	je      .divide_by_zero
+	cdq                      ; sign extend eax into edx
+	idiv    ebx
 	ret
 .divide_by_zero:
 	call __exception
@@ -27,8 +27,9 @@ __division:
 ;; left := right ? is right type a kind of left type?
 global __kind_of_type
 __kind_of_type:
-	mov    eax, 0 ; false, because this needs to be implemented
-	;; TODO: IMPLEMENT ME!
+	mov     eax, 0 ; false, because this needs to be implemented
+        ;; TODO: IMPLEMENT ME!
+	ret
 
 ;; instanceof check
 ;;
@@ -38,13 +39,13 @@ __kind_of_type:
 ;; post: boolean value will be left in eax
 global __instanceof
 __instanceof:
-	cmp    eax, 0          ; perform null check
-	je     .null
-	mov    ebx, [ebx]      ; get the tag for the object
-	call __kind_of_type    ; delegate actual check
+	cmp     eax, 0          ; perform null check
+	je      .null
+	mov     ebx, [ebx]      ; get the tag for the object
+	call __kind_of_type     ; delegate actual check
 	ret
 .null:
-	mov    eax, 0          ; false
+	mov     eax, 0          ; false
 	ret
 
 
@@ -57,12 +58,12 @@ __instanceof:
 global __downcast_check
 __downcast_check:
 	call __instanceof
-	cmp    eax, 0          ; if not instanceof, then we have a problem
-	je     .bad_cast
-	mov    eax, 1          ; true
+	cmp     eax, 0          ; if not instanceof, then we have a problem
+	je      .bad_cast
+	mov     eax, 1          ; true
 	ret
 .bad_cast:
-	call __exception       ; bad cast exception
+	call __exception        ; bad cast exception
 
 
 ;; TODO:
