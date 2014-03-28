@@ -142,7 +142,7 @@ module CompileAST
         raise "Not implemented - instanceof"
       elsif node.nodes[1].LazyAnd or node.nodes[1].LazyOr
         # These need special branching logic
-        raise "Not implemented - short-circuiting operators"
+        return compile_short_circuit flow_block, node
       end
 
       block = compile flow_block, node.nodes[0]
@@ -282,6 +282,29 @@ module CompileAST
     end
 
     [block, results]
+  end
+
+  # Compile short-circuiting ops && and ||
+  def compile_short_circuit flow_block, node
+    left_block = compile flow_block, node.nodes[0]
+    left_result = left_block.result
+    next_block = FlowBlock.new block_name('next')
+
+    if node.nodes[1].LazyAnd
+      right_block = FlowBlock.new block_name('and')
+      left_block.continuation = Branch.new left_result, right_block, next_block
+    elsif node.nodes[1].LazyOr
+      right_block = FlowBlock.new block_name('or')
+      left_block.continuation = Branch.new left_result, next_block, right_block
+    else
+      raise "Match failed - #{node}"
+    end
+
+    right_block_end = compile right_block, node.nodes[2]
+    right_result = right_block_end.result
+    right_block_end.continuation = Next.new next_block
+
+    next_block.make_result Merge.new(new_var, left_result, right_result)
   end
 end
 

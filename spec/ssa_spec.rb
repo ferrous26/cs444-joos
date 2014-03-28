@@ -5,7 +5,7 @@ require 'joos/ssa/segment'
 describe Joos::SSA::Segment do
   if false
     it 'has a spec that dumps output for debugging' do
-      main, seg = ssa_test 'fixture/while_test'
+      main, seg = ssa_test 'fixture/short_circuit'
       puts seg.inspect
     end
   end
@@ -48,5 +48,15 @@ describe Joos::SSA::Segment do
     expect(
       seg.flow_blocks.find {|b| b.continuation.is_a? Joos::SSA::Loop}
     ).to_not be_nil
+  end
+
+  it 'constructs short circuiting operators' do
+    main, seg = ssa_test 'fixture/short_circuit'
+    expect( seg.flow_blocks.length ).to be == 5
+    expect( seg.instructions.to_a.length ).to be == 13
+    expect( seg.variable_count ).to be == 12
+    expect(
+      seg.instructions.select{|ins| ins.is_a? Joos::SSA::Merge}.length
+    ).to be == 2
   end
 end

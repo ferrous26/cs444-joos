@@ -88,6 +88,12 @@ class LessThan      < BinOp; end
 class LessEqual     < BinOp; end
 class GreaterEqual  < BinOp; end
 
+# Super-special merge (phi) instruction used for && and ||:
+# #left is the result of the first entry branch to the current block,
+# #right is the result of the second entry branch to the current block.
+# #target 'chooses' a value based on which branch was followed.
+class Merge     < BinOp; end
+
 # Map from infix ops in the grammar to instruction types.
 # Does not include instanceof or short-circuiting, since these are special.
 INFIX_OPERATOR_TYPES = {
