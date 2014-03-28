@@ -1,3 +1,5 @@
+require 'fileutils'
+
 require 'joos/version'
 require 'joos/freedom_patches'
 require 'joos/scanner'
@@ -235,11 +237,16 @@ class Joos::Compiler
     end
   end
 
+  def runtime
+    'config/runtime.s'
+  end
+
   def generate_code
     @compilation_units.first.generate_main_code output_directory
     @compilation_units[1..-1].each do |unit|
       unit.generate_code output_directory
     end
+    FileUtils.cp runtime, output_directory
   end
 
 end
