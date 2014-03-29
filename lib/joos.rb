@@ -239,7 +239,7 @@ class Joos::Compiler
   end
 
   def runtime
-    'config/runtime.s'
+    'config/joos_runtime.s'
   end
 
   def generate_code
