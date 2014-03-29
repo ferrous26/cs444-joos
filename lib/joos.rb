@@ -113,7 +113,7 @@ class Joos::Compiler
   end
 
   def add_stdlib
-    @files += Dir.glob 'test/stdlib/5.0/**/*.java'
+    @files += Dir.glob 'test/stdlib/5.1/**/*.java'
   end
 
   ##

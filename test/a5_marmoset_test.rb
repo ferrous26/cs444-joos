@@ -48,11 +48,11 @@ class Assignment5Tests < Minitest::Test
     end
 
     def runtime_s
-      File.expand_path './test/stdlib/5.0/runtime_osx.s'
+      File.expand_path './test/stdlib/5.1/runtime_osx.s'
     end
 
     def runtime_o
-      File.expand_path './test/stdlib/5.0/runtime_osx.o'
+      File.expand_path './test/stdlib/5.1/runtime_osx.o'
     end
 
   ##
@@ -69,11 +69,11 @@ class Assignment5Tests < Minitest::Test
     end
 
     def runtime_s
-      File.expand_path './test/stdlib/5.0/runtime_linux.s'
+      File.expand_path './test/stdlib/5.1/runtime_linux.s'
     end
 
     def runtime_o
-      File.expand_path './test/stdlib/5.0/runtime_linux.o'
+      File.expand_path './test/stdlib/5.1/runtime_linux.o'
     end
   end
 
@@ -110,7 +110,7 @@ class Assignment5Tests < Minitest::Test
   end
 
   def stdlib
-    @stdlib ||= Dir.glob('test/stdlib/5.0/**/*.java')
+    @stdlib ||= Dir.glob('test/stdlib/5.1/**/*.java')
   end
 
   def self.make_directory_test dir
