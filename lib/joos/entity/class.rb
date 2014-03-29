@@ -462,9 +462,7 @@ class Joos::Entity::Class < Joos::Entity
   end
 
   def ancestors
-    ancestor_classes      +
-      ancestor_interfaces +
-      ancestor_classes.map(&:ancestor_interfaces)
+    ancestor_classes + ancestor_classes.map(&:ancestor_interfaces).flatten
   end
 
   # @param klass [Joos::Entity::Class, Joos::Entity::Interface]

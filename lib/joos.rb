@@ -243,10 +243,19 @@ class Joos::Compiler
   end
 
   def generate_code
-    @compilation_units.each_with_index do |unit, index|
+    # assign an ancestor number to each compilation unit
+    base = 0x10
+    @compilation_units.each do |unit|
+      unit.ancestor_number = base
+      base += 1
+    end
+
+    objs = @compilation_units.select { |unit| unit.is_a? Joos::Entity::Class }
+    objs.each_with_index do |unit, index|
       gen = Joos::CodeGenerator.new unit, :i386, output_directory, index.zero?
       gen.render_to_file
     end
+
     # also add our static runtime code
     FileUtils.cp runtime, output_directory
   end
