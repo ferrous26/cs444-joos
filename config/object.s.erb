@@ -1,0 +1,69 @@
+;; <%= @unit.fully_qualified_name.join('.') %>
+
+section .data
+
+;; tag data
+
+;; vtable
+
+<% if @unit.is_a? Joos::Entity::Class %>
+;; static field declarations
+   <% @unit.fields.select(&:static?).each do |field| %>
+global <%= field.label %>
+<%= field.label %>: dd 00
+   <% end %>
+<% end %>
+
+
+section .text
+
+<% if @unit.is_a? Joos::Entity::Class %>
+;; field initializers
+
+   <% @unit.fields.select(&:initializer).each do |field| %>
+global Init_<%= field.label %>
+Init_<%= field.label %>:
+   <% end %>
+<% end %>
+
+
+;; methods
+<% @unit.methods.reject(&:abstract?).each do |method| %>
+global <%= method.label %>
+<%= method.label %>:
+        ret
+
+<% end %>
+
+<% if @unit.is_a? Joos::Entity::Class %>
+;; aggregate initializer
+global Init_<%= @unit.label %>
+Init_<%= @unit.label %>:
+    <% static_initializers.each do |init| %>
+        call <%= init %>
+    <% end %>
+        ret
+<% end %>
+
+<% if @main %>
+global <%= start_sym %>
+<%= start_sym %>:
+    <% unit_initializers.each do |init| %>
+        call <%= init %>
+    <% end %>
+        mov     eax, 123 ;; TODO: call real main!
+        call __debexit
+<% end %>
+
+
+;; Literal Strings
+section .data
+<% @strings.each_pair do |str, symbol| %>
+<%= symbol %>: db '<%= str %>'
+<% end %>
+
+
+;; Symbols that we need to import
+<% @symbols.each do |symbol| %>
+extern <%= symbol %>
+<% end %>

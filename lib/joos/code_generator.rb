@@ -1,5 +1,6 @@
-require 'base64'
-require 'digest/md5'
+require 'securerandom'
+require 'erb'
+
 require 'joos/utilities'
 
 
@@ -77,92 +78,70 @@ class Joos::CodeGenerator
   # @return [Array<String>]
   attr_reader :symbols
 
-  # @return [Hash]
+  ##
+  # Literal strings used in the compilation unit
+  #
+  # Map of string value to symbol name.
+  #
+  # @return [Hash{ String => String }]
   attr_reader :strings
 
   # @param unit      [Joos::Entity::CompilationUnit]
   # @param platform  [Symbol] pretty much has to be `:i386`
   # @param directory [String] where to put all the asm
-  def initialize unit, platform, directory
-    @platform = self.class.const_get platform.to_s.capitalize
-    @unit     = unit
-    @file     = unit.fully_qualified_name.join('_') << '.s'
-    @fd       = File.open "#{directory}/#{@file}", 'w'
-    @symbols  = ['__debexit', '__malloc', '__exception']
-    @strings  = literal_string_hash
+  # @param main      [Boolean] whether or not to generate the main routine
+  def initialize unit, platform, directory, main
+    @platform  = self.class.const_get platform.to_s.capitalize
+    @unit      = unit
+    @directory = directory
+    @file      = unit.fully_qualified_name.join('_') << '.s'
+    @symbols   = default_symbols
+    @strings   = literal_string_hash
+    @main      = main
   end
 
-  if Joos::Utilities.darwin?
-    def start_sym
-      '_main'
+  def start_sym
+    Joos::Utilities.darwin? ? '_main' : '_start'
+  end
+
+  def render
+    File.open "#{@directory}/#{@file}", 'w' do |fd|
+      fd.write render_object
     end
-  else
-    def start_sym
-      '_start'
-    end
   end
 
-  def generate_data
-    @fd.puts 'section .data'
 
-    # tag data
-    # vtable
-    # static fields
-
-    # literal strings
+  def self.read name
+    File.read "config/#{name}.erb"
   end
-
-  def generate_text
-    @fd.puts 'section .text'
-
-    # static methods
-    # instance methods
-  end
-
-  def generate_main
-    @fd.puts <<-EOC
-global #{start_sym}
-#{start_sym}:
-    mov eax, 123
-    call __debexit
-    EOC
-  end
-
-  def finalize
-    append_literal_strings
-    append_external_symbols
-    @fd.close
-  end
+  ERB.new(read('object.s'), nil, '>-').def_method(self, :render_object)
 
 
   private
 
-  def append_literal_strings
-    @fd.puts
-    @fd.puts ';; Literal strings'
-    @fd.puts 'section .data'
-    @strings.each_pair do |str, symbol|
-      @fd.puts "#{symbol}: db '#{str}'"
-    end
-  end
-
-  def append_external_symbols
-    @fd.puts
-    @fd.puts ';; Symbols that we need to import'
-    @symbols.each do |symbol|
-      @fd.puts "extern #{symbol}"
-    end
-  end
-
   def literal_string_hash
-    @strings = Hash.new do |hash, key|
-      digest = Digest::MD5.digest key
-      encode = Base64.encode64 digest
-      encode.chomp!
-      encode.gsub!(/\+/, '$')
-      encode.gsub!(/\//, '?')
-      encode.gsub!(/==/, '')
-      hash[key] = "string##{encode}"
+    Hash.new do |hash, key|
+      id = SecureRandom.uuid
+      id.gsub!(/-/, '_')
+      hash[key] = "string##{id}"
+    end
+  end
+
+  def default_symbols
+    ['__debexit', '__malloc', '__exception', '__division']
+  end
+
+  def static_initializers
+    @unit.fields.select(&:static?).select(&:initializer).map do |field|
+      'Init_' << field.label
+    end
+  end
+
+  def unit_initializers
+    @unit.root_package.all_classes.map do |unit|
+      label = 'Init_' + unit.label
+      @symbols << label unless unit == @unit
+      label
     end
   end
 

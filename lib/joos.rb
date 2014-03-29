@@ -242,9 +242,9 @@ class Joos::Compiler
   end
 
   def generate_code
-    @compilation_units.first.generate_main_code output_directory
-    @compilation_units[1..-1].each do |unit|
-      unit.generate_code output_directory
+    @compilation_units.each_with_index do |unit, index|
+      gen = Joos::CodeGenerator.new unit, :i386, output_directory, index.zero?
+      gen.render
     end
     FileUtils.cp runtime, output_directory
   end
