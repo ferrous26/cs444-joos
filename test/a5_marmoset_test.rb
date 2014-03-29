@@ -106,7 +106,7 @@ class Assignment5Tests < Minitest::Test
   def refute_compile *files
     compile 0, files.concat(stdlib), output_dir
     try_assemble_and_link
-    refute_run_success
+    assert_run_failure
   end
 
   def stdlib
@@ -122,7 +122,7 @@ class Assignment5Tests < Minitest::Test
       rest  = files - main
       files = main + rest
 
-      if dir.split('/').last =~ /\AJe/
+      if dir.split('/').last =~ /\AJ1e/
         refute_compile files
       else
         assert_compile files
@@ -134,7 +134,7 @@ class Assignment5Tests < Minitest::Test
     test_case = File.basename(file, '.java')
 
     define_method "test_#{test_case}" do
-      if test_case =~ /\AJe/
+      if test_case =~ /\AJ1e/
         refute_compile file
       else
         assert_compile file
