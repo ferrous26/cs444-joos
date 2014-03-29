@@ -88,7 +88,7 @@ class Joos::Entity
 
   private
 
-  # @param sub [Joos::Entity]
+  # @param sub [Class]
   def self.inherited sub
     path = "config/#{sub.to_s.split('::').last.downcase}_inspect.erb"
     return unless File.exist? path

@@ -204,6 +204,14 @@ class Joos::Entity::Method < Joos::Entity
   end
 
 
+  # @!group Assignment 5
+
+  def label
+    @label ||= (base = type_environment.label + "~#{name}";
+                @parameters.empty? ? base : (base + '~' + parameter_labels))
+  end
+
+
   # @!group Inspect
 
   # @todo add relevant modifiers
@@ -247,6 +255,10 @@ class Joos::Entity::Method < Joos::Entity
     @body.visit do |_, node|
       raise StaticThis.new(node) if node.to_sym == :This
     end
+  end
+
+  def parameter_labels
+    @parameters.map(&:label).join('~')
   end
 
 

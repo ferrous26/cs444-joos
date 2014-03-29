@@ -20,4 +20,8 @@ class Joos::BasicType::Byte < Joos::BasicType
 
   alias_method :wider?, :==
 
+  def label
+    'b'
+  end
+
 end

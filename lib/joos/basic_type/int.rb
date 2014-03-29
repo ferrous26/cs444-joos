@@ -22,4 +22,8 @@ class Joos::BasicType::Int < Joos::BasicType
     length >= other.length
   end
 
+  def label
+    'i'
+  end
+
 end

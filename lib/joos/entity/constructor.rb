@@ -45,6 +45,15 @@ class Joos::Entity::Constructor < Joos::Entity::Method
     super
   end
 
+  # @!group Assignment 5
+
+  def label
+    @label ||= (base = type_environment.label + '~@';
+                @parameters.empty? ? base : (base + '~' + parameter_labels))
+  end
+
+  # @!endgroup
+
 
   private
 

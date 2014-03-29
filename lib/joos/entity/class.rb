@@ -518,19 +518,8 @@ class Joos::Entity::Class < Joos::Entity
 
   # @!group Assignment 5
 
-  def generate_code directory
-    @gen = Joos::CodeGenerator.new self, :i386, directory
-    @gen.generate_data
-    @gen.generate_text
-    @gen.finalize
-  end
-
-  def generate_main_code directory
-    @gen = Joos::CodeGenerator.new self, :i386, directory
-    @gen.generate_data
-    @gen.generate_text
-    @gen.generate_main
-    @gen.finalize
+  def label
+    @label ||= ('@' + fully_qualified_name.join('.'))
   end
 
   # @!endgroup

@@ -117,6 +117,12 @@ class Joos::Entity::Field < Joos::Entity
     check_forward_refs_visit initializer
   end
 
+  # @!group Assignment 5
+
+  def label
+    @label ||= (type_environment.label + "?#{name}")
+  end
+
 
   # @!group Inspect
 
