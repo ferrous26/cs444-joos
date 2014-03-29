@@ -3,5 +3,5 @@ global <%= start_sym %>
 <% unit_initializers.each do |init| %>
         call <%= init -%>
 <% end %>
-        mov     eax, 123 ;; TODO: call real main!
+        call <%= joos_main %>
         call __debexit

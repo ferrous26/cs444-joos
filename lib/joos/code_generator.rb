@@ -1,12 +1,23 @@
 require 'securerandom'
 require 'erb'
 
+require 'joos/exceptions'
 require 'joos/utilities'
 
 
 ##
 # Code generating logic for Joos
 class Joos::CodeGenerator
+
+  ##
+  # Exception raised when the compilation unit expected to have the main
+  # function does not have a main function.
+  #
+  class NoMainDetected < Joos::CompilerException
+    def initialize unit
+      super "#{unit.inspect} must have a public static int test() method", unit
+    end
+  end
 
   ##
   # Knows the names of values in registers and the current stack frame.
@@ -112,15 +123,18 @@ class Joos::CodeGenerator
   # Load all the templates
   [
     'object',
-    'static_field_data',
+    # section .text
     'field_initializers',
-    'methods',
     'aggregate_field_initializer',
+    'methods',
     'main',
+    # section .data
+    'vtable',
+    'ancestry_table',
+    'static_field_data',
     'literal_strings',
-    'extern_symbols',
-    'class_tag',
-    'vtable'
+    # section (other)
+    'extern_symbols'
   ].each do |name|
     template = File.read "config/#{name}.s.erb"
     ERB.new(template, nil, '>-').def_method(self, "render_#{name}")
@@ -141,18 +155,53 @@ class Joos::CodeGenerator
     ['__debexit', '__malloc', '__exception', '__division']
   end
 
-  def static_initializers
+  def field_initializer field
+    'Init_' + field.label
+  end
+
+  def static_field_initializers
     @unit.fields.select(&:static?).select(&:initializer).map do |field|
-      'Init_' << field.label
+      field_initializer field
     end
+  end
+
+  def unit_initializer unit
+    'Init_' + unit.label
   end
 
   def unit_initializers
     @unit.root_package.all_classes.map do |unit|
-      label = 'Init_' + unit.label
-      @symbols << label unless unit == @unit
-      label
+      unit_initializer(unit).tap do |label|
+        @symbols << label unless unit == @unit
+      end
     end
+  end
+
+  def concrete_methods
+    @unit.methods.reject(&:abstract?).reject(&:native?)
+  end
+
+  def joos_main
+    method = @unit.methods.find { |m| m.signature == ['test', []] }
+    raise NoMainDetected.new @unit unless method
+    method.label
+  end
+
+  def vtable_label
+    'vtable_' + @unit.label
+  end
+
+  def atable_label
+    'atable_' + @unit.label
+  end
+
+  # @return [Array<Joos::Entity::CompilationUnit>]
+  def unit_ancestors
+    @unit.ancestors.uniq
+  end
+
+  def static_fields
+    @unit.fields.select(&:static?)
   end
 
 end
