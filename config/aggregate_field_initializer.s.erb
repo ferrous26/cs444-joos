@@ -1,0 +1,7 @@
+;; aggregate initializer for all static fields
+global Init_<%= @unit.label %>
+Init_<%= @unit.label %>:
+<% static_initializers.each do |init| %>
+        call <%= init %>
+<% end %>
+        ret

@@ -4,62 +4,18 @@ section .data
 
 ;; tag data
 
+<% if @unit.is_a? Joos::Entity::Class %>
+
 ;; vtable
 
-<% if @unit.is_a? Joos::Entity::Class %>
-  <%= render_static_field_data %>
-<% end %>
-
+<%= render_static_field_data %>
 
 section .text
 
-<% if @unit.is_a? Joos::Entity::Class %>
-;; field initializers
-
-  <% @unit.fields.select(&:initializer).each do |field| %>
-global Init_<%= field.label %>
-Init_<%= field.label %>:
-  <% end %>
-<% end %>
-
-
-;; methods
-<% @unit.methods.reject(&:abstract?).each do |method| %>
-global <%= method.label %>
-<%= method.label %>:
-        ret
-
-<% end %>
-
-<% if @unit.is_a? Joos::Entity::Class %>
-;; aggregate initializer
-global Init_<%= @unit.label %>
-Init_<%= @unit.label %>:
-  <% static_initializers.each do |init| %>
-        call <%= init %>
-  <% end %>
-        ret
-<% end %>
-
-<% if @main %>
-global <%= start_sym %>
-<%= start_sym %>:
-  <% unit_initializers.each do |init| %>
-        call <%= init %>
-  <% end %>
-        mov     eax, 123 ;; TODO: call real main!
-        call __debexit
-<% end %>
-
-
-;; Literal Strings
-section .data
-<% @strings.each_pair do |str, symbol| %>
-<%= symbol %>: db '<%= str %>'
-<% end %>
-
-
-;; Symbols that we need to import
-<% @symbols.each do |symbol| %>
-extern <%= symbol %>
+<%= render_field_initializers %>
+<%= render_aggregate_field_initializer %>
+<%= render_methods %>
+<%= render_main if @main -%>
+<%= render_literal_strings %>
+<%= render_extern_symbols %>
 <% end %>

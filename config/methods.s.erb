@@ -1,0 +1,7 @@
+;; methods
+<% @unit.methods.reject(&:abstract?).each do |method| %>
+global <%= method.label %>
+<%= method.label %>:
+        ret
+
+<% end %>

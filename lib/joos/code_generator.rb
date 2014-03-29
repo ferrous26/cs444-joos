@@ -91,21 +91,20 @@ class Joos::CodeGenerator
   # @param directory [String] where to put all the asm
   # @param main      [Boolean] whether or not to generate the main routine
   def initialize unit, platform, directory, main
-    @platform  = self.class.const_get platform.to_s.capitalize
-    @unit      = unit
-    @directory = directory
-    @file      = unit.fully_qualified_name.join('_') << '.s'
-    @symbols   = default_symbols
-    @strings   = literal_string_hash
-    @main      = main
+    @platform = self.class.const_get platform.to_s.capitalize
+    @unit     = unit
+    @file     = "#{directory}/#{unit.fully_qualified_name.join('_') << '.s'}"
+    @symbols  = default_symbols
+    @strings  = literal_string_hash
+    @main     = main
   end
 
   def start_sym
     Joos::Utilities.darwin? ? '_main' : '_start'
   end
 
-  def render
-    File.open "#{@directory}/#{@file}", 'w' do |fd|
+  def render_to_file
+    File.open @file, 'w' do |fd|
       fd.write render_object
     end
   end
@@ -113,7 +112,13 @@ class Joos::CodeGenerator
   # Load all the templates
   [
     'object',
-    'static_field_data'
+    'static_field_data',
+    'field_initializers',
+    'methods',
+    'aggregate_field_initializer',
+    'main',
+    'literal_strings',
+    'extern_symbols'
   ].each do |name|
     template = File.read "config/#{name}.s.erb"
     ERB.new(template, nil, '>-').def_method(self, "render_#{name}")

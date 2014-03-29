@@ -5,6 +5,7 @@ require 'joos/freedom_patches'
 require 'joos/scanner'
 require 'joos/parser'
 require 'joos/entity'
+require 'joos/code_generator'
 
 
 ##
@@ -244,8 +245,9 @@ class Joos::Compiler
   def generate_code
     @compilation_units.each_with_index do |unit, index|
       gen = Joos::CodeGenerator.new unit, :i386, output_directory, index.zero?
-      gen.render
+      gen.render_to_file
     end
+    # also add our static runtime code
     FileUtils.cp runtime, output_directory
   end
 

@@ -6,7 +6,6 @@ require 'joos/entity/has_interfaces'
 require 'joos/token/identifier'
 require 'joos/ast'
 require 'joos/exceptions'
-require 'joos/code_generator'
 
 
 ##

@@ -1,0 +1,5 @@
+;; Literal Strings
+section .data
+<% @strings.each_pair do |str, symbol| %>
+<%= symbol %>: db '<%= str %>'
+<% end %>

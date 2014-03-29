@@ -3,7 +3,6 @@ require 'joos/entity/compilation_unit'
 require 'joos/entity/modifiable'
 require 'joos/entity/has_interfaces'
 require 'joos/entity/has_methods'
-require 'joos/code_generator'
 
 ##
 # Entity representing the definition of a interface.
