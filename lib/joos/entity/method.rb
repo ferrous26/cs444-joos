@@ -207,8 +207,15 @@ class Joos::Entity::Method < Joos::Entity
   # @!group Assignment 5
 
   def label
-    @label ||= (base = type_environment.label + "~#{name}";
-                @parameters.empty? ? base : (base + '~' + parameter_labels))
+    @label ||= if native?
+                 'NATIVE'                                          +
+                   type_environment.fully_qualified_name.join('.') +
+                   '.'                                             +
+                   name.to_s
+               else
+                 base = type_environment.label + "~#{name}"
+                 @parameters.empty? ? base : (base + '~' + parameter_labels)
+               end
   end
 
 
