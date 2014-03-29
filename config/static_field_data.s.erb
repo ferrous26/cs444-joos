@@ -1,0 +1,5 @@
+;; static field declarations
+<% @unit.fields.select(&:static?).each do |field| %>
+global <%= field.label %>
+<%= field.label %>: dd 00
+<% end %>

@@ -7,11 +7,7 @@ section .data
 ;; vtable
 
 <% if @unit.is_a? Joos::Entity::Class %>
-;; static field declarations
-   <% @unit.fields.select(&:static?).each do |field| %>
-global <%= field.label %>
-<%= field.label %>: dd 00
-   <% end %>
+  <%= render_static_field_data %>
 <% end %>
 
 
@@ -20,10 +16,10 @@ section .text
 <% if @unit.is_a? Joos::Entity::Class %>
 ;; field initializers
 
-   <% @unit.fields.select(&:initializer).each do |field| %>
+  <% @unit.fields.select(&:initializer).each do |field| %>
 global Init_<%= field.label %>
 Init_<%= field.label %>:
-   <% end %>
+  <% end %>
 <% end %>
 
 
@@ -39,18 +35,18 @@ global <%= method.label %>
 ;; aggregate initializer
 global Init_<%= @unit.label %>
 Init_<%= @unit.label %>:
-    <% static_initializers.each do |init| %>
+  <% static_initializers.each do |init| %>
         call <%= init %>
-    <% end %>
+  <% end %>
         ret
 <% end %>
 
 <% if @main %>
 global <%= start_sym %>
 <%= start_sym %>:
-    <% unit_initializers.each do |init| %>
+  <% unit_initializers.each do |init| %>
         call <%= init %>
-    <% end %>
+  <% end %>
         mov     eax, 123 ;; TODO: call real main!
         call __debexit
 <% end %>

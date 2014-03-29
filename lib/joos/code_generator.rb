@@ -110,11 +110,14 @@ class Joos::CodeGenerator
     end
   end
 
-
-  def self.read name
-    File.read "config/#{name}.erb"
+  # Load all the templates
+  [
+    'object',
+    'static_field_data'
+  ].each do |name|
+    template = File.read "config/#{name}.s.erb"
+    ERB.new(template, nil, '>-').def_method(self, "render_#{name}")
   end
-  ERB.new(read('object.s'), nil, '>-').def_method(self, :render_object)
 
 
   private
