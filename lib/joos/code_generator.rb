@@ -118,7 +118,9 @@ class Joos::CodeGenerator
     'aggregate_field_initializer',
     'main',
     'literal_strings',
-    'extern_symbols'
+    'extern_symbols',
+    'class_tag',
+    'vtable'
   ].each do |name|
     template = File.read "config/#{name}.s.erb"
     ERB.new(template, nil, '>-').def_method(self, "render_#{name}")
