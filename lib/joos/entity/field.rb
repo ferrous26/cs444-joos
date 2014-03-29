@@ -107,9 +107,9 @@ class Joos::Entity::Field < Joos::Entity
   # @param other_field [Field]
   # @return [Bool]
   def forward_reference? other_field
-    return false if other_field.unit != unit
-    return false if other_field.static? != static?
-    return other_field.order >= order
+    other_field.unit    == unit    &&
+    other_field.static? == static? &&
+    other_field.order   >= order
   end
 
   def check_forward_references
