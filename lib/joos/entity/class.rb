@@ -519,6 +519,29 @@ class Joos::Entity::Class < Joos::Entity
     @label ||= ('@' + fully_qualified_name.join('.'))
   end
 
+  def instance_fields
+    fields.reject(&:static?)
+  end
+
+  ##
+  # Byte offset from object base that the receiving classes fields begin
+  #
+  # @return [Fixnum]
+  def base_field_offset
+    # @todo optimize this code path
+    if top_class?
+      8 # 4 bytes in a dword, we want to reserve 2 dwords
+    else
+      superclass.base_field_offset + superclass.total_fields_size
+    end
+  end
+
+  def total_fields_size
+    @total_field_size ||= instance_fields.reduce(0) { |size, field|
+      size + field.size
+    }
+  end
+
   # @!endgroup
 
 

@@ -123,6 +123,14 @@ class Joos::Entity::Field < Joos::Entity
     @label ||= (type_environment.label + "?#{name}")
   end
 
+  ##
+  # The total number of bytes that this field requires
+  #
+  # @return [Fixnum]
+  def size
+    4 # to start with, everything requires a full dword
+  end
+
 
   # @!group Inspect
 

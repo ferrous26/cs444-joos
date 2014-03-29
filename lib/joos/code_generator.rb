@@ -75,10 +75,21 @@ class Joos::CodeGenerator
   module I386
     extend self
 
-    def add left, right
+    def static_field_read label
+      "mov     eax, [#{offset}]"
     end
 
-    def imult left, right
+    def static_field_write label, value
+      "mov     [#{label}], #{value}"
+    end
+
+    def instance_field_read offset
+      "mov     eax, [ebx + #{offset}]"
+    end
+
+    # @param value [String]
+    def instance_field_write offset, value
+      "mov     [ebx + #{offset}], #{value}"
     end
   end
 
@@ -160,7 +171,7 @@ class Joos::CodeGenerator
   end
 
   def field_initializer field
-    'Init_' + field.label
+    'init_' + field.label
   end
 
   def static_field_initializers
@@ -170,7 +181,7 @@ class Joos::CodeGenerator
   end
 
   def unit_initializer unit
-    'Init_' + unit.label
+    'init_' + unit.label
   end
 
   def unit_initializers
