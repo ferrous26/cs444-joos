@@ -1,5 +1,5 @@
 ;; methods
-<% @unit.methods.reject(&:abstract?).each do |method| %>
+<% @unit.methods.reject(&:abstract?).reject(&:native?).each do |method| %>
 global <%= method.label %>
 <%= method.label %>:
         ret
