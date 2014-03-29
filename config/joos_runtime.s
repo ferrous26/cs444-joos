@@ -3,11 +3,10 @@
 extern __malloc
 extern __debexit
 extern __exception
-extern __NATIVEjava.io.OutputStream.nativeWrite
 
 ;; division
-;; pre:  dividend in eax, divisor in ebx, we take over edx, and
-;;       eax must be a full int
+;; pre:  dividend in eax, divisor in ebx, we take ownership of edx, and
+;;       eax must be already be a full int (sign extended)
 ;; post: quotient in eax, remainder in edx
 global __division
 __division:
@@ -19,52 +18,55 @@ __division:
 .divide_by_zero:
 	call __exception
 
-;; kind_of_type
-;; pre:  left type in eax, right type in ebx
-;; post: boolean value will be left in eax
-;;
-;; This is essentially the assignability check, but only for reference types
-;; left := right ? is right type a kind of left type?
-global __kind_of_type
-__kind_of_type:
-	mov     eax, 0 ; false, because this needs to be implemented
-        ;; TODO: IMPLEMENT ME!
-	ret
-
 ;; instanceof check
 ;;
 ;; paraphrasing: is the given type an ancestor of the type of the concrete data
 ;;
-;; pre:  concrete data in ebx, type pointer in eax
-;; post: boolean value will be left in eax
+;; pre:  concrete data in ebx, type number in eax, takes ownership of ebx & edi
+;; post: boolean result value will be left in eax
 global __instanceof
 __instanceof:
-	cmp     eax, 0          ; perform null check
-	je      .null
-	mov     ebx, [ebx]      ; get the tag for the object
-	call __kind_of_type     ; delegate actual check
+	cmp     ebx, 0             ; if (ebx == null) return false
+	jne     .prolog            ; else begin table lookup
+	mov     eax, 0
 	ret
-.null:
-	mov     eax, 0          ; false
+.prolog:
+	add     ebx, 4             ; move pointer to first atable entry
+	mov     edi, [ebx]         ; load atable[0] into edi
+	cmp     eax, edi
+	je      .same
+.loop:
+	add     ebx, 4
+	mov     edi, [ebx]
+	cmp     edi, 0             ; check if we hit end of the atable
+	je      .different
+	cmp     eax, edi
+	jne     .loop              ; try next atable entry
+.same:
+	mov     eax, 1
 	ret
-
+.different:
+	mov     eax, 0
+	ret
 
 ;; downcast check
 ;;
-;; paraphrasing: is the given type an ancestor of the type of the concrete data
+;; paraphrasing: is the cast type an ancestor of the type of the concrete data
 ;;
-;; pre:  concrete data in ebx, type pointer in eax
-;; post: boolean value will be left in eax
+;; pre:  concrete data in ebx, type number in eax, takes ownership of ebx & edi
+;; post: boolean result value will be left in eax
 global __downcast_check
 __downcast_check:
+	cmp     ebx, 0          ; if (ebx == null) return true
+	je      .ok             ; null cast is always a success
 	call __instanceof
-	cmp     eax, 0          ; if not instanceof, then we have a problem
-	je      .bad_cast
-	mov     eax, 1          ; true
-	ret
+	cmp     eax, 1          ; else return (ebx instanceof eax)
+	je      .ok
 .bad_cast:
-	call __exception        ; bad cast exception
-
+	call __exception        ; exit(BadCastException)
+.ok:
+	mov     eax, 1
+	ret
 
 ;; TODO:
 ;; instance method dispatch
@@ -75,4 +77,3 @@ __downcast_check:
 ;; array allocation
 ;;  -> zero out the data before running init/constructors
 ;; execute field initializer
-;; assign static field

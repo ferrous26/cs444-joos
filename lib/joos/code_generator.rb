@@ -152,7 +152,11 @@ class Joos::CodeGenerator
   end
 
   def default_symbols
-    ['__debexit', '__malloc', '__exception', '__division']
+    [
+      '__debexit', '__malloc', '__exception',
+      '__division',
+      '__downcast_check', '__instanceof'
+    ]
   end
 
   def field_initializer field
