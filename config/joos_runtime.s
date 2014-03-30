@@ -63,6 +63,7 @@ __downcast_check:
 	call __instanceof
 	cmp     eax, 1          ; else return (ebx instanceof eax)
 	jne     .bad_cast
+.ok:
 	mov     eax, 1
 	ret
 .bad_cast:
