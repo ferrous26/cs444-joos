@@ -97,18 +97,29 @@ global __allocate
 __allocate:
 	call __malloc
 	mov     [eax], ebx    ; put vtable pointer in place
+	; do I need to zero out the object?
 	; call constructor
 	ret
 
+;; pre: array size in eax, vtable ptr in ebx
+;; post: pointer to head of array in eax
+global __allocate_array
+__allocate_array:
+	; check if array size is greater than 0
+	mov     edi, eax      ; copy array size as counter
+	imul    eax, 4        ; calculate actual array size
+	call __malloc
+	; if constructor is primitive
+        ;   zero the array
+	; else
+	;   allocate object for each array element and insert it
+
 ;; TODO:
-;; array inner type
 ;; array length
 ;; array element access
 ;; array element assignment
-;; array allocation
-;;  -> zero out the data before running init/constructors
 ;; array instanceof check
-;; execute field initializer
+
 
 ;; print out an exception message and then exit
 ;;
