@@ -3,6 +3,7 @@
 extern __malloc
 extern __debexit
 extern __exception
+extern __debug_print
 
 ;; method dispatch (actually, just finding the correct method pointer)
 ;;
@@ -33,7 +34,8 @@ __division:
 	idiv    ebx
 	ret
 .divide_by_zero:
-	call __exception
+	mov     eax, division_exception
+	call    __internal_exception
 
 ;; instanceof check
 ;;
@@ -84,7 +86,8 @@ __downcast_check:
 	mov     eax, 1
 	ret
 .bad_cast:
-	call __exception        ; exit(BadCastException)
+	mov     eax, bad_cast_exception
+	call __internal_exception
 
 ;; object allocation
 ;;
@@ -94,6 +97,7 @@ global __allocate
 __allocate:
 	call __malloc
 	mov     [eax], ebx    ; put vtable pointer in place
+	; call constructor
 	ret
 
 ;; TODO:
@@ -105,3 +109,17 @@ __allocate:
 ;;  -> zero out the data before running init/constructors
 ;; array instanceof check
 ;; execute field initializer
+
+;; print out an exception message and then exit
+;;
+;; pre:  pointer to exception string in eax
+;; post: N/A
+__internal_exception:
+	call __debug_print
+	call __exception
+
+section .data
+
+division_exception: db 'divide by zero                 ', 10
+bad_cast_exception: db 'bad cast                       ', 10
+dispatch_exception: db 'dispatch problem               ', 10

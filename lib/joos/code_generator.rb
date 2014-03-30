@@ -169,7 +169,7 @@ class Joos::CodeGenerator
       'NATIVEjava.io.OutputStream.nativeWrite',
       '__division',
       '__downcast_check', '__instanceof',
-      '__allocate'
+      '__allocate', '__dispatch'
     ]
   end
 

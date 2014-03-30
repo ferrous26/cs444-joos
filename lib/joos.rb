@@ -6,6 +6,7 @@ require 'joos/scanner'
 require 'joos/parser'
 require 'joos/entity'
 require 'joos/code_generator'
+require 'joos/utilities'
 
 
 ##
@@ -242,6 +243,14 @@ class Joos::Compiler
     'config/joos_runtime.s'
   end
 
+  def platform_runtime
+    if Joos::Utilities.darwin?
+      'config/joos_runtime_osx.s'
+    else
+      'config/joos_runtime_linux.s'
+    end
+  end
+
   def generate_code
     # assign an ancestor number to each compilation unit
     base = 0x10
@@ -284,6 +293,7 @@ class Joos::Compiler
 
     # also add our static runtime code
     FileUtils.cp runtime, output_directory
+    FileUtils.cp platform_runtime, output_directory
   end
 
 end
