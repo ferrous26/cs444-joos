@@ -62,12 +62,11 @@ __downcast_check:
 	je      .ok             ; null cast is always a success
 	call __instanceof
 	cmp     eax, 1          ; else return (ebx instanceof eax)
-	je      .ok
-.bad_cast:
-	call __exception        ; exit(BadCastException)
-.ok:
+	jne     .bad_cast
 	mov     eax, 1
 	ret
+.bad_cast:
+	call __exception        ; exit(BadCastException)
 
 ;; object allocation
 ;;
