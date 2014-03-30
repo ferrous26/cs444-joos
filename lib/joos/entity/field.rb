@@ -19,6 +19,15 @@ class Joos::Entity::Field < Joos::Entity
   attr_accessor :order
 
   ##
+  # Offset, in bytes, from object base
+  #
+  # This only applies to non-static fields, and will not be set until code
+  # generation.
+  #
+  # @return [Fixnum]
+  attr_accessor :field_offset
+
+  ##
   # Exception raised when a static field initializer tries to use keyword `this`
   class StaticThis < Joos::CompilerException
     def initialize this

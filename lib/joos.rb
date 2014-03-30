@@ -260,6 +260,22 @@ class Joos::Compiler
       end
     end
 
+    # Assign a field offset to each field of each class
+    @compilation_units.each do |unit|
+      next unless unit.is_a? Joos::Entity::Class
+
+      fields = unit.instance_fields
+      next if fields.empty?
+
+      fields.first.field_offset = unit.base_field_offset
+      next if fields.size == 1
+
+      fields[1..-1].each_with_index do |field, index|
+        previous_field = fields[index]
+        field.field_offset = previous_field.field_offset + previous_field.size
+      end
+    end
+
     objs = @compilation_units.select { |unit| unit.is_a? Joos::Entity::Class }
     objs.each_with_index do |unit, index|
       gen = Joos::CodeGenerator.new unit, :i386, output_directory, index.zero?
