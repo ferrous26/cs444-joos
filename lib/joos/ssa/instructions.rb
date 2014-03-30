@@ -169,7 +169,7 @@ class Set < Instruction
   include ParamaterizedByEntity
 
   def initialize variable, value
-    super target, value
+    super nil, value
     @entity = variable
     assert_entity_type Joos::Entity::Field, Joos::Entity::LocalVariable,
       Joos::Entity::FormalParameter
@@ -214,11 +214,49 @@ class SetField < Instruction
 
   alias_method :receiver, :left
 
+  def value
+    arguments[2]
+  end
+
   def initialize field, receiver, value
     # SetField does not have a target
-    super target, receiver, value
+    super nil, receiver, value
     @entity = field
     assert_entity_type Joos::Entity::Field
+  end
+end
+
+# Get element of an array
+class GetIndex < Instruction
+  include HasReceiver
+  include Binary
+
+  alias_method :receiver, :left
+  alias_method :index, :right
+
+  def initialize target, receiver, index
+    super target, receiver, index
+  end
+end
+
+# Set element of an array
+class SetIndex < Instruction
+  include HasReceiver
+
+  def receiver
+    arguments[0]
+  end
+
+  def index
+    arguments[1]
+  end
+
+  def value
+    arguments[2]
+  end
+
+  def initialize receiver, index, value
+    super nil, receiver, index, value
   end
 end
 

@@ -5,7 +5,8 @@ require 'joos/ssa/segment'
 describe Joos::SSA::Segment do
   if false
     it 'has a spec that dumps output for debugging' do
-      main, seg = ssa_test 'fixture/short_circuit'
+      main, seg = ssa_test 'fixture/selectors'
+      #puts main.body.inspect
       puts seg.inspect
     end
   end
@@ -62,6 +63,23 @@ describe Joos::SSA::Segment do
 
   it 'constructs new' do
     main, seg = ssa_test 'fixture/creator_test'
+    expect( seg.flow_blocks.length ).to be == 1
+    expect( seg.instructions.to_a.length ).to be == 11
+    expect( seg.variable_count ).to be == 8
+  end
+
+  it 'constructs OH SHIT SELECTORS~~!' do
+    main, seg = ssa_test 'fixture/selectors'
+    expect( seg.flow_blocks.length ).to be == 1
+    expect( seg.instructions.to_a.length ).to be == 14
+    expect( seg.variable_count ).to be == 14
+    expect( seg.start_block.continuation ).to be_a Joos::SSA::Return
+  end
+
+  it 'constructs array accesses' do
+    pending "FUCKING L-VALUES"
+    main, seg = ssa_test 'fixture/array_access'
+    puts seg.inspect
     expect( seg.flow_blocks.length ).to be == 1
     expect( seg.instructions.to_a.length ).to be == 11
     expect( seg.variable_count ).to be == 8

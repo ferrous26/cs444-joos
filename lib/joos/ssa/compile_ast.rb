@@ -53,15 +53,25 @@ module CompileAST
     end
 
     receiver = flow_block.result
-    entity = node.entity
-    if entity.is_a? Joos::Entity::Field
-      flow_block.make_result GetField.new(new_var, entity, receiver)
-    elsif entity.is_a? Joos::Entity::Method
-      block, args = compile_arguments flow_block, node.Arguments
-      target = new_var unless entity.void_return?
-      block.make_result CallMethod.new(target, entity, *args)
+    if node.Identifier
+      # Field access or method call
+      entity = node.entity
+      if entity.is_a? Joos::Entity::Method
+        block, args = compile_arguments flow_block, node.Arguments
+        target = new_var unless entity.void_return?
+
+        block.make_result CallMethod.new(target, entity, receiver, *args)
+      else
+        flow_block.make_result GetField.new(new_var, entity, receiver)
+      end
+    elsif node.OpenStaple
+      # Array access
+      block = compile flow_block, node.Expression
+      index_var = block.result
+
+      block.make_result GetIndex.new(new_var, receiver, index_var)
     else
-      raise "Unexpected Entity - #{entity}"
+      raise "Match failed - #{node}"
     end
   end
 
@@ -170,42 +180,38 @@ module CompileAST
       compile_cast compile(flow_block, child[3]), child[1]
     when [:Primary, :Selectors]
       block = compile flow_block, child[0]
-      compile block, child[1]
+      compile block, node.Selectors
     when [:QualifiedIdentifier, :Arguments,  :Selectors]
       block = compile_static_method flow_block, child[0].entity, child[1]
-      compile block, child[2]
-    when [:QualifiedIdentifier, :OpenStaple, :Expression,  :CloseStaple, :Selectors]
-      raise "Not implemented - static array access"
+      compile block, node.Selectors
     when [:QualifiedIdentifier]
-      # Field / argument / variable access.
-      node.QualifiedIdentifier.entity_chain.reduce flow_block do |block, entity|
-        if entity.is_a? Joos::Entity::Field and !entity.static?
-          unless block.result
-            # Receiver is implicit this
-            block.make_result This.new(new_var)
-          end
-          block.make_result GetField.new(new_var, entity, block.result)
-        else
-          block.make_result Get.new(new_var, entity)
-        end
-      end
+      compile_entity_chain flow_block, node.QualifiedIdentifier.entity_chain
     when [:QualifiedIdentifier, :Selectors]
-      # This rule is the result of a transform somewhere
-      static_member = child[0].entity
-      unless static_member.static?
-        raise "Presumably static member #{static_member} not actually static" 
-      end
-
-      if static_member.is_a? Joos::Entity::Field
-        block = compile_static_field flow_block, static_member
-        compile block, child[1]
-      elsif static_member.is_a? Joos::Entity::Method
-        compile_static_method flow_block, static_member, node
-      else
-        raise "Presumably static member is actually a #{static_member}"
-      end
+      flow_block.continuation = nil
+      block = compile_entity_chain flow_block, node.QualifiedIdentifier.entity_chain
+      compile block, node.Selectors
     else
       raise "Match failed - #{node}"
+    end
+  end
+
+  # Field / variable access of the form a.b.c where a is static
+  # This gets called for {QualifiedIdentifier}s.
+  #
+  # @param entity_chain [Array<Joos::Entity>]
+  def compile_entity_chain flow_block, entity_chain
+    entity_chain.reduce flow_block do |block, entity|
+      if entity.lvalue?
+        if entity.is_a? Joos::Entity::LocalVariable or
+            entity.is_a? Joos::Entity::FormalParameter or entity.static?
+          block.make_result Get.new(new_var, entity)
+        else
+          block.make_result GetField.new(new_var, entity, block.result)
+        end
+      else
+        # "Qualified" part of the qualified identifier
+        block
+      end
     end
   end
 
@@ -218,11 +224,6 @@ module CompileAST
   # @param field [Joos::Entity::Field]
   def compile_static_field flow_block, field
     flow_block.make_result Get.new(new_var, field)
-  end
-  
-  # @param method [Joos::Entity::Method]
-  def compile_static_method flow_block, method, args
-    raise "Not implemented - static method"
   end
 
   # Compile a variable's initializer.
