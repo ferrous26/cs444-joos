@@ -130,21 +130,35 @@ class Const < Instruction
   end
 end
 
+
+module ParamaterizedByEntity
+  # @return [Joos::Entity]
+  attr_reader :entity
+
+  # Asserts that #entity has one of the correct types.
+  # For debugging purposes.
+  def assert_entity_type *types
+    unless types.find {|t| entity.is_a? t}
+      raise "Type assert - #{entity||'nil'} should be " <<
+        (types.length == 1? "a " : "one of ") <<
+        types.map(&:name).join(', ')
+    end
+  end
+end
+
 # Get a local variable, param, or static field
 class Get < Instruction
-  # The local var, parameter, or static field to fetch
-  # @return [Joos::Entity::LocalVariable, Joos::Entity::FormalParameter,
-  #          Jooos::Entity::Field]
-  attr_reader :entity
+  include ParamaterizedByEntity
 
   def target_type
     @entity.type
   end
 
   def initialize target, variable
-    raise "Type error - #{variable} should be a var" unless variable.is_a? Joos::Entity
     super target
     @entity = variable
+    assert_entity_type Joos::Entity::Field, Joos::Entity::LocalVariable,
+      Joos::Entity::FormalParameter
   end
 end
 
@@ -152,84 +166,105 @@ end
 # Returns the passed argument.
 class Set < Instruction
   include Unary
-
-  # The local var, parameter, or static field to set
-  # @return [Joos::Entity::LocalVariable, Joos::Entity::FormalParameter,
-  #          Jooos::Entity::Field]
-  attr_reader :entity
+  include ParamaterizedByEntity
 
   def initialize variable, value
-    raise "Type error - #{variable} should be a var/field" unless variable.is_a? Joos::Entity
     super target, value
     @entity = variable
+    assert_entity_type Joos::Entity::Field, Joos::Entity::LocalVariable,
+      Joos::Entity::FormalParameter
   end
 end
+
+
+module HasReceiver
+  # @return [Fixnum]
+  attr_reader :receiver
+
+  # @return [Joos::Entity::Class, Joos::Entity::Interface]
+  attr_accessor :receiver_type
+end
+
 
 # Get value of an instance field
 class GetField < Instruction
   include Unary
-
-  # @return [Joos::Entity::Class]
-  attr_reader :receiver_type
-
-  # @return [Joos::Entity::Field]
-  attr_reader :entity
+  include ParamaterizedByEntity
+  include HasReceiver
 
   # Single operand is the receiver
   alias_method :receiver, :operand
 
   def initialize target, field, receiver
-    unless field.is_a? Joos::Entity::Field
-      raise "You messed up types / order of arguments, noob" 
-    end
     super target, receiver
     @entity = field
+    assert_entity_type Joos::Entity::Field
   end
 
   def target_type
     @entity.type
   end
-
 end
 
 # Set value of an instance field
 class SetField < Instruction
   include Binary
-
-  # @return [Joos::Entity::Class]
-  attr_reader :receiver_type
-
-  # @return [Joos::Entity::Field]
-  attr_reader :entity
+  include HasReceiver
+  include ParamaterizedByEntity
 
   alias_method :receiver, :left
 
   def initialize field, receiver, value
     # SetField does not have a target
-    raise "Type assert - #{field} should be a var/field" unless Field.is_a? Joos::Entity
     super target, receiver, value
     @entity = field
+    assert_entity_type Joos::Entity::Field
   end
 end
 
 # Call a static method
 class CallStatic < Instruction
-  # @return [Joos::Entity::Method]
-  attr_reader :entity
+  include ParamaterizedByEntity
 
   def initialize target, method, *args
     super target, *args
     @entity = method
+    assert_entity_type Joos::Entity::Method
+  end
+end
+
+# Single object new()
+class New < Instruction
+  include ParamaterizedByEntity
+
+  def initialize target, constructor, *args
+    super target, *args
+    @entity = constructor
+    assert_entity_type Joos::Entity::Constructor
+  end
+
+  def target_type
+    entity.type
+  end
+end
+
+# Array new
+class NewArray < Instruction
+  include Unary
+  include ParamaterizedByEntity
+
+  def initialize target, type, length
+    super target, length
+    @entity = type
+    @target_type = type
+    assert_entity_type Joos::Array
   end
 end
 
 # Call an instance method
 class CallMethod < Instruction
-  # @return [Joos::Entity::Class, Joos::Entity::Interface]
-  attr_reader :receiver_type
-
-  # @return [Joos::Entity::Method]
-  attr_reader :entity
+  include HasReceiver
+  include ParamaterizedByEntity
 
   # @return [Fixnum]
   def receiver
@@ -239,6 +274,7 @@ class CallMethod < Instruction
   def initialize target, method, receiver, *args
     super target, receiver, *args
     @entity = method
+    assert_entity_type Joos::Entity::Method
   end
 end
 

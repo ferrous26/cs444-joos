@@ -59,4 +59,11 @@ describe Joos::SSA::Segment do
       seg.instructions.select{|ins| ins.is_a? Joos::SSA::Merge}.length
     ).to be == 2
   end
+
+  it 'constructs new' do
+    main, seg = ssa_test 'fixture/creator_test'
+    expect( seg.flow_blocks.length ).to be == 1
+    expect( seg.instructions.to_a.length ).to be == 11
+    expect( seg.variable_count ).to be == 8
+  end
 end

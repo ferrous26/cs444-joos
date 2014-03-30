@@ -19,7 +19,7 @@ module CompileAST
     when Joos::AST::LocalVariableDeclarationStatement
       flow_block # handled by the Block case
     when Joos::AST::Block
-      compile_variable_initializer flow_block, node if node.declaration
+      flow_block = compile_variable_initializer flow_block, node if node.declaration
       node.statements.reduce flow_block do |block, statement|
         compile block, statement
       end
@@ -30,7 +30,7 @@ module CompileAST
     when Joos::AST::Term
       compile_term flow_block, node
     when Joos::AST::Creator
-      raise "Not implemented - creator"
+      compile_creator flow_block, node
     when Joos::AST::Statement
       compile_statement flow_block, node
     when Joos::AST::Selector
@@ -178,13 +178,16 @@ module CompileAST
       raise "Not implemented - static array access"
     when [:QualifiedIdentifier]
       # Field / argument / variable access.
-      entity = node.QualifiedIdentifier.entity
-      if entity.is_a? Joos::Entity::Field and !entity.static?
-        this = This.new
-        flow_block << this
-        flow_block.make_result GetField.new(new_var, entity, this.target)
-      else
-        flow_block.make_result Get.new(new_var, entity)
+      node.QualifiedIdentifier.entity_chain.reduce flow_block do |block, entity|
+        if entity.is_a? Joos::Entity::Field and !entity.static?
+          unless block.result
+            # Receiver is implicit this
+            block.make_result This.new(new_var)
+          end
+          block.make_result GetField.new(new_var, entity, block.result)
+        else
+          block.make_result Get.new(new_var, entity)
+        end
       end
     when [:QualifiedIdentifier, :Selectors]
       # This rule is the result of a transform somewhere
@@ -305,6 +308,26 @@ module CompileAST
     right_block_end.continuation = Next.new next_block
 
     next_block.make_result Merge.new(new_var, left_result, right_result)
+  end
+
+  # Compile all the varieties of new
+  def compile_creator flow_block, node
+    # [:BasicType, :ArrayCreator],
+    # [:QualifiedIdentifier, :ArrayCreator],
+    # [:QualifiedIdentifier, :Arguments]
+    creator = node.nodes[1]
+    if node.ArrayCreator
+      # [:OpenStaple, :Expression, :CloseStaple]
+      type = node.type
+      block = compile flow_block, creator.Expression
+
+      block.make_result NewArray.new(new_var, type, block.result)
+    else
+      block, args = compile_arguments flow_block, creator
+      constructor = node.constructor
+
+      block.make_result New.new(new_var, constructor, *args)
+    end
   end
 end
 
