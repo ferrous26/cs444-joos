@@ -31,7 +31,7 @@ __instanceof:
 	mov     eax, 0
 	ret
 .prolog:
-	add     ebx, 4             ; move obj ptr to obj.atable ptr
+	mov     ebx, [ebx]         ; load obj.vtable ptr into ebx
 	mov     ebx, [ebx]         ; load obj.atable ptr into ebx
 	mov     edi, [ebx]         ; load obj.atable[0] into edi
 	cmp     eax, edi
@@ -69,6 +69,16 @@ __downcast_check:
 	mov     eax, 1
 	ret
 
+;; object allocation
+;;
+;; pre:  size in eax, vtable ptr in ebx
+;; post: pointer to new object in eax
+global __allocate
+__allocate:
+	call __malloc
+	mov     [eax], ebx    ; put vtable pointer in place
+	ret
+
 ;; TODO:
 ;; instance method dispatch
 ;; array inner type
@@ -77,4 +87,5 @@ __downcast_check:
 ;; array element assignment
 ;; array allocation
 ;;  -> zero out the data before running init/constructors
+;; array instanceof check
 ;; execute field initializer

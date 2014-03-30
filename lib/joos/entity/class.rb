@@ -530,7 +530,7 @@ class Joos::Entity::Class < Joos::Entity
   def base_field_offset
     # @todo optimize this code path
     if top_class?
-      8 # 4 bytes in a dword, we want to reserve 2 dwords
+      4 # 4 bytes in a dword, we want to reserve space for the tag pointer
     else
       superclass.base_field_offset + superclass.total_fields_size
     end
