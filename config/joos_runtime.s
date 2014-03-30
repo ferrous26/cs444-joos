@@ -4,6 +4,23 @@ extern __malloc
 extern __debexit
 extern __exception
 
+;; method dispatch (actually, just finding the correct method pointer)
+;;
+;; pre:  object in ebx, method number in eax
+;; post: method pointer in eax
+global __dispatch
+__dispatch:
+	imul    eax, 4             ; calculate table offset
+	mov     ebx, [ebx]         ; load obj.vtable ptr into ebx
+	add     ebx, eax           ; add table offset
+	mov     eax, [ebx]         ; load method pointer into eax
+	cmp     eax, 0             ; debug check if (method_ptr == null)
+	je      .bad_method
+	ret
+.bad_method:
+	mov     eax, dispatch_exception
+	call __internal_exception
+
 ;; division
 ;; pre:  dividend in eax, divisor in ebx, we take ownership of edx, and
 ;;       eax must be already be a full int (sign extended)
@@ -80,7 +97,6 @@ __allocate:
 	ret
 
 ;; TODO:
-;; instance method dispatch
 ;; array inner type
 ;; array length
 ;; array element access
