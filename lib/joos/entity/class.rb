@@ -542,6 +542,10 @@ class Joos::Entity::Class < Joos::Entity
     }
   end
 
+  def allocation_size
+    @allocation_size ||= base_field_offset + total_fields_size
+  end
+
   def all_instance_methods
     all_methods.reject(&:static?)
   end
