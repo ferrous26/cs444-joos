@@ -8,9 +8,10 @@ __malloc:
 	push   ebp       ; setup the frame
         mov    ebp, esp
 
+	sub    esp, 12   ; align the stack...
 	push   eax       ; push allocation size onto stack
 	call   _malloc
-	add    esp, 4    ; pop the stack
+	add    esp, 16   ; pop the stack
 
 	cmp    eax, 0    ; check if we got NULL back
 	jne    ok
