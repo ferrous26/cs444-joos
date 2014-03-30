@@ -138,6 +138,7 @@ class Joos::CodeGenerator
     'field_initializers',
     'aggregate_field_initializer',
     'methods',
+    'constructors',
     'main',
     # section .data
     'vtable',

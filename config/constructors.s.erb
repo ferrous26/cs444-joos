@@ -1,0 +1,7 @@
+;; constructors
+<% @unit.constructors.each do |constructor| %>
+global <%= constructor.label %>
+<%= constructor.label %>:
+        ret                   ;; TODO: actual code
+
+<% end %>
