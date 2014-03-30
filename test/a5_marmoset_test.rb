@@ -30,6 +30,8 @@ class Assignment5Tests < Minitest::Test
   end
 
   def teardown
+    # don't cleanup if we failed, so humans can inspect output closely
+    return unless self.passed?
     rm_rf output_dir
     rm_rf main
   end
