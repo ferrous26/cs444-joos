@@ -31,17 +31,18 @@ __instanceof:
 	mov     eax, 0
 	ret
 .prolog:
-	add     ebx, 4             ; move pointer to first atable entry
-	mov     edi, [ebx]         ; load atable[0] into edi
+	add     ebx, 4             ; move obj ptr to obj.atable ptr
+	mov     ebx, [ebx]         ; load obj.atable ptr into ebx
+	mov     edi, [ebx]         ; load obj.atable[0] into edi
 	cmp     eax, edi
 	je      .same
 .loop:
-	add     ebx, 4
+	add     ebx, 4             ; move obj.atable ptr to next index
 	mov     edi, [ebx]
-	cmp     edi, 0             ; check if we hit end of the atable
+	cmp     edi, 0             ; check if we hit end of obj.atable
 	je      .different
 	cmp     eax, edi
-	jne     .loop              ; try next atable entry
+	jne     .loop              ; try next obj.atable entry
 .same:
 	mov     eax, 1
 	ret
