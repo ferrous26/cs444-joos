@@ -165,8 +165,10 @@ class Joos::CodeGenerator
   def default_symbols
     [
       '__debexit', '__malloc', '__exception',
+      'NATIVEjava.io.OutputStream.nativeWrite',
       '__division',
-      '__downcast_check', '__instanceof'
+      '__downcast_check', '__instanceof',
+      '__allocate'
     ]
   end
 
@@ -204,6 +206,23 @@ class Joos::CodeGenerator
 
   def vtable_label
     'vtable_' + @unit.label
+  end
+
+  def vtable_methods
+    methods = @unit.all_instance_methods
+      .reject(&:abstract?)
+      .sort_by(&:method_number)
+
+    methods.each do |method|
+      @symbols << method.label unless method.type_environment == @unit
+    end
+
+    mtable = Array.new(methods.last.method_number) do |index|
+      methods.find { |method| method.method_number == index }
+    end
+    mtable.shift # throw away index zero, which is always empty
+
+    mtable.map { |m| m ? m.label : '0x00'}
   end
 
   def atable_label

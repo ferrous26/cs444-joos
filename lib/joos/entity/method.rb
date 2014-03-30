@@ -24,6 +24,14 @@ class Joos::Entity::Method < Joos::Entity
   # @return [Joos::Entity::Method, nil]
   attr_accessor :ancestor
 
+  ##
+  # A number that uniquely identifies the signature of the method in the
+  # scope of the program.
+  #
+  # This value is assigned during code generation.
+  #
+  # @return [Fixnum]
+  attr_accessor :method_number
 
   # @!group Exceptions
 

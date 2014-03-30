@@ -542,6 +542,10 @@ class Joos::Entity::Class < Joos::Entity
     }
   end
 
+  def all_instance_methods
+    all_methods.reject(&:static?)
+  end
+
   # @!endgroup
 
 

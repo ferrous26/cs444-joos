@@ -250,6 +250,16 @@ class Joos::Compiler
       base += 1
     end
 
+    # Assign a method number to each method based on the method signature
+    unique = Hash.new do |h, k|
+      h[k] = h.keys.size + 1
+    end
+    @compilation_units.each do |unit|
+      unit.instance_methods.each do |method|
+        method.method_number = unique[method.signature]
+      end
+    end
+
     objs = @compilation_units.select { |unit| unit.is_a? Joos::Entity::Class }
     objs.each_with_index do |unit, index|
       gen = Joos::CodeGenerator.new unit, :i386, output_directory, index.zero?
