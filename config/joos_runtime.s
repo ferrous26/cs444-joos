@@ -197,7 +197,7 @@ array_set:
 	push    edi
 	push    ebx
 	push    eax
-	add     esp, 4          ; align the stack
+	sub     esp, 4          ; align the stack
 
 	add     edi, 4          ; move pointer to inner type
 	mov     eax, [edi]      ; load ancestor number of inner type
@@ -209,10 +209,10 @@ array_set:
 
         ; restore stuff we saved before calling __instanceof
 .instanceof_epilog:
-	sub     esp, 4          ; pop stack
-	pop     edi
-	pop     ebx
+	add     esp, 4          ; pop stack
 	pop     eax
+	pop     ebx
+	pop     edi
 
 .post_instanceof:
 	; now we need to check bounds on the other side
@@ -251,6 +251,7 @@ __internal_exception:
 
 section .data
 
+debug_message:                         db 'oops                           ', 10
 dispatch_exception:                    db 'dispatch problem               ', 10
 null_pointer_exception:                db 'NullPointerException           ', 10
 arithmetic_exception:                  db 'ArithmeticException            ', 10
