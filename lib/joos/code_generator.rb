@@ -167,7 +167,7 @@ class Joos::CodeGenerator
     [
       '__debexit', '__malloc', '__exception',
       'NATIVEjava.io.OutputStream.nativeWrite',
-      '__division',
+      '__division', '__modulo',
       '__downcast_check', '__instanceof',
       '__allocate', '__dispatch'
     ]

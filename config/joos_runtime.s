@@ -11,6 +11,8 @@ extern __debug_print
 ;; post: method pointer in eax
 global __dispatch
 __dispatch:
+	cmp     ebx, 0             ; first, check if receiver is null
+	je      .null_pointer
 	imul    eax, 4             ; calculate table offset
 	mov     ebx, [ebx]         ; load obj.vtable ptr into ebx
 	add     ebx, eax           ; add table offset
@@ -21,20 +23,25 @@ __dispatch:
 .bad_method:
 	mov     eax, dispatch_exception
 	call __internal_exception
+.null_pointer:
+	mov     eax, null_pointer_exception
+	call __internal_exception
 
-;; division
+;; division/modulo
 ;; pre:  dividend in eax, divisor in ebx, we take ownership of edx, and
 ;;       eax must be already be a full int (sign extended)
 ;; post: quotient in eax, remainder in edx
 global __division
+global __modulo
 __division:
-	cmp     ebx, 0           ; trying to divide is not allowed!
+__modulo:
+	cmp     ebx, 0           ; trying to divide by 0 is not allowed!
 	je      .divide_by_zero
 	cdq                      ; sign extend eax into edx
 	idiv    ebx
 	ret
 .divide_by_zero:
-	mov     eax, division_exception
+	mov     eax, arithmetic_exception
 	call    __internal_exception
 
 ;; instanceof check
@@ -86,7 +93,7 @@ __downcast_check:
 	mov     eax, 1
 	ret
 .bad_cast:
-	mov     eax, bad_cast_exception
+	mov     eax, class_cast_exception
 	call __internal_exception
 
 ;; object allocation
@@ -116,8 +123,12 @@ __allocate_array:
 
 ;; TODO:
 ;; array length
+	;; don't forget to check for null pointer
 ;; array element access
+        ;; don't forget to check for null pointer
 ;; array element assignment
+        ;; don't forget to check for null pointer
+        ;; don't forget to check (newVal instanceof innertype)
 ;; array instanceof check
 
 
@@ -131,6 +142,10 @@ __internal_exception:
 
 section .data
 
-division_exception: db 'divide by zero                 ', 10
-bad_cast_exception: db 'bad cast                       ', 10
-dispatch_exception: db 'dispatch problem               ', 10
+dispatch_exception:                    db 'dispatch problem               ', 10
+null_pointer_exception:                db 'NullPointerException           ', 10
+arithmetic_exception:                  db 'ArithmeticException            ', 10
+class_cast_exception:                  db 'ClassCastException             ', 10
+array_store_exception:                 db 'ArrayStoreException            ', 10
+negative_array_size_exception:         db 'NegativeArraySizeException     ', 10
+array_index_out_of_bounds_exception:   db 'ArrayIndexOutOfBoundsException ', 10
