@@ -108,27 +108,132 @@ __allocate:
 	; call constructor
 	ret
 
-;; pre: array size in eax, vtable ptr in ebx
+;; allocate space for an array, and zero the entire thing
+;; the caller of this function will need to initialize the first
+;; two fields of the array (vtable, ancestor number), and call
+;; the default constructor for each element if the inner type is
+;; a reference type
+;;
+;; pre: array size in eax, takes over of ebx, edi, esi
 ;; post: pointer to head of array in eax
-global __allocate_array
-__allocate_array:
-	; check if array size is greater than 0
-	mov     edi, eax      ; copy array size as counter
-	imul    eax, 4        ; calculate actual array size
+global __array__create
+__array_create:
+	cmp     eax, 0         ; array size cannot be <= 0
+	jle     .negative_array_size
+	mov     ebx, eax
+	mov     edi, eax       ; copy array size as counter
+	add     edx, 3         ; we need to reserve 3 dwords
+	imul    edi, 4         ; calculate actual array size
+	mov     eax, edi
 	call __malloc
-	; if constructor is primitive
-        ;   zero the array
-	; else
-	;   allocate object for each array element and insert it
+	mov     esi, eax       ; copy head of array
+	add     esi, edi       ; move to end of array
+.zeroing:
+	sub     esi, 4         ; move to next prev entry
+	mov     [esi], dword 0 ; zero out the entry
+	cmp     esi, eax
+	jne     .zeroing
+	add     esi, 4         ; copy array length into field spot
+	mov     [esi], ebx
+	ret
+.negative_array_size:
+	mov     eax, negative_array_size_exception
+	call __internal_exception
+
+;; Access the length of the array
+;;
+;; pre:  pointer to array is in eax
+;; post: length of array is in eax
+global __array_length:
+__array_length:
+	cmp     eax, 0
+	je      .null_array
+	add     eax, 8
+	mov     eax, [eax]
+	ret
+.null_array:
+	mov     null_pointer_exception
+	call __internal_exception
+
+;; pre:  index in eax, pointer to array in ebx
+;; post: value in eax
+global __array_get
+__array_get:
+	cmp     ebx, 0
+	je      .null_array
+	cmp     eax, 0
+	jl      .out_of_bounds
+	mov     edi, ebx        ; copy pointer to temp
+	add     edi, 8          ; move pointer to length
+	mov     edi, [edi]      ; load length
+	cmp     eax, edi        ; check out of bounds on right
+	jg      .out_of_bounds
+	add     edi, 4          ; move tmp pointer to array data
+	add     edi, eax        ; move to correct index
+	mov     eax, [edi]      ; load value at index into eax
+	ret
+.null_array:
+	mov     null_pointer_exception
+	call __internal_exception
+.out_of_bounds:
+	mov     array_index_out_of_bounds_exception
+	call __internal_exception
+
+;; pre:  index in eax, pointer to array in ebx, value in ecx
+;; post: value in eax?
+global __array_set
+__array_set:
+	; check if array ref is null, and if index is less than zero
+	cmp     ebx, 0
+	je      .null_array
+	cmp     eax, 0
+	jl      .out_of_bounds
+	mov     edi, ebx        ; copy pointer to temp
+
+        ; check if the assignment is allowed according to type rules
+	; first, we need to save these before calling __instanceof
+	push    edi
+	push    ebx
+	push    eax
+	add     esp, 4          ; align the stack
+
+	add     edi, 4          ; move pointer to inner type
+	mov     eax, [edi]      ; load ancestor number of inner type
+	cmp     eax, 0x10       ; skip check for instanceof primitive
+	jl      .post_instanceof
+	call __instanceof
+	cmp     eax, 0
+	je      .set_exception
+
+        ; restore stuff we saved before calling __instanceof
+.post_instanceof:
+	sub     esp, 4          ; pop stack
+	pop     edi
+	pop     ebx
+	pop     eax
+
+	; now we need to check bounds on the other side
+	add     edi, 8          ; move pointer to length
+	mov     edi, [edi]      ; load length
+	cmp     eax, edi        ; check out of bounds on right
+	jg      .out_of_bounds
+
+	add     edi, 4          ; move tmp pointer to array data
+	add     edi, eax        ; move to correct index
+	mov     [edi], ecx      ; load value at index into eax
+	mov     eax, ecx        ; fulfill postcondition...?
+	ret
+.null_array:
+	mov     null_pointer_exception
+	call __internal_exception
+.out_of_bounds:
+	mov     array_index_out_of_bounds_exception
+	call __internal_exception
+.set_exception:
+	mov     array_store_exception
+	call __internal_exception
 
 ;; TODO:
-;; array length
-	;; don't forget to check for null pointer
-;; array element access
-        ;; don't forget to check for null pointer
-;; array element assignment
-        ;; don't forget to check for null pointer
-        ;; don't forget to check (newVal instanceof innertype)
 ;; array instanceof check
 
 
