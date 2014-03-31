@@ -114,7 +114,7 @@ __allocate:
 ;; the default constructor for each element if the inner type is
 ;; a reference type
 ;;
-;; pre: array size in eax, takes over of ebx, edi, esi
+;; pre:  array size in eax, takes over of ebx, edi, esi
 ;; post: pointer to head of array in eax
 global array__allocate
 array__allocate:
@@ -129,11 +129,11 @@ array__allocate:
 	mov     esi, eax       ; copy head of array
 	add     esi, edi       ; move to end of array
 .zeroing:
-	sub     esi, 4         ; move to next prev entry
+	sub     esi, 4         ; move to prev entry
 	mov     [esi], dword 0 ; zero out the entry
-	cmp     esi, eax
+	cmp     esi, eax       ; are we at head of object
 	jne     .zeroing
-	add     esi, 4         ; copy array length into field spot
+	add     esi, 8         ; copy array length into field spot
 	mov     [esi], ebx
 	ret
 .negative_array_size:

@@ -183,10 +183,10 @@ class Joos::CodeGenerator
   def default_symbols
     [
       '__debexit', '__malloc', '__exception',
-      'NATIVEjava.io.OutputStream.nativeWrite',
       '__division', '__modulo',
       '__downcast_check', '__instanceof',
-      '__allocate', '__dispatch'
+      '__allocate', '__dispatch',
+      'array__allocate', 'array?length', 'array_get', 'array_set'
     ]
   end
 
