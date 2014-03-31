@@ -189,6 +189,8 @@ array_set:
 	cmp     eax, 0
 	jl      .out_of_bounds
 	mov     edi, ebx        ; copy pointer to temp
+	cmp     ecx, 0          ; setting value to null or zero?
+	je      .post_instanceof
 
         ; check if the assignment is allowed according to type rules
 	; first, we need to save these before calling __instanceof
@@ -200,18 +202,19 @@ array_set:
 	add     edi, 4          ; move pointer to inner type
 	mov     eax, [edi]      ; load ancestor number of inner type
 	cmp     eax, 0x10       ; skip check for instanceof primitive
-	jl      .post_instanceof
+	jl      .instanceof_epilog
 	call __instanceof
-	cmp     eax, 0
+	cmp     eax, 0          ; if (instanceof == false)
 	je      .set_exception
 
         ; restore stuff we saved before calling __instanceof
-.post_instanceof:
+.instanceof_epilog:
 	sub     esp, 4          ; pop stack
 	pop     edi
 	pop     ebx
 	pop     eax
 
+.post_instanceof:
 	; now we need to check bounds on the other side
 	add     edi, 8          ; move pointer to length
 	mov     esi, [edi]      ; load length
@@ -223,6 +226,7 @@ array_set:
 	mov     [edi], ecx      ; load value at index into eax
 	mov     eax, ecx        ; fulfill postcondition...?
 	ret
+
 .null_array:
 	mov     eax, null_pointer_exception
 	call __internal_exception
