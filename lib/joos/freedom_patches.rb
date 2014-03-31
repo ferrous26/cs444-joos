@@ -215,8 +215,6 @@ class IO
   end
 end
 
-##
-# Freedom patches on SystemCallError exception
 class Symbol
   include Joos::Colour
 end
