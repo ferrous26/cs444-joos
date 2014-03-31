@@ -84,11 +84,13 @@ class Joos::CodeGenerator
     end
 
     def instance_field_read offset
+      # @todo null check
       "mov     eax, [ebx + #{offset}]"
     end
 
     # @param value [String]
     def instance_field_write offset, value
+      # @todo null check
       "mov     [ebx + #{offset}], #{value}"
     end
   end
