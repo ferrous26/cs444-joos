@@ -7,6 +7,9 @@ class Joos::Array
   # @return [Joos::BasicType, Joos::Entity::CompilationUnit]
   attr_reader :type
 
+  # @return [Joos::Package]
+  attr_accessor :root_package
+
   def initialize type
     @type = type
   end
@@ -26,24 +29,39 @@ class Joos::Array
   FIELD.define_singleton_method(:static?) { false }
   FIELD.define_singleton_method(:public?) { true  }
   FIELD.define_singleton_method(:lvalue?) { true  }
+  FIELD.define_singleton_method(:label)   { 'array?length' }
+  FIELD.define_singleton_method(:field_offset) { 12 }
+
 
   def all_fields
     [FIELD]
   end
 
-  def ancestors
-    root = if type.basic_type?
-             type.token.scope.type_environment.root_package
-           else
-             type.type_environment.root_package
-           end
+  def fully_qualified_name
+    ['joos_array']
+  end
+
+  def ancestor_number
+    0x09
+  end
+
+  def ancestors_hack
+    @root_package ||= if type.basic_type?
+                        type.token.scope.type_environment.root_package
+                      else
+                        type.type_environment.root_package
+                      end
     [
-     ['java', 'lang', 'Object'],
-     ['java', 'io',   'Serializable'],
-     ['java', 'lang', 'Cloneable']
+      ['java', 'lang', 'Object'],
+      ['java', 'io',   'Serializable'],
+      ['java', 'lang', 'Cloneable']
     ].map do |qid|
-      root.find qid
-    end << self
+      @root_package.find qid
+    end.reverse
+  end
+
+  def ancestors
+    ancestors_hack.unshift self
   end
 
   def label

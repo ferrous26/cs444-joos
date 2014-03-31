@@ -125,14 +125,29 @@ class Joos::CodeGenerator
     Joos::Utilities.darwin? ? '_main' : '_start'
   end
 
+  def self.render_array_to_file platform, directory, root_package
+    array = Joos::Array.new Joos::BasicType.new :Int
+    array.root_package = root_package
+    array.define_singleton_method(:label) { 'array' }
+    gen   = new array, platform, directory, false
+    gen.render_array_class
+  end
+
   def render_to_file
     File.open @file, 'w' do |fd|
       fd.write render_object
     end
   end
 
+  def render_array_class
+    File.open @file, 'w' do |fd|
+      fd.write render_joos_array
+    end
+  end
+
   # Load all the templates
   [
+    'joos_array',
     'object',
     # section .text
     'field_initializers',
@@ -223,7 +238,7 @@ class Joos::CodeGenerator
     end
     mtable.shift # throw away index zero, which is always empty
 
-    mtable.map { |m| m ? m.label : '0x00'}
+    mtable.map { |m| m ? m.label : '0x00' }
   end
 
   def atable_label

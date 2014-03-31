@@ -188,12 +188,12 @@ class Joos::Compiler
     ast
   end
 
-  def build_entity ast, root_package
+  def build_entity ast
     type = ast.TypeDeclaration
     if type.ClassDeclaration
-      Joos::Entity::Class.new ast, root_package
+      Joos::Entity::Class.new ast, @root_package
     elsif type.InterfaceDeclaration
-      Joos::Entity::Interface.new ast, root_package
+      Joos::Entity::Interface.new ast, @root_package
     else
       raise NoDeclarationError.new ast
     end
@@ -212,10 +212,10 @@ class Joos::Compiler
 
     # create a new root package to be shared by all compilation
     # units for this compiler instance
-    root_package = Joos::Package.make_root
+    @root_package = Joos::Package.make_root
 
     @compilation_units = asts.map do |ast|
-      build_entity(ast, root_package).tap do |entity|
+      build_entity(ast).tap do |entity|
         entity.validate
         $stderr.puts entity.inspect if $DEBUG
       end
@@ -296,6 +296,11 @@ class Joos::Compiler
       gen = Joos::CodeGenerator.new unit, :i386, output_directory, index.zero?
       gen.render_to_file
     end
+
+    # also create the static data for arrays
+    Joos::CodeGenerator.render_array_to_file(:i386,
+                                             output_directory,
+                                             @root_package)
 
     # also add our static runtime code
     FileUtils.cp runtime, output_directory
