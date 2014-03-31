@@ -115,7 +115,7 @@ class Joos::CodeGenerator
   def initialize unit, platform, directory, main
     @platform = self.class.const_get platform.to_s.capitalize
     @unit     = unit
-    @file     = "#{directory}/#{unit.fully_qualified_name.join('_') << '.s'}"
+    @file     = "#{directory}/_#{unit.fully_qualified_name.join('_') << '.s'}"
     @symbols  = default_symbols
     @strings  = literal_string_hash
     @main     = main
