@@ -38,7 +38,10 @@ module Joos::TypeChecking::Block
     @reachability = analyze_flow
 
     unless can_complete?
-      unless finishing_statement == statements.last
+      unless finishing_statement == statements.last ||
+               statements.last.was_for_loop? &&
+               finishing_statement == statements[-2]
+
         raise NonFinalReturn.new(finishing_statement)
       end
     end
@@ -141,7 +144,9 @@ module Joos::TypeChecking::Block
   def check_that_return_statements_are_only_at_end_of_block
     return_statement = statements.find { |s| s.Return }
     if return_statement
-      unless statements.index(return_statement) == (statements.size - 1)
+      unless statements.index(return_statement) == (statements.size - 1) ||
+             statements.index(return_statement) == (statements.size - 2) &&
+             statements.last.was_for_loop?
         raise MissingReturn.new(self)
       end
     end

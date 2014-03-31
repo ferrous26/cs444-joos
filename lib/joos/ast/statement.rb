@@ -70,15 +70,13 @@ class Joos::AST::Statement
   end
 
   def while_loop
-    loop = make(:BlockStatement,
-                make(:Statement,
-                     Joos::Token.make(:While, 'while'),
-                     Joos::Token.make(:OpenParen, '('),
-                     while_condition,
-                     Joos::Token.make(:CloseParen, ')'),
-                     while_body))
-    loop.Statement.was_for_loop = true
-    loop
+    make(:BlockStatement,
+         make(:Statement,
+              Joos::Token.make(:While, 'while'),
+              Joos::Token.make(:OpenParen,  '('),
+              while_condition,
+              Joos::Token.make(:CloseParen, ')'),
+              while_body))
   end
 
   def while_condition
@@ -99,8 +97,9 @@ class Joos::AST::Statement
               make(:BlockStatements,
                    make(:BlockStatement, self.Statement),
                    *if self.ForUpdate.Expression
-                      [make(:BlockStatement,
-                            make(:Statement, self.ForUpdate.Expression))]
+                      statement = make(:Statement, self.ForUpdate.Expression)
+                      statement.was_for_loop = true
+                      [make(:BlockStatement, statement)]
                     end)))
   end
 
