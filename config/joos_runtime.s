@@ -214,9 +214,9 @@ array_set:
 
 	; now we need to check bounds on the other side
 	add     edi, 8          ; move pointer to length
-	mov     edi, [edi]      ; load length
-	cmp     eax, edi        ; check out of bounds on right
-	jg      .out_of_bounds
+	mov     esi, [edi]      ; load length
+	cmp     eax, esi        ; check out of bounds on right
+	jge     .out_of_bounds
 
 	add     edi, 4          ; move tmp pointer to array data
 	add     edi, eax        ; move to correct index
