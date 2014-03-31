@@ -4,7 +4,6 @@ doc
 *.gem
 xcuserdata
 .DS_Store
-test/fixture
 *.bundle
 *.o
 .rvmrc
@@ -21,4 +20,5 @@ marmoset.zip
 *.synctex.gz
 *.class
 output/
-
+*.swp
+*~

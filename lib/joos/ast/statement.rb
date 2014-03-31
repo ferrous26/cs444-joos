@@ -49,6 +49,14 @@ class Joos::AST::Statement
     nodes[6]
   end
 
+  # Body of a while loop
+  # @return [AST]
+  def loop_body
+    # [:While, :OpenParen, :Expression, :CloseParen, :Statement]
+    return unless while_loop?
+    nodes[4]
+  end
+
   private
 
   def transform_for_loop
