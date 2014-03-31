@@ -271,15 +271,14 @@ class Joos::Compiler
     unique = Hash.new do |h, k|
       h[k] = h.keys.size + 1
     end
-    @compilation_units.each do |unit|
+    classes.each do |unit|
       unit.instance_methods.each do |method|
         method.method_number = unique[method.signature]
       end
     end
 
     # Assign a field offset to each field of each class
-    @compilation_units.each do |unit|
-      next unless unit.is_a? Joos::Entity::Class
+    classes.each do |unit|
 
       fields = unit.instance_fields
       next if fields.empty?
@@ -293,8 +292,7 @@ class Joos::Compiler
       end
     end
 
-    objs = @compilation_units.select { |unit| unit.is_a? Joos::Entity::Class }
-    objs.each_with_index do |unit, index|
+    classes.each_with_index do |unit, index|
       gen = Joos::CodeGenerator.new unit, :i386, output_directory, index.zero?
       gen.render_to_file
     end
