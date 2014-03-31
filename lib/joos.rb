@@ -178,6 +178,14 @@ class Joos::Compiler
     ast = Joos::Parser.new(Joos::Scanner.scan_file job).parse
     $stderr.safe_puts ast.inspect if $DEBUG
     ast.visit { |parent, node| node.validate(parent) } # some weeder checks
+
+    ast.visit_reduce { |node, acc|
+      acc.tap do |_|
+        acc << node if node.is_a?(Joos::AST::Block)
+      end
+    }.flatten.compact.each(&:rescopify)
+
+    ast
   end
 
   def build_entity ast, root_package

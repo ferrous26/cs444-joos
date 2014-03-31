@@ -14,32 +14,30 @@ class Joos::AST::Block
     # trim braces
     if self.BlockStatements
       @nodes = [self.BlockStatements]
-      rescopify
     else
       @nodes.clear
     end
   end
 
-
-  private
-
   def rescopify
-    decl_or_statement_seen = false
-
-    statements = self.BlockStatements.to_a
+    return unless self.BlockStatements
+    children = []
+    statements = self.BlockStatements.to_a.reverse
     statements.each_with_index do |node, index|
-      if node.LocalVariableDeclarationStatement && decl_or_statement_seen
+      children.unshift(node)
+      if node.LocalVariableDeclarationStatement &&
+         index < statements.size - 1
         bs = make(:BlockStatement,
                   make(:Statement,
                        make(:Block,
-                            make(:BlockStatements, *statements[index..-1]))))
-
-        statements.pop(statements.size - index)
-        self.BlockStatements.reparent bs, at_index: index
-        return # we are done here
-      elsif node.LocalVariableDeclarationStatement || node.Statement
-        decl_or_statement_seen = true
+                            make(:BlockStatements, *children))))
+        children = [bs]
       end
+    end
+
+    self.BlockStatements.nodes.clear
+    children.each_with_index do |node, index|
+      self.BlockStatements.reparent node, at_index: index
     end
   end
 
