@@ -199,6 +199,7 @@ class Joos::AST
     # @param tab [Fixnum]
     def inspect tab = 0
       base = "#{taby tab}#{to_sym}\n"
+      base << @declaration.inspect(tab+1) << "\n" if @declaration
       @statements.each do |node|
         base << node.inspect(tab + 1) << "\n"
       end
