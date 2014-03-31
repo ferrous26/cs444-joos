@@ -242,20 +242,28 @@ module CompileAST
     # The rule is to eval the LHS of the assignment first.
     left = node.nodes[0]
     right = node.nodes[2]
+    receiver = nil
+    entity = nil
+    block = flow_block
 
+    # TODO: properly extract l-values
     if left.Term.QualifiedIdentifier
-      # Simple field - compile the RHS, then assign it
-      block = compile flow_block, right
-      value = block.result
-      var = left.entity
+      # X.a form: compile X to get the receiver (if any), then assign to a
+      identifier = left.Term.QualifiedIdentifier
+      block = compile_entity_chain flow_block, identifier.entity_chain[0..-2]
+      receiver = block.result
+      entity = identifier.entity
 
-      if var.is_a? Joos::Entity::Field and !var.static?
-        receiver = This.new
-        block << receiver
-        block << SetField.new(receriver.target, value)
+      # Compile RHS. Value of the overall assignment expression is the RHS.
+      block = compile block, right
+
+      if receiver
+        # Instance field, including instance fields on implicit this, which are
+        # transformed at some point to have an explicit this
+        block << SetField.new(entity, receiver, block.result)
       else
-        # Add the Set to the block as a side effect, but don't change the result
-        block << Set.new(var, value)
+        # Static field
+        block << Set.new(entity, block.result)
       end
     else
       puts left.inspect

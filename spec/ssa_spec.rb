@@ -5,8 +5,8 @@ require 'joos/ssa/segment'
 describe Joos::SSA::Segment do
   if false
     it 'has a spec that dumps output for debugging' do
-      main, seg = ssa_test 'fixture/selectors'
-      #puts main.body.inspect
+      main, seg = ssa_test 'fixture/lvalues'
+      puts main.inspect
       puts seg.inspect
     end
   end
@@ -74,6 +74,11 @@ describe Joos::SSA::Segment do
     expect( seg.instructions.to_a.length ).to be == 14
     expect( seg.variable_count ).to be == 14
     expect( seg.start_block.continuation ).to be_a Joos::SSA::Return
+  end
+
+  it 'wades through the horror of l-values' do
+    main, seg = 'fixture/lvalues'
+    puts seg
   end
 
   it 'constructs array accesses' do
