@@ -19,6 +19,15 @@ class Joos::Entity::Field < Joos::Entity
   attr_accessor :order
 
   ##
+  # Offset, in bytes, from object base
+  #
+  # This only applies to non-static fields, and will not be set until code
+  # generation.
+  #
+  # @return [Fixnum]
+  attr_accessor :field_offset
+
+  ##
   # Exception raised when a static field initializer tries to use keyword `this`
   class StaticThis < Joos::CompilerException
     def initialize this
@@ -107,14 +116,28 @@ class Joos::Entity::Field < Joos::Entity
   # @param other_field [Field]
   # @return [Bool]
   def forward_reference? other_field
-    return false if other_field.unit != unit
-    return false if other_field.static? != static?
-    return other_field.order >= order
+    other_field.unit    == unit    &&
+    other_field.static? == static? &&
+    other_field.order   >= order
   end
 
   def check_forward_references
     return unless initializer
     check_forward_refs_visit initializer
+  end
+
+  # @!group Assignment 5
+
+  def label
+    @label ||= (type_environment.label + "?#{name}")
+  end
+
+  ##
+  # The total number of bytes that this field requires
+  #
+  # @return [Fixnum]
+  def size
+    4 # to start with, everything requires a full dword
   end
 
 

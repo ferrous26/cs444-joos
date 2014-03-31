@@ -1,0 +1,7 @@
+;; ancestry table
+global <%= atable_label %>
+<%= atable_label -%>:
+<% unit_ancestors.each do |ancestor| %>
+        dd 0x<%= ancestor.ancestor_number.to_s(16) %>    ; <%= ancestor.label -%>
+<% end %>
+        dd 0x00    ; NULL terminator for atable

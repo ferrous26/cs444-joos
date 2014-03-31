@@ -27,7 +27,7 @@ namespace :test do
     end
 
     # do not bother with main tests if stdlib fails
-    task "a#{assignment}" => :stdlib if assignment > 1
+    task "a#{assignment}" => :stdlib if assignment > 1 && assignment < 5
   end
 
   Rake::TestTask.new do |t|

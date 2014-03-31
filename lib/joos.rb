@@ -1,8 +1,12 @@
+require 'fileutils'
+
 require 'joos/version'
 require 'joos/freedom_patches'
 require 'joos/scanner'
 require 'joos/parser'
 require 'joos/entity'
+require 'joos/code_generator'
+require 'joos/utilities'
 
 
 ##
@@ -110,7 +114,7 @@ class Joos::Compiler
   end
 
   def add_stdlib
-    @files += Dir.glob 'test/stdlib/5.0/**/*.java'
+    @files += Dir.glob 'test/stdlib/5.1/**/*.java'
   end
 
   ##
@@ -243,11 +247,61 @@ class Joos::Compiler
     end
   end
 
-  def generate_code
-    @compilation_units.first.generate_main_code output_directory
-    @compilation_units[1..-1].each do |unit|
-      unit.generate_code output_directory
+  def runtime
+    'config/joos_runtime.s'
+  end
+
+  def platform_runtime
+    if Joos::Utilities.darwin?
+      'config/joos_runtime_osx.s'
+    else
+      'config/joos_runtime_linux.s'
     end
+  end
+
+  def generate_code
+    # assign an ancestor number to each compilation unit
+    base = 0x10
+    @compilation_units.each do |unit|
+      unit.ancestor_number = base
+      base += 1
+    end
+
+    # Assign a method number to each method based on the method signature
+    unique = Hash.new do |h, k|
+      h[k] = h.keys.size + 1
+    end
+    @compilation_units.each do |unit|
+      unit.instance_methods.each do |method|
+        method.method_number = unique[method.signature]
+      end
+    end
+
+    # Assign a field offset to each field of each class
+    @compilation_units.each do |unit|
+      next unless unit.is_a? Joos::Entity::Class
+
+      fields = unit.instance_fields
+      next if fields.empty?
+
+      fields.first.field_offset = unit.base_field_offset
+      next if fields.size == 1
+
+      fields[1..-1].each_with_index do |field, index|
+        previous_field = fields[index]
+        field.field_offset = previous_field.field_offset + previous_field.size
+      end
+    end
+
+    objs = @compilation_units.select { |unit| unit.is_a? Joos::Entity::Class }
+    objs.each_with_index do |unit, index|
+      gen = Joos::CodeGenerator.new unit, :i386, output_directory, index.zero?
+      gen.render_to_file
+    end
+
+    # also add our static runtime code
+    FileUtils.cp runtime, output_directory
+    FileUtils.cp platform_runtime, output_directory
   end
 
 end

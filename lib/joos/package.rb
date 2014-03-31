@@ -185,6 +185,16 @@ class Joos::Package
     parent.fully_qualified_name << name
   end
 
+  def all_classes
+    @members.values.map do |member|
+      if member.is_a? Joos::Entity::Class
+        member
+      elsif member.is_a? Joos::Package
+        member.all_classes
+      end
+    end.compact.flatten
+  end
+
   def inspect tab = 0
     "#{taby tab}package #{name.cyan}\n" <<
       (members.map { |_, m|

@@ -6,7 +6,6 @@ require 'joos/entity/has_interfaces'
 require 'joos/token/identifier'
 require 'joos/ast'
 require 'joos/exceptions'
-require 'joos/code_generator'
 
 
 ##
@@ -463,9 +462,7 @@ class Joos::Entity::Class < Joos::Entity
   end
 
   def ancestors
-    ancestor_classes      +
-      ancestor_interfaces +
-      ancestor_classes.map(&:ancestor_interfaces)
+    ancestor_classes + ancestor_classes.map(&:ancestor_interfaces).flatten
   end
 
   # @param klass [Joos::Entity::Class, Joos::Entity::Interface]
@@ -518,19 +515,39 @@ class Joos::Entity::Class < Joos::Entity
 
   # @!group Assignment 5
 
-  def generate_code directory
-    @gen = Joos::CodeGenerator.new self, :i386, directory
-    @gen.generate_data
-    @gen.generate_text
-    @gen.finalize
+  def label
+    @label ||= ('@' + fully_qualified_name.join('.'))
   end
 
-  def generate_main_code directory
-    @gen = Joos::CodeGenerator.new self, :i386, directory
-    @gen.generate_data
-    @gen.generate_text
-    @gen.generate_main
-    @gen.finalize
+  def instance_fields
+    fields.reject(&:static?)
+  end
+
+  ##
+  # Byte offset from object base that the receiving classes fields begin
+  #
+  # @return [Fixnum]
+  def base_field_offset
+    # @todo optimize this code path
+    if top_class?
+      4 # 4 bytes in a dword, we want to reserve space for the tag pointer
+    else
+      superclass.base_field_offset + superclass.total_fields_size
+    end
+  end
+
+  def total_fields_size
+    @total_field_size ||= instance_fields.reduce(0) { |size, field|
+      size + field.size
+    }
+  end
+
+  def allocation_size
+    @allocation_size ||= base_field_offset + total_fields_size
+  end
+
+  def all_instance_methods
+    all_methods.reject(&:static?)
   end
 
   # @!endgroup

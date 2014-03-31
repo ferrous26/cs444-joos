@@ -22,4 +22,8 @@ class Joos::BasicType::Short < Joos::BasicType
     length >= other.length && !other.is_a?(Joos::BasicType::Char)
   end
 
+  def label
+    's'
+  end
+
 end

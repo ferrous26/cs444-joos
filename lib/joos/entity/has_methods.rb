@@ -80,4 +80,8 @@ module Joos::Entity::HasMethods
     methods.each(&:link_identifiers)
   end
 
+  def instance_methods
+    methods.reject(&:static?)
+  end
+
 end

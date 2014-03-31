@@ -20,4 +20,8 @@ class Joos::BasicType::Char < Joos::BasicType
 
   alias_method :wider?, :==
 
+  def label
+    'c'
+  end
+
 end

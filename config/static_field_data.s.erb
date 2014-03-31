@@ -1,0 +1,5 @@
+;; static field declarations
+<% static_fields.each do |field| %>
+global <%= field.label %>
+<%= field.label %>: dd 00
+<% end %>

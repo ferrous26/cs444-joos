@@ -35,6 +35,13 @@ class Joos::Entity::FormalParameter < Joos::Entity
   end
 
 
+  # @!group Assignment 5
+
+  def label
+    type.label
+  end
+
+
   # @!endgroup
 
 

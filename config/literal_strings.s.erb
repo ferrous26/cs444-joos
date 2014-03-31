@@ -1,0 +1,4 @@
+;; Literal Strings
+<% @strings.each_pair do |str, symbol| %>
+<%= symbol %>: db '<%= str %>'
+<% end %>

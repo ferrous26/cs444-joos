@@ -1,0 +1,7 @@
+global <%= start_sym %>
+<%= start_sym %>:
+<% unit_initializers.each do |init| %>
+        call <%= init -%>
+<% end %>
+        call <%= joos_main %>
+        call __debexit

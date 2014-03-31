@@ -24,6 +24,14 @@ class Joos::Entity::Method < Joos::Entity
   # @return [Joos::Entity::Method, nil]
   attr_accessor :ancestor
 
+  ##
+  # A number that uniquely identifies the signature of the method in the
+  # scope of the program.
+  #
+  # This value is assigned during code generation.
+  #
+  # @return [Fixnum]
+  attr_accessor :method_number
 
   # @!group Exceptions
 
@@ -209,6 +217,21 @@ class Joos::Entity::Method < Joos::Entity
   end
 
 
+  # @!group Assignment 5
+
+  def label
+    @label ||= if native?
+                 'NATIVE'                                          +
+                   type_environment.fully_qualified_name.join('.') +
+                   '.'                                             +
+                   name.to_s
+               else
+                 base = type_environment.label + "~#{name}"
+                 @parameters.empty? ? base : (base + '~' + parameter_labels)
+               end
+  end
+
+
   # @!group Inspect
 
   # @todo add relevant modifiers
@@ -252,6 +275,10 @@ class Joos::Entity::Method < Joos::Entity
     @body.visit do |_, node|
       raise StaticThis.new(node) if node.to_sym == :This
     end
+  end
+
+  def parameter_labels
+    @parameters.map(&:label).join('~')
   end
 
 

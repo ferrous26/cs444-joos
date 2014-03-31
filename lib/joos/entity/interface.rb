@@ -3,7 +3,6 @@ require 'joos/entity/compilation_unit'
 require 'joos/entity/modifiable'
 require 'joos/entity/has_interfaces'
 require 'joos/entity/has_methods'
-require 'joos/code_generator'
 
 ##
 # Entity representing the definition of a interface.
@@ -162,14 +161,8 @@ class Joos::Entity::Interface < Joos::Entity
 
   # @!group Assignment 5
 
-  def generate_code directory
-    @gen = Joos::CodeGenerator.new self, :i386, directory
-    @gen.generate_data
-    @gen.generate_text
-  end
-
-  def generate_main_code directory
-    raise "An interface cannot possibly have `public static int test()'"
+  def label
+    @label ||= ('@' + fully_qualified_name.join('.'))
   end
 
   # @!endgroup

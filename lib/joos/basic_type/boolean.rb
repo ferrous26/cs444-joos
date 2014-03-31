@@ -14,4 +14,8 @@ class Joos::BasicType::Boolean < Joos::BasicType
     true
   end
 
+  def label
+    'B'
+  end
+
 end

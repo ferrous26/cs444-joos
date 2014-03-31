@@ -46,6 +46,10 @@ class Joos::Array
     end << self
   end
 
+  def label
+    "#{type.label}#"
+  end
+
 
   # @!group Type API
 

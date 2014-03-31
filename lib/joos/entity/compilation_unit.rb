@@ -33,6 +33,14 @@ module Joos::Entity::CompilationUnit
   # @return [Joos::Package]
   attr_accessor :root_package
 
+  ##
+  # A globally unique number that identifies the compilation unit
+  #
+  # This value is assigned during code generation.
+  #
+  # @return [Fixnum]
+  attr_accessor :ancestor_number
+
 
   # @!group Exceptions
 

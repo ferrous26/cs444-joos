@@ -30,6 +30,8 @@ class Assignment5Tests < Minitest::Test
   end
 
   def teardown
+    # don't cleanup if we failed, so humans can inspect output closely
+    return unless self.passed?
     rm_rf output_dir
     rm_rf main
   end
@@ -44,15 +46,15 @@ class Assignment5Tests < Minitest::Test
 
     def link_program
       files = Dir.glob("#{output_dir}/*.o")
-      `ld -w -o #{main} -e _start #{files.join(' ')}`
+      `clang -m32 -Wl,-no_pie -o #{main} #{files.join(' ')}`
     end
 
     def runtime_s
-      File.expand_path './test/stdlib/5.0/runtime_osx.s'
+      File.expand_path './test/stdlib/5.1/runtime_osx.s'
     end
 
     def runtime_o
-      File.expand_path './test/stdlib/5.0/runtime_osx.o'
+      File.expand_path './test/stdlib/5.1/runtime_osx.o'
     end
 
   ##
@@ -69,11 +71,11 @@ class Assignment5Tests < Minitest::Test
     end
 
     def runtime_s
-      File.expand_path './test/stdlib/5.0/runtime_linux.s'
+      File.expand_path './test/stdlib/5.1/runtime_linux.s'
     end
 
     def runtime_o
-      File.expand_path './test/stdlib/5.0/runtime_linux.o'
+      File.expand_path './test/stdlib/5.1/runtime_linux.o'
     end
   end
 
@@ -106,11 +108,11 @@ class Assignment5Tests < Minitest::Test
   def refute_compile *files
     compile 0, files.concat(stdlib), output_dir
     try_assemble_and_link
-    refute_run_success
+    assert_run_failure
   end
 
   def stdlib
-    @stdlib ||= Dir.glob('test/stdlib/5.0/**/*.java')
+    @stdlib ||= Dir.glob('test/stdlib/5.1/**/*.java')
   end
 
   def self.make_directory_test dir
@@ -122,7 +124,7 @@ class Assignment5Tests < Minitest::Test
       rest  = files - main
       files = main + rest
 
-      if dir.split('/').last =~ /\AJe/
+      if dir.split('/').last =~ /\AJ1e/
         refute_compile files
       else
         assert_compile files
@@ -134,7 +136,7 @@ class Assignment5Tests < Minitest::Test
     test_case = File.basename(file, '.java')
 
     define_method "test_#{test_case}" do
-      if test_case =~ /\AJe/
+      if test_case =~ /\AJ1e/
         refute_compile file
       else
         assert_compile file

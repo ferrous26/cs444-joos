@@ -1,8 +1,23 @@
-require 'joos/version'
+require 'securerandom'
+require 'erb'
+
+require 'joos/exceptions'
+require 'joos/utilities'
+
 
 ##
 # Code generating logic for Joos
 class Joos::CodeGenerator
+
+  ##
+  # Exception raised when the compilation unit expected to have the main
+  # function does not have a main function.
+  #
+  class NoMainDetected < Joos::CompilerException
+    def initialize unit
+      super "#{unit.inspect} must have a public static int test() method", unit
+    end
+  end
 
   ##
   # Knows the names of values in registers and the current stack frame.
@@ -60,48 +75,168 @@ class Joos::CodeGenerator
   module I386
     extend self
 
-    def add left, right
+    def static_field_read label
+      "mov     eax, [#{offset}]"
     end
 
-    def imult left, right
+    def static_field_write label, value
+      "mov     [#{label}], #{value}"
+    end
+
+    def instance_field_read offset
+      "mov     eax, [ebx + #{offset}]"
+    end
+
+    # @param value [String]
+    def instance_field_write offset, value
+      "mov     [ebx + #{offset}], #{value}"
     end
   end
+
+
+  ##
+  # Symbols that are externally defined and should be declared as such
+  #
+  # @return [Array<String>]
+  attr_reader :symbols
+
+  ##
+  # Literal strings used in the compilation unit
+  #
+  # Map of string value to symbol name.
+  #
+  # @return [Hash{ String => String }]
+  attr_reader :strings
 
   # @param unit      [Joos::Entity::CompilationUnit]
   # @param platform  [Symbol] pretty much has to be `:i386`
   # @param directory [String] where to put all the asm
-  def initialize unit, platform, directory
+  # @param main      [Boolean] whether or not to generate the main routine
+  def initialize unit, platform, directory, main
     @platform = self.class.const_get platform.to_s.capitalize
     @unit     = unit
-    @file     = unit.fully_qualified_name.join('_') << '.s'
-    @fd       = File.open "#{directory}/#{@file}", 'w'
+    @file     = "#{directory}/#{unit.fully_qualified_name.join('_') << '.s'}"
+    @symbols  = default_symbols
+    @strings  = literal_string_hash
+    @main     = main
   end
 
-  def generate_data
-    # tag data
-    # vtable
-    # static fields
+  def start_sym
+    Joos::Utilities.darwin? ? '_main' : '_start'
   end
 
-  def generate_text
-    # static methods
-    # instance methods
+  def render_to_file
+    File.open @file, 'w' do |fd|
+      fd.write render_object
+    end
   end
 
-  def generate_main
-    @main = true
-    @fd.puts <<-EOC
-extern __debexit
-
-global _start
-_start:
-    mov eax, 123
-    call __debexit
-    EOC
+  # Load all the templates
+  [
+    'object',
+    # section .text
+    'field_initializers',
+    'aggregate_field_initializer',
+    'methods',
+    'constructors',
+    'main',
+    # section .data
+    'vtable',
+    'ancestry_table',
+    'static_field_data',
+    'literal_strings',
+    # section (other)
+    'extern_symbols'
+  ].each do |name|
+    template = File.read "config/#{name}.s.erb"
+    ERB.new(template, nil, '>-').def_method(self, "render_#{name}")
   end
 
-  def finalize
-    @fd.close
+
+  private
+
+  def literal_string_hash
+    Hash.new do |hash, key|
+      id = SecureRandom.uuid
+      id.gsub!(/-/, '_')
+      hash[key] = "string##{id}"
+    end
+  end
+
+  def default_symbols
+    [
+      '__debexit', '__malloc', '__exception',
+      'NATIVEjava.io.OutputStream.nativeWrite',
+      '__division', '__modulo',
+      '__downcast_check', '__instanceof',
+      '__allocate', '__dispatch'
+    ]
+  end
+
+  def field_initializer field
+    'init_' + field.label
+  end
+
+  def static_field_initializers
+    @unit.fields.select(&:static?).select(&:initializer).map do |field|
+      field_initializer field
+    end
+  end
+
+  def unit_initializer unit
+    'init_' + unit.label
+  end
+
+  def unit_initializers
+    @unit.root_package.all_classes.map do |unit|
+      unit_initializer(unit).tap do |label|
+        @symbols << label unless unit == @unit
+      end
+    end
+  end
+
+  def concrete_methods
+    @unit.methods.reject(&:abstract?).reject(&:native?)
+  end
+
+  def joos_main
+    method = @unit.methods.find { |m| m.signature == ['test', []] }
+    raise NoMainDetected.new @unit unless method
+    method.label
+  end
+
+  def vtable_label
+    'vtable_' + @unit.label
+  end
+
+  def vtable_methods
+    methods = @unit.all_instance_methods
+      .reject(&:abstract?)
+      .sort_by(&:method_number)
+
+    methods.each do |method|
+      @symbols << method.label unless method.type_environment == @unit
+    end
+
+    mtable = Array.new(methods.last.method_number) do |index|
+      methods.find { |method| method.method_number == index }
+    end
+    mtable.shift # throw away index zero, which is always empty
+
+    mtable.map { |m| m ? m.label : '0x00'}
+  end
+
+  def atable_label
+    'atable_' + @unit.label
+  end
+
+  # @return [Array<Joos::Entity::CompilationUnit>]
+  def unit_ancestors
+    @unit.ancestors.uniq
+  end
+
+  def static_fields
+    @unit.fields.select(&:static?)
   end
 
 end

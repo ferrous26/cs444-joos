@@ -1,0 +1,7 @@
+;; vtable
+global <%= vtable_label %>
+<%= vtable_label %>:
+        dd <%= atable_label %>    ; The first entry is actually a link to the atable
+<% vtable_methods.each do |method| -%>
+        dd <%= method %>
+<% end %>
