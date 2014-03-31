@@ -116,8 +116,8 @@ __allocate:
 ;;
 ;; pre: array size in eax, takes over of ebx, edi, esi
 ;; post: pointer to head of array in eax
-global __array__create
-__array_create:
+global array__allocate
+array__allocate:
 	cmp     eax, 0         ; array size cannot be <= 0
 	jle     .negative_array_size
 	mov     ebx, eax
@@ -144,21 +144,21 @@ __array_create:
 ;;
 ;; pre:  pointer to array is in eax
 ;; post: length of array is in eax
-global __array_length:
-__array_length:
+global array?length
+array?length:
 	cmp     eax, 0
 	je      .null_array
 	add     eax, 8
 	mov     eax, [eax]
 	ret
 .null_array:
-	mov     null_pointer_exception
+	mov     eax, null_pointer_exception
 	call __internal_exception
 
 ;; pre:  index in eax, pointer to array in ebx
 ;; post: value in eax
-global __array_get
-__array_get:
+global array_get
+array_get:
 	cmp     ebx, 0
 	je      .null_array
 	cmp     eax, 0
@@ -173,16 +173,16 @@ __array_get:
 	mov     eax, [edi]      ; load value at index into eax
 	ret
 .null_array:
-	mov     null_pointer_exception
+	mov     eax, null_pointer_exception
 	call __internal_exception
 .out_of_bounds:
-	mov     array_index_out_of_bounds_exception
+	mov     eax, array_index_out_of_bounds_exception
 	call __internal_exception
 
 ;; pre:  index in eax, pointer to array in ebx, value in ecx
 ;; post: value in eax?
-global __array_set
-__array_set:
+global array_set
+array_set:
 	; check if array ref is null, and if index is less than zero
 	cmp     ebx, 0
 	je      .null_array
@@ -224,13 +224,13 @@ __array_set:
 	mov     eax, ecx        ; fulfill postcondition...?
 	ret
 .null_array:
-	mov     null_pointer_exception
+	mov     eax, null_pointer_exception
 	call __internal_exception
 .out_of_bounds:
-	mov     array_index_out_of_bounds_exception
+	mov     eax, array_index_out_of_bounds_exception
 	call __internal_exception
 .set_exception:
-	mov     array_store_exception
+	mov     eax, array_store_exception
 	call __internal_exception
 
 ;; TODO:
