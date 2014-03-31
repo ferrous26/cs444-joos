@@ -155,7 +155,7 @@ array?length:
 	mov     eax, null_pointer_exception
 	call __internal_exception
 
-;; pre:  index in eax, pointer to array in ebx
+;; pre:  index in eax, pointer to array in ebx, take over edi & esi
 ;; post: value in eax
 global array_get
 array_get:
@@ -165,9 +165,9 @@ array_get:
 	jl      .out_of_bounds
 	mov     edi, ebx        ; copy pointer to temp
 	add     edi, 8          ; move pointer to length
-	mov     edi, [edi]      ; load length
-	cmp     eax, edi        ; check out of bounds on right
-	jg      .out_of_bounds
+	mov     esi, [edi]      ; load length
+	cmp     eax, esi        ; check out of bounds on right
+	jge     .out_of_bounds
 	add     edi, 4          ; move tmp pointer to array data
 	add     edi, eax        ; move to correct index
 	mov     eax, [edi]      ; load value at index into eax
