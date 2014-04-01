@@ -20,6 +20,8 @@ class Joos::CodeGenerator
   end
 
   ##
+  # @todo move this to its own file...
+  #
   # Knows the names of values in registers and the current stack frame.
   #
   # The purpose of this class is to keep track of where variables/values
@@ -130,7 +132,7 @@ class Joos::CodeGenerator
   def self.render_array_to_file platform, directory, root_package
     array = Joos::Array.new Joos::BasicType.new :Int
     array.root_package = root_package
-    array.define_singleton_method(:label) { 'array' }
+    array.define_singleton_method(:label) { 'array' } # hack
     gen   = new array, platform, directory, false
     gen.render_array_class
   end

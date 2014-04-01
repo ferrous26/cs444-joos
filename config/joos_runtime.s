@@ -110,7 +110,7 @@ __allocate:
 
 ;; allocate space for an array, and zero the entire thing
 ;; the caller of this function will need to initialize the first
-;; two fields of the array (vtable, ancestor number), and call
+;; two fields of the array (vtable, inner vtable), and call
 ;; the default constructor for each element if the inner type is
 ;; a reference type
 ;;
@@ -183,35 +183,41 @@ array_get:
 ;; post: value in eax?
 global array_set
 array_set:
-	; check if array ref is null, and if index is less than zero
-	cmp     ebx, 0
+	cmp     ebx, 0          ; check if array ref is null
 	je      .null_array
-	cmp     eax, 0
+	cmp     eax, 0          ; check if array index is less than zero
 	jl      .out_of_bounds
-	mov     edi, ebx        ; copy pointer to temp
-	cmp     ecx, 0          ; setting value to null or zero?
+	mov     edi, ebx        ; copy array ref to temp register
+	cmp     ecx, 0          ; if (value == null) skip remaining checks
 	je      .post_instanceof
 
         ; check if the assignment is allowed according to type rules
 	; first, we need to save these before calling __instanceof
 	push    edi
+	push    ecx
 	push    ebx
 	push    eax
-	sub     esp, 4          ; align the stack
 
-	add     edi, 4          ; move pointer to inner type
-	mov     eax, [edi]      ; load ancestor number of inner type
-	cmp     eax, 0x10       ; skip check for instanceof primitive
+	add     edi, 4          ; mov ptr to inner tag
+	mov     edi, [edi]      ; load inner tag pointer
+
+	; if inner tag belongs to a primitive type, we skip __instanceof check
+	cmp     edi, 0x10
 	jl      .instanceof_epilog
+
+	; else, we need to get the inner type's ancestor number
+	mov     edi, [edi]      ; load atable pointer
+	mov     edi, [edi]      ; load first atable entry
+	mov     ebx, ecx        ; place object in expected register
 	call __instanceof
 	cmp     eax, 0          ; if (instanceof == false)
 	je      .set_exception
 
         ; restore stuff we saved before calling __instanceof
 .instanceof_epilog:
-	add     esp, 4          ; pop stack
 	pop     eax
 	pop     ebx
+	pop     ecx
 	pop     edi
 
 .post_instanceof:
