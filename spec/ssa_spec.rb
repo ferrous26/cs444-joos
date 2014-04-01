@@ -9,13 +9,13 @@ describe Joos::SSA::Segment do
       puts main.inspect
       puts seg.inspect
     end
+  end
 
   it 'constructs SSA form with a single flow block' do
     main, seg = ssa_test 'a5/J1_Hello'
 
     expect( seg.flow_blocks.length ).to be == 1
     expect( seg.start_block ).to be seg.flow_blocks[0]
-    expect( seg.variable_count ).to be == 3
     expect( seg.instructions.to_a.length ).to be == 4
     expect( seg.find_var 1 ).to be_a Joos::SSA::Const
     expect( seg.start_block.continuation ).to be_a Joos::SSA::Return
@@ -35,7 +35,6 @@ describe Joos::SSA::Segment do
 
     expect( seg.flow_blocks.length ).to be == 1
     expect( seg.instructions.to_a.length ).to be == 7
-    expect( seg.variable_count ).to be == 5
   end
 
   it 'constructs while loops' do
@@ -43,7 +42,6 @@ describe Joos::SSA::Segment do
 
     expect( seg.flow_blocks.length ).to be == 4
     expect( seg.instructions.to_a.length ).to be == 10
-    expect( seg.variable_count ).to be == 8
 
     expect(
       seg.flow_blocks.find {|b| b.continuation.is_a? Joos::SSA::Loop}
@@ -64,7 +62,6 @@ describe Joos::SSA::Segment do
     main, seg = ssa_test 'fixture/creator_test'
     expect( seg.flow_blocks.length ).to be == 1
     expect( seg.instructions.to_a.length ).to be == 11
-    expect( seg.variable_count ).to be == 8
   end
 
   it 'constructs OH SHIT SELECTORS~~!' do
@@ -75,24 +72,21 @@ describe Joos::SSA::Segment do
     expect( seg.start_block.continuation ).to be_a Joos::SSA::Return
   end
 
-  it 'wades through the horror of l-values' do
-    main, seg = 'fixture/lvalues'
-    puts seg
+  it 'works with all possible l-value cases' do
+    main, seg = ssa_test 'fixture/lvalues'
+    expect( seg.flow_blocks.length ).to be == 1
+    expect( seg.instructions.to_a.length ).to be == 21
   end
 
   it 'constructs array accesses' do
-    pending "FUCKING L-VALUES"
     main, seg = ssa_test 'fixture/array_access'
-    puts seg.inspect
     expect( seg.flow_blocks.length ).to be == 1
-    expect( seg.instructions.to_a.length ).to be == 11
-    expect( seg.variable_count ).to be == 8
-  end
-
+    expect( seg.instructions.to_a.length ).to be == 10
   end
 
   it 'compiles qualified static calls' do
     main, seg = ssa_test 'fixture/static_call'
-    puts seg.inspect
+    expect( seg.flow_blocks.length ).to be == 1
+    expect( seg.instructions.to_a.length ).to be == 1
   end
 end

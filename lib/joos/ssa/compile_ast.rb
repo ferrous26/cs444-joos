@@ -69,6 +69,12 @@ module CompileAST
           block.make_result CallStatic.new(target, entity, *args)
         end
       else
+        unless receiver
+          # Sometimes the AST is transformed to make implicit this explicit, but
+          # not always it seems (e.g. a = 5 for field a)
+          flow_block.make_result This.new(new_var)
+          receiver = flow_block.result
+        end
         flow_block.make_result GetField.new(new_var, entity, receiver)
       end
     elsif node.OpenStaple
@@ -178,6 +184,7 @@ module CompileAST
   end
 
   def compile_term flow_block, node
+    flow_block.continuation = nil
     child = node.nodes
     case child.map(&:to_sym)
     when [:TermModifier, :Term]
@@ -207,7 +214,6 @@ module CompileAST
       end
       compile block, node.Selectors
     else
-      puts child.map(&:to_sym)
       raise "Match failed - #{node}"
     end
   end
@@ -224,6 +230,9 @@ module CompileAST
           block.make_result Get.new(new_var, entity)
         else
           # Instance field or array.length
+          unless block.result
+            block.make_result This.new(new_var)
+          end
           block.make_result GetField.new(new_var, entity, block.result)
         end
       else
@@ -260,16 +269,14 @@ module CompileAST
     # The rule is to eval the LHS of the assignment first.
     left = node.nodes[0]
     right = node.nodes[2]
-    receiver = nil
-    entity = nil
-    block = flow_block
 
-    # L-value hack - treat the LHS as an rvalue, then replace the instruction
-    # that generates the returned value with the corresponding Set instruction
+    # L-value hack: generate instructions for LHS as if it were an l-value,
+    # delete the final Get*, then replace it with a corresponding Set* after
+    # evaluating the RHS
     left_block = compile flow_block, left
     lresult = left_block.result
-    lindex = left_block.instructions.rindex {|ins| ins.target == lresult}
-    lvalue = left_block.instructions[lindex]
+    lvalue = left_block.instructions.find{|ins| ins.target == lresult}
+    left_block.instructions.delete lvalue
     left_block.continuation = nil
 
     # Compile RHS
@@ -277,20 +284,18 @@ module CompileAST
     rvalue = right_block.result
     
     # Replace l-value instruction on the LHS
-    left_block.instructions[lindex] = case lvalue
+    right_block << case lvalue
     when Get
       Set.new lvalue.entity, rvalue
     when GetIndex
       SetIndex.new lvalue.receiver, lvalue.index, rvalue
     when GetField
+      raise "Expected lvalue to have a receiver for field access" unless lvalue.receiver
       SetField.new lvalue.entity, lvalue.receiver, rvalue
     else
       puts node.inspect
       raise "Left side of assignment deosn't evaluate to an l-value, somehow"
     end
-
-    # Return RHS
-    right_block
   end
 
   # @param left [Fixnum]
