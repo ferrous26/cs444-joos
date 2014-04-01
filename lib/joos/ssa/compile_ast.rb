@@ -11,7 +11,7 @@ module CompileAST
   def compile flow_block, node
     case node
     when Joos::Token::Literal
-      flow_block.make_result Const.new(new_var, node)
+      flow_block.make_result Const.from_token(new_var, node)
     when Joos::Token::This
       flow_block.make_result This.new(new_var)
     when Joos::Token
@@ -43,15 +43,18 @@ module CompileAST
         compile block, node
       end
     end
+  rescue RuntimeError => e
+    # puts the offending node and some context in the case of error
+    @debug_depth = (@debug_depth || 0) + 1
+
+    # Change this to a higher value to look further up the AST
+    puts node.inspect if @debug_depth == 2
+    raise e
   end
 
   private
 
   def compile_selector flow_block, node
-    unless flow_block.continuation.is_a? Just
-      raise "FlowBlock should have Just result - got #{flow_block.continuation}"
-    end
-
     receiver = flow_block.result
     if node.Identifier
       # Field access or method call
@@ -60,7 +63,11 @@ module CompileAST
         block, args = compile_arguments flow_block, node.Arguments
         target = new_var unless entity.void_return?
 
-        block.make_result CallMethod.new(target, entity, receiver, *args)
+        if receiver
+          block.make_result CallMethod.new(target, entity, receiver, *args)
+        else
+          block.make_result CallStatic.new(target, entity, *args)
+        end
       else
         flow_block.make_result GetField.new(new_var, entity, receiver)
       end
@@ -85,6 +92,9 @@ module CompileAST
     child = node.nodes
     case child.map(&:to_sym)
     when [:Block]
+      compile flow_block, child[0]
+    when [:Expression]
+      # This case comes up in e.g. initializers
       compile flow_block, child[0]
     when [:Return, :Semicolon]
       flow_block.continuation = Return.new nil
@@ -172,7 +182,7 @@ module CompileAST
     case child.map(&:to_sym)
     when [:TermModifier, :Term]
       raise "Not implemented - term modifier"
-    when [:OpenParen, :Expression, :CloseParen, :Term]
+    when [:OpenParen, :Type, :CloseParen, :Term]
       compile_cast compile(flow_block, child[3]), child[1]
     when [:OpenParen, :ArrayType,  :CloseParen, :Term]
       compile_cast compile(flow_block, child[3]), child[1]
@@ -188,9 +198,16 @@ module CompileAST
       compile_entity_chain flow_block, node.QualifiedIdentifier.entity_chain
     when [:QualifiedIdentifier, :Selectors]
       flow_block.continuation = nil
-      block = compile_entity_chain flow_block, node.QualifiedIdentifier.entity_chain
+      if child[0].entity.is_a? Joos::Entity::Class
+        # "QualifiedIdentifier" is really just a word we use to mean something
+        # (but not always)
+        block = flow_block
+      else
+        block = compile_entity_chain flow_block, node.QualifiedIdentifier.entity_chain
+      end
       compile block, node.Selectors
     else
+      puts child.map(&:to_sym)
       raise "Match failed - #{node}"
     end
   end
@@ -206,6 +223,7 @@ module CompileAST
             entity.is_a? Joos::Entity::FormalParameter or entity.static?
           block.make_result Get.new(new_var, entity)
         else
+          # Instance field or array.length
           block.make_result GetField.new(new_var, entity, block.result)
         end
       else
@@ -246,29 +264,33 @@ module CompileAST
     entity = nil
     block = flow_block
 
-    # TODO: properly extract l-values
-    if left.Term.QualifiedIdentifier
-      # X.a form: compile X to get the receiver (if any), then assign to a
-      identifier = left.Term.QualifiedIdentifier
-      block = compile_entity_chain flow_block, identifier.entity_chain[0..-2]
-      receiver = block.result
-      entity = identifier.entity
+    # L-value hack - treat the LHS as an rvalue, then replace the instruction
+    # that generates the returned value with the corresponding Set instruction
+    left_block = compile flow_block, left
+    lresult = left_block.result
+    lindex = left_block.instructions.rindex {|ins| ins.target == lresult}
+    lvalue = left_block.instructions[lindex]
+    left_block.continuation = nil
 
-      # Compile RHS. Value of the overall assignment expression is the RHS.
-      block = compile block, right
-
-      if receiver
-        # Instance field, including instance fields on implicit this, which are
-        # transformed at some point to have an explicit this
-        block << SetField.new(entity, receiver, block.result)
-      else
-        # Static field
-        block << Set.new(entity, block.result)
-      end
+    # Compile RHS
+    right_block = compile left_block, right
+    rvalue = right_block.result
+    
+    # Replace l-value instruction on the LHS
+    left_block.instructions[lindex] = case lvalue
+    when Get
+      Set.new lvalue.entity, rvalue
+    when GetIndex
+      SetIndex.new lvalue.receiver, lvalue.index, rvalue
+    when GetField
+      SetField.new lvalue.entity, lvalue.receiver, rvalue
     else
-      puts left.inspect
-      raise "Match failed - #{left}"
+      puts node.inspect
+      raise "Left side of assignment deosn't evaluate to an l-value, somehow"
     end
+
+    # Return RHS
+    right_block
   end
 
   # @param left [Fixnum]
@@ -285,6 +307,8 @@ module CompileAST
   # variable number of each argument.
   # @return (FlowBlock, Array<Fixnum>)
   def compile_arguments flow_block, node
+    return [flow_block, []] unless node.Expressions
+
     args = node.Expressions.nodes
     results = []
     block = args.reduce flow_block do |block, arg|

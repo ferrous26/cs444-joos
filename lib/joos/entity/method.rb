@@ -2,6 +2,7 @@ require 'joos/entity'
 require 'joos/entity/modifiable'
 require 'joos/entity/type_resolution'
 require 'joos/type_checking'
+require 'joos/ssa/segment'
 
 ##
 # Entity representing the definition of an class/interface method.
@@ -231,6 +232,11 @@ class Joos::Entity::Method < Joos::Entity
                end
   end
 
+  # SSA code segment for the method's body
+  # @return [Joos::SSA::Segment]
+  def segment
+    @seg ||= Joos::SSA::Segment.from_method self
+  end
 
   # @!group Inspect
 

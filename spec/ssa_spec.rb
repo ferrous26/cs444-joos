@@ -9,7 +9,6 @@ describe Joos::SSA::Segment do
       puts main.inspect
       puts seg.inspect
     end
-  end
 
   it 'constructs SSA form with a single flow block' do
     main, seg = ssa_test 'a5/J1_Hello'
@@ -88,5 +87,12 @@ describe Joos::SSA::Segment do
     expect( seg.flow_blocks.length ).to be == 1
     expect( seg.instructions.to_a.length ).to be == 11
     expect( seg.variable_count ).to be == 8
+  end
+
+  end
+
+  it 'compiles qualified static calls' do
+    main, seg = ssa_test 'fixture/static_call'
+    puts seg.inspect
   end
 end

@@ -2,6 +2,10 @@
 <% @unit.constructors.each do |constructor| %>
 global <%= constructor.label %>
 <%= constructor.label %>:
-        ret                   ;; TODO: actual code
+    ; TODO: Call superclass constructor
+    ; TODO: Call instance fields initializer (#fields_initializer), passing this
+    ; Constructor body
+    <%= render_segment constructor.segment %>
+    ret
 
 <% end %>

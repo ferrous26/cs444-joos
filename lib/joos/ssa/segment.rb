@@ -10,10 +10,6 @@ module Joos::SSA
 class Segment
   include CompileAST
 
-  # Label of the segment used in the generated assembly
-  # @return [String]
-  attr_accessor :label
-
   # Entry point of the segment
   # @return [FlowBlock]
   attr_accessor :start_block
@@ -57,10 +53,53 @@ class Segment
     new.tap do|ret|
       ret.start_block = FlowBlock.new '.enter'
       fields.reduce ret.start_block do |block, field|
-        ret.compile block, field.initializer
+        # Compile the initializer
+        block = if field.initializer
+                  ret.compile block, field.initializer
+                else
+                  ret.compile_default_initializer block, field.type
+                end
+        # Add an instruction to actually set the field
+        receiver = This.new ret.new_var
+        block << receiver
+        block << SetField.new(field, receiver.target, block.result)
       end
       ret.flow_blocks = ret.start_block.dominates.reverse
     end
+  end
+
+  # Create a segment that initializes an array of static fields
+  # @param fields [Array<Joos::Entity::Field>]
+  # @param label [String]
+  def self.from_static_fields fields
+    new.tap do|ret|
+      ret.start_block = FlowBlock.new '.enter'
+      fields.reduce ret.start_block do |block, field|
+        # Compile the initializer
+        block = if field.initializer
+                  ret.compile block, field.initializer
+                else
+                  ret.compile_default_initializer block, field.type
+                end
+        # Add an instruction to actually set the field
+        block << Set.new(field, block.result)
+      end
+      ret.flow_blocks = ret.start_block.dominates.reverse
+    end
+  end
+
+  # Return a default value for a field
+  # @return [FlowBlock]
+  def compile_default_initializer flow_block, type
+    const = if type.reference_type?
+      Const.new(new_var, type, nil)
+    elsif type.boolean_type?
+      Const.new(new_var, type, false)
+    else
+      Const.new(new_var, type, 0)
+    end
+
+    flow_block.make_result const
   end
 
 
