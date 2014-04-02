@@ -238,6 +238,10 @@ module Joos::Entity::CompilationUnit
     get_type Joos::Entity::Class::BASE_CLASS
   end
 
+  def get_string_class
+    get_type Joos::Entity::Class::STRING_CLASS
+  end
+
   def link_imports
     @imported_packages << default_package # this must come first
 

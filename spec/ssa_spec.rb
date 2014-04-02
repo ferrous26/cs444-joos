@@ -3,13 +3,6 @@ require 'spec_helper'
 require 'joos/ssa/segment'
 
 describe Joos::SSA::Segment do
-  if false
-    it 'has a spec that dumps output for debugging' do
-      main, seg = ssa_test 'fixture/lvalues'
-      puts main.inspect
-      puts seg.inspect
-    end
-  end
 
   it 'constructs SSA form with a single flow block' do
     main, seg = ssa_test 'a5/J1_Hello'
@@ -88,5 +81,11 @@ describe Joos::SSA::Segment do
     main, seg = ssa_test 'fixture/static_call'
     expect( seg.flow_blocks.length ).to be == 1
     expect( seg.instructions.to_a.length ).to be == 1
+  end
+
+  it 'compiles string concatenations' do
+    pending
+    main, seg = ssa_test 'fixture/string_cats'
+    puts seg.inspect
   end
 end

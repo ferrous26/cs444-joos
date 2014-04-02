@@ -561,7 +561,7 @@ class Joos::Entity::Class < Joos::Entity
 
   # SSA segment that initializes instance fields
   def instance_initializer_segment
-    @field_seg ||= Joos::SSA::Segment.from_fields instance_fields
+    @field_seg ||= Joos::SSA::Segment.from_fields instance_fields, self
   end
 
   # @!endgroup

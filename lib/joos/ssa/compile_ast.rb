@@ -13,7 +13,7 @@ module CompileAST
     when Joos::Token::Literal
       flow_block.make_result Const.from_token(new_var, node)
     when Joos::Token::This
-      flow_block.make_result This.new(new_var)
+      flow_block.make_result This.new(new_var, this_type)
     when Joos::Token
       flow_block
     when Joos::AST::LocalVariableDeclarationStatement
@@ -72,7 +72,7 @@ module CompileAST
         unless receiver
           # Sometimes the AST is transformed to make implicit this explicit, but
           # not always it seems (e.g. a = 5 for field a)
-          flow_block.make_result This.new(new_var)
+          flow_block.make_result This.new(new_var, this_type)
           receiver = flow_block.result
         end
         flow_block.make_result GetField.new(new_var, entity, receiver)
@@ -231,7 +231,7 @@ module CompileAST
         else
           # Instance field or array.length
           unless block.result
-            block.make_result This.new(new_var)
+            block.make_result This.new(new_var, this_type)
           end
           block.make_result GetField.new(new_var, entity, block.result)
         end
@@ -275,7 +275,7 @@ module CompileAST
     # evaluating the RHS
     left_block = compile flow_block, left
     lresult = left_block.result
-    lvalue = left_block.instructions.find{|ins| ins.target == lresult}
+    lvalue = left_block.instructions.find{|ins| ins == lresult}
     left_block.instructions.delete lvalue
     left_block.continuation = nil
 
@@ -298,14 +298,42 @@ module CompileAST
     end
   end
 
-  # @param left [Fixnum]
+  # @param left [Instruction]
   # @param operatior [Joos::AST]
-  # @param right [Fixnum]
+  # @param right [Instruction]
   def compile_infix flow_block, left, operator, right
-    op = INFIX_OPERATOR_TYPES[operator.nodes[0].to_sym]
+    op_sym = operator.nodes[0].to_sym
+    if op_sym == :Plus and left.target_type.string_class? || right.target_type.string_class?
+      # String concatenation
+      block = compile_to_string flow_block, left
+      left_string = block.result
+      block = compile_to_string flow_block, right
+      right_string = block.result
+
+      concat_method = left_string.target_type.all_methods.find {|m| m.name == 'concat'}
+      return block.make_result CallMethod.new(new_var, concat_method, left_string, right_string)
+    end
+
+    op = INFIX_OPERATOR_TYPES[op_sym]
     raise "Match failed - #{operator}" unless op
 
     flow_block.make_result op.new(new_var, left, right)
+  end
+
+  # Call toString() on an existing SSA value
+  def compile_to_string flow_block, instruction
+    type = instruction.target_type
+    if type.basic_type?
+      raise "Not implemented - string conversion for basic types"
+    elsif type.string_class?
+      # Do nothing for java.lang.string
+      flow_block.make_result instruction
+    else
+      # Call toString() on reference types
+      method = type.all_methods.find {|m| m.name == 'toString' }
+      raise "toString() not found" unless method
+      flow_block.make_result CallMethod.new(new_var, method, instruction)
+    end
   end
 
   # Compile a list of arguments into a single FlowBlock, and return it with the

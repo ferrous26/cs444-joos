@@ -56,7 +56,7 @@ def ssa_test name
     compiler = test_compiler name
     compiler.compile_to 4
     main = compiler.classes[0].methods[0]
-    seg = Joos::SSA::Segment.from_method main
+    seg = main.segment
 
     [main, seg]
 end

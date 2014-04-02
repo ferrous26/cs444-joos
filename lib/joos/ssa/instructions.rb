@@ -21,7 +21,7 @@ class Instruction
   attr_reader :target_type
 
   # SSA variable arguments to the instruction
-  # @return [Array<Fixnum>]
+  # @return [Array<Instruction>]
   attr_reader :arguments
 
   def initialize target, *arguments
@@ -36,7 +36,7 @@ class Instruction
     ret << "[#{entity}]" if respond_to? :entity
     ret << "[#{token.type.type_inspect} #{token.value}]" if respond_to? :token
     ret << "  "
-    ret << arguments.join(', ')
+    ret << arguments.map(&:target).join(', ')
   end
 end
 
@@ -67,6 +67,12 @@ module Binary
 
   def right
     arguments[1]
+  end
+end
+
+module NumericOp
+  def target_type
+
   end
 end
 
@@ -115,6 +121,10 @@ INFIX_OPERATOR_TYPES = {
 
 # Get the receiver
 class This < Instruction
+  def initialize target, type
+    super target
+    @target_type = type
+  end
 end
 
 # Load a literal into an SSA variable
@@ -191,7 +201,7 @@ end
 
 
 module HasReceiver
-  # @return [Fixnum]
+  # @return [Instruction]
   attr_reader :receiver
 
   # @return [Joos::Entity::Class, Joos::Entity::Interface]
@@ -249,6 +259,10 @@ class GetIndex < Instruction
 
   def initialize target, receiver, index
     super target, receiver, index
+  end
+
+  def target_type
+    receiver.target_type.type
   end
 end
 
@@ -317,7 +331,7 @@ class CallMethod < Instruction
   include HasReceiver
   include ParamaterizedByEntity
 
-  # @return [Fixnum]
+  # @return [Instruction]
   def receiver
     arguments[0]
   end
@@ -326,6 +340,10 @@ class CallMethod < Instruction
     super target, receiver, *args
     @entity = method
     assert_entity_type Joos::Entity::Method
+  end
+
+  def type
+    entity.type
   end
 end
 
