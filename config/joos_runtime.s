@@ -279,7 +279,7 @@ array_instanceof:
 	add     edi, 4             ; move ptr down to inner type ptr
 	mov     edi, [edi]         ; load the ptr value
 	cmp     edi, ref#
-	jge     .recursive_case    ;
+	jge     .recursive_case    ; fuuuuu
 
 	; since it is a primitive type, we must check against given type
 	cmp     edi, eax
@@ -288,7 +288,7 @@ array_instanceof:
 	mov     eax, 1
 	ret
 .recursive_case:
-	mov     ebx, edi           ; should be inner type vtable ptr
+	add     ebx, 4             ; chop off the head of the arry ptr
 	call __instanceof
 	ret
 .different:
