@@ -35,21 +35,21 @@ class Joos::Array
     def static?
       false
     end
-    
+
     def public?
       true
     end
-    
+
     def lvalue?
       true
     end
-    
+
     def label
       'array?length'
     end
-    
+
     def field_offset
-      12
+      8
     end
   end
 
