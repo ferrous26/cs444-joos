@@ -53,9 +53,7 @@ __modulo:
 global __instanceof
 __instanceof:
 	cmp     ebx, 0             ; if (ebx == null) return false
-	jne     .prolog            ; else begin table lookup
-	mov     eax, 0
-	ret
+	je      .different         ; null is by definition not any type
 .prolog:
 	mov     ebx, [ebx]         ; load obj.vtable ptr into ebx
 	mov     ebx, [ebx]         ; load obj.atable ptr into ebx
@@ -87,8 +85,9 @@ __downcast_check:
 	cmp     ebx, 0          ; if (ebx == null) return true
 	je      .ok             ; null cast is always a success
 	call __instanceof
-	cmp     eax, 1          ; else return (ebx instanceof eax)
-	jne     .bad_cast
+	cmp     eax, 0          ; if (!instanceof) then we need to exit
+	je      .bad_cast
+	ret                     ; else return true
 .ok:
 	mov     eax, 1
 	ret
@@ -107,6 +106,16 @@ __allocate:
 	; do I need to zero out the object?
 	; call constructor
 	ret
+
+
+;; Constants for array ancestor numbers (use these instead of magic numbers)
+%define ref#           0x10 ; the first ancestor number for reference types
+%define int_array#     0xf
+%define short_array#   0xe
+%define byte_array#    0xd
+%define char_array#    0xc
+%define boolean_array# 0xb
+%define array#         0x9
 
 ;; allocate space for an array, and zero the entire thing
 ;; the caller of this function will need to initialize the first
@@ -148,7 +157,7 @@ global array?length
 array?length:
 	cmp     eax, 0
 	je      .null_array
-	add     eax, 8
+	add     eax, 8        ; offset into object where length is stored
 	mov     eax, [eax]
 	ret
 .null_array:
@@ -202,7 +211,7 @@ array_set:
 	mov     edi, [edi]      ; load inner tag pointer
 
 	; if inner tag belongs to a primitive type, we skip __instanceof check
-	cmp     edi, 0x10
+	cmp     edi, ref#
 	jl      .instanceof_epilog
 
 	; else, we need to get the inner type's ancestor number
