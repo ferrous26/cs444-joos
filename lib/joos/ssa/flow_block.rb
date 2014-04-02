@@ -41,7 +41,7 @@ class FlowBlock
       raise "FlowBlock already ends with jump" 
     end
     @continuation = nil
-    @continuation = Just.new instruction.target if instruction
+    @continuation = Just.new instruction if instruction
 
     self << instruction
   end
@@ -103,7 +103,8 @@ class Return < Continuation
   end
 
   def to_s
-    "#{super} #{value}"
+    val = value ? value.target : 'nil'
+    "#{super} #{val}"
   end
 end
 
@@ -119,7 +120,8 @@ class Just < Continuation
   end
 
   def to_s
-    "#{super} #{value||'nil'.bold_red}"
+    val = value ? value.target : 'nil'.bold_red
+    "#{super} #{val}"
   end
 end
 

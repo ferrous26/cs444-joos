@@ -10,6 +10,14 @@ module Joos::SSA
 class Segment
   include CompileAST
 
+  # Type of `This`.
+  # @return [Joos::Entity::Class]
+  attr_accessor :this_type
+
+  # Method whose body is the receiver Segment, if any.
+  # @return [Joos::Entity::Method, nil]
+  attr_accessor :method
+
   # Entry point of the segment
   # @return [FlowBlock]
   attr_accessor :start_block
@@ -30,6 +38,8 @@ class Segment
   
 
   def initialize
+    @method = nil
+    @this_type = nil
     @flow_blocks = []
     @first_variable = 0
     @next_variable = 0
@@ -37,9 +47,10 @@ class Segment
 
   # Create a segment from a method
   # @return [Segment]
-  def self.from_method method
+  def self.from_method method, this_type
     new.tap do |ret|
-      # TODO: add stuff for formal params, etc.
+      ret.method = method
+      ret.this_type = this_type
       ret.start_block = FlowBlock.new '.enter'
       ret.compile ret.start_block, method.body
       ret.flow_blocks = ret.start_block.dominates.reverse
@@ -48,9 +59,9 @@ class Segment
 
   # Create a segment that initializes an array of fields
   # @param fields [Array<Joos::Entity::Field>]
-  # @param label [String]
-  def self.from_fields fields
+  def self.from_fields fields, this_type
     new.tap do|ret|
+      ret.this_type = this_type
       ret.start_block = FlowBlock.new '.enter'
       fields.reduce ret.start_block do |block, field|
         # Compile the initializer
@@ -60,7 +71,7 @@ class Segment
                   ret.compile_default_initializer block, field.type
                 end
         # Add an instruction to actually set the field
-        receiver = This.new ret.new_var
+        receiver = This.new ret.new_var, this_type
         block << receiver
         block << SetField.new(field, receiver.target, block.result)
       end

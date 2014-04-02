@@ -103,6 +103,10 @@ class Joos::BasicType
     false
   end
 
+  def string_class?
+    false
+  end
+
   # @!endgroup
 
 

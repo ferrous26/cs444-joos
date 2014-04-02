@@ -235,7 +235,7 @@ class Joos::Entity::Method < Joos::Entity
   # SSA code segment for the method's body
   # @return [Joos::SSA::Segment]
   def segment
-    @seg ||= Joos::SSA::Segment.from_method self
+    @seg ||= Joos::SSA::Segment.from_method self, @unit
   end
 
   # @!group Inspect
