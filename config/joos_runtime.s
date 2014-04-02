@@ -211,12 +211,13 @@ array_set:
 	mov     edi, [edi]      ; load inner tag pointer
 
 	; if inner tag belongs to a primitive type, we skip __instanceof check
+	; because the check will have been statically done during type checking
 	cmp     edi, ref#
 	jl      .instanceof_epilog
 
-	; else, we need to get the inner type's ancestor number
+        ; else, we need to get the inner type's ancestor number
 	mov     edi, [edi]      ; load atable pointer
-	mov     edi, [edi]      ; load first atable entry
+	mov     eax, [edi]      ; load atable[0] into expected register
 	mov     ebx, ecx        ; place object in expected register
 	call __instanceof
 	cmp     eax, 0          ; if (instanceof == false)
