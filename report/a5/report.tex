@@ -14,6 +14,34 @@ the Joos 1W language implemented by our compiler to target the
 
 We did some stuff\ldots
 
+Ported runtime to OS X. Have both versions; choose the correct one at
+compile time.
+
+
+\section{Testing}
+
+Augment the test harness to compile stuff
+
+Interestingly, tests that run extremely slowly are hidden by all the
+tests which run quickly.
+
+Augment the compiler so that output directory was configurable
+
+Use our own exception routine in teh runtime so that we can print out
+the excption type.
+
+Add new tests to the marmoset suite to test edge cases in our
+implementation.
+
+Also added tests that exercise more components than the other tests.
+
+In some cases, where test programs would not provide precise feedback,
+we wrote unit tests.
+
+In order to test the runtime, we create mock objects in assembly and
+fed them to the various runtime functions to test that they worked
+correctly.
+
 \end{document}
 
 
