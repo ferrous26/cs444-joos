@@ -149,6 +149,15 @@ class Joos::CodeGenerator
     end
   end
 
+  # Compile and render a {SSA::Segment} to machine code
+  # @param segment [Joos::SSA::Segment]
+  # @return [String]
+  def render_segment segment
+    # TODO stub
+    ''
+  end
+
+
   # Load all the templates
   [
     'joos_array',
@@ -171,7 +180,6 @@ class Joos::CodeGenerator
     ERB.new(template, nil, '>-').def_method(self, "render_#{name}")
   end
 
-
   private
 
   def literal_string_hash
@@ -192,14 +200,8 @@ class Joos::CodeGenerator
     ]
   end
 
-  def field_initializer field
-    'init_' + field.label
-  end
-
-  def static_field_initializers
-    @unit.fields.select(&:static?).select(&:initializer).map do |field|
-      field_initializer field
-    end
+  def fields_initializer
+    'init_fields' + @unit.label
   end
 
   def unit_initializer unit

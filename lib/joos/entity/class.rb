@@ -523,6 +523,10 @@ class Joos::Entity::Class < Joos::Entity
     fields.reject(&:static?)
   end
 
+  def static_fields
+    fields.select(&:static?)
+  end
+
   ##
   # Byte offset from object base that the receiving classes fields begin
   #
@@ -548,6 +552,16 @@ class Joos::Entity::Class < Joos::Entity
 
   def all_instance_methods
     all_methods.reject(&:static?)
+  end
+
+  # SSA segment that initializes static fields
+  def static_initializer_segment
+    @static_seg ||= Joos::SSA::Segment.from_static_fields static_fields
+  end
+
+  # SSA segment that initializes instance fields
+  def instance_initializer_segment
+    @field_seg ||= Joos::SSA::Segment.from_fields instance_fields
   end
 
   # @!endgroup

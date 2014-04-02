@@ -1,7 +1,4 @@
 ;; field initializers
-<% @unit.fields.select(&:initializer).each do |field| %>
-global <%= field_initializer field %>
-<%= field_initializer field %>:
-        mov     eax, 0        ;; TODO: actually code...
-        ret
-<% end %>
+<%= fields_initializer %>:
+    <%= render_segment @unit.instance_initializer_segment %>
+    ret

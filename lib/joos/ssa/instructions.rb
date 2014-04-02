@@ -123,10 +123,23 @@ class Const < Instruction
   # @return [Joos::Token]
   attr_reader :token
 
-  def initialize target, literal
+  # Ruby value of the literal
+  attr_reader :value
+
+  # Token this literal comes from, if any
+  # @return [Joos::Token, nil]
+  attr_accessor :token
+
+  def initialize target, type, value
     super target
-    @target_type = literal.type
-    @token = literal
+    @target_type = type
+    @value = value
+  end
+
+  def self.from_token target, token
+    new(target, token.type, token.value).tap do |ret|
+      ret.token = token
+    end
   end
 end
 
@@ -158,7 +171,7 @@ class Get < Instruction
     super target
     @entity = variable
     assert_entity_type Joos::Entity::Field, Joos::Entity::LocalVariable,
-      Joos::Entity::FormalParameter
+      Joos::Entity::FormalParameter, Joos::Array::LengthField
   end
 end
 
@@ -198,7 +211,7 @@ class GetField < Instruction
   def initialize target, field, receiver
     super target, receiver
     @entity = field
-    assert_entity_type Joos::Entity::Field
+    assert_entity_type Joos::Entity::Field, Joos::Array::LengthField
   end
 
   def target_type

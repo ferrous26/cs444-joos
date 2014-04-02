@@ -1,7 +1,5 @@
 ;; aggregate initializer for all static fields
 global <%= unit_initializer @unit %>
 <%= unit_initializer @unit %>:
-<% static_field_initializers.each do |init| %>
-        call <%= init -%>
-<% end %>
-        ret
+    <%= render_segment @unit.static_initializer_segment %>
+    ret

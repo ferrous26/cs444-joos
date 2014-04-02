@@ -22,16 +22,38 @@ class Joos::Array
     self.type == other.type if other.is_a? Joos::Array
   end
 
-  # @todo make this less of a hack
-  FIELD = Object.new
-  FIELD.define_singleton_method(:name) { Joos::Token.make :Identifier, 'length' }
-  FIELD.define_singleton_method(:type) { Joos::BasicType.new :Int }
-  FIELD.define_singleton_method(:static?) { false }
-  FIELD.define_singleton_method(:public?) { true  }
-  FIELD.define_singleton_method(:lvalue?) { true  }
-  FIELD.define_singleton_method(:label)   { 'array?length' }
-  FIELD.define_singleton_method(:field_offset) { 12 }
+  # @todo make this even less of a hack
+  class LengthField
+    def name
+      Joos::Token.make :Identifier, 'length'
+    end
 
+    def type
+      Joos::BasicType.new :Int
+    end
+
+    def static?
+      false
+    end
+    
+    def public?
+      true
+    end
+    
+    def lvalue?
+      true
+    end
+    
+    def label
+      'array?length'
+    end
+    
+    def field_offset
+      12
+    end
+  end
+
+  FIELD = LengthField.new
 
   def all_fields
     [FIELD]
