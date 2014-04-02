@@ -252,8 +252,70 @@ array_set:
 	mov     eax, array_store_exception
 	call __internal_exception
 
-;; TODO:
+
 ;; array instanceof check
+;;
+;; special case of __instanceof for handling array checks
+;;
+;; pre:  concrete data in ebx, inner type number in eax, takes edi & ebx
+;; post: boolean result value will be left in eax
+global array_instanceof
+array_instanceof:
+	cmp     ebx, 0             ; if (ebx == null) return false
+	je     .different          ; null is by definition not any type
+
+        ; load the type number of the concrete object
+	mov     edi, [ebx]         ; load obj.vtable ptr into edi
+	mov     edi, [edi]         ; load obj.atable ptr into edi
+	mov     edi, [edi]         ; load obj.atable[0] into edi
+
+	; check if the concrete type is an array
+	cmp     edi, array#
+	jne     .different
+
+        ; check if the inner type of the array is a primitive
+	mov     edi, ebx           ; reload concrete obj ptr
+	add     edi, 4             ; move ptr down to inner type ptr
+	mov     edi, [edi]         ; load the ptr value
+	cmp     edi, ref#
+	jge     .recursive_case    ;
+
+	; since it is a primitive type, we must check against given type
+	cmp     edi, eax
+	jne     .different
+	; else, inner type is a match, so instanceof returns true
+	mov     eax, 1
+	ret
+.recursive_case:
+	mov     ebx, edi           ; should be inner type vtable ptr
+	call __instanceof
+	ret
+.different:
+	mov     eax, 0
+	ret
+
+;; array downcast check
+;;
+;; special case of downcasting check for handling array casting
+;;
+;; pre:  concrete data in ebx, inner type number in eax, takes over ebx & edi
+;; post: boolean result value will be left in eax
+global array_downcast_check
+array_downcast_check:
+	cmp     ebx, 0          ; if (ebx == null) return true
+	je      .ok             ; null cast is always a success
+	call array_instanceof
+	; if instanceof is false, it is an illegal cast and we need to exit
+	cmp     eax, 0          ; if (!instanceof)
+	je      .bad_cast
+	ret                     ; else return true
+.ok:
+	mov     eax, 1
+	ret
+.bad_cast:
+	mov     eax, class_cast_exception
+	call __internal_exception
+
 
 
 ;; print out an exception message and then exit
