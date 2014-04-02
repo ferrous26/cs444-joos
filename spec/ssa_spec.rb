@@ -84,8 +84,12 @@ describe Joos::SSA::Segment do
   end
 
   it 'compiles string concatenations' do
-    pending
     main, seg = ssa_test 'fixture/string_cats'
-    puts seg.inspect
+    # TODO: string conversion for basic types
+    expect( seg.flow_blocks.length ).to be == 1
+    expect( seg.instructions.to_a.length ).to be == 13;
+    expect(
+      seg.instructions.select{|ins| ins.is_a? Joos::SSA::Add}.length
+    ).to be == 0
   end
 end

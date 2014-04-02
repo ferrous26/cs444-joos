@@ -12,6 +12,9 @@ class Joos::Entity::Constructor < Joos::Entity::Method
   # @return [Joos::Entity::Constructor]
   attr_reader :superconstructor
 
+  # @return [Joos::Entity::Class]
+  attr_reader :unit
+
   ##
   # Exception raised when the super class of a class does not contain a default
   # constructor. The default constructor is required for the implicity super

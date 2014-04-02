@@ -303,12 +303,14 @@ module CompileAST
   # @param right [Instruction]
   def compile_infix flow_block, left, operator, right
     op_sym = operator.nodes[0].to_sym
+
     if op_sym == :Plus and left.target_type.string_class? || right.target_type.string_class?
       # String concatenation
       block = compile_to_string flow_block, left
       left_string = block.result
-      block = compile_to_string flow_block, right
+      block = compile_to_string block, right
       right_string = block.result
+
 
       concat_method = left_string.target_type.all_methods.find {|m| m.name == 'concat'}
       return block.make_result CallMethod.new(new_var, concat_method, left_string, right_string)
@@ -327,7 +329,8 @@ module CompileAST
       raise "Not implemented - string conversion for basic types"
     elsif type.string_class?
       # Do nothing for java.lang.string
-      flow_block.make_result instruction
+      flow_block.continuation = Just.new(instruction)
+      flow_block
     else
       # Call toString() on reference types
       method = type.all_methods.find {|m| m.name == 'toString' }

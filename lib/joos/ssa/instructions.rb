@@ -33,10 +33,14 @@ class Instruction
     ret = ""
     ret << "#{target} = " if target
     ret << self.class.name.split(/::/).last.bold_green
-    ret << "[#{entity}]" if respond_to? :entity
-    ret << "[#{token.type.type_inspect} #{token.value}]" if respond_to? :token
-    ret << "  "
+    ret << "[#{param_to_s}] " unless param_to_s.empty?
     ret << arguments.map(&:target).join(', ')
+  end
+
+  # Debug summary of the non-SSA parameter of an instruction, if applicable
+  # @return [String]
+  def param_to_s
+    ""
   end
 end
 
@@ -49,17 +53,10 @@ module Unary
   end
 end
 
-class UnOp  < Instruction; include Unary end
-
-class Not   < UnOp; end
-class Neg   < UnOp; end  # Unary minus
-
-
-
 # Simple binary operations
 #
 # These do not include short-circuiting && and ||, since these are technically
-# branch operations and therefore must be handled at the 
+# branch operations and therefore must be handled at the  FlowBlock level
 module Binary
   def left
     arguments[0]
@@ -70,35 +67,60 @@ module Binary
   end
 end
 
+# Operators on numbers
 module NumericOp
   def target_type
-
+    @target_type ||= Joos::BasicType.new(:Int)
   end
 end
 
-class BinOp   < Instruction; include Binary end
+# Operators that return a Boolean
+module BooleanOp
+  def target_type
+    @target_type ||= Joos::BasicType.new(:Boolean)
+  end
+end
 
-class Add     < BinOp; end
-class Sub     < BinOp; end
-class Mul     < BinOp; end
-class Div     < BinOp; end
-class Mod     < BinOp; end
+class BinOp < Instruction
+  include Binary
+end
 
-class BinAnd  < BinOp; end
-class BinOr   < BinOp; end
+class Comparison < BinOp
+  include BooleanOp
+end
 
-class Equal         < BinOp; end
-class NotEqual      < BinOp; end
-class GreaterThan   < BinOp; end
-class LessThan      < BinOp; end
-class LessEqual     < BinOp; end
-class GreaterEqual  < BinOp; end
+class ArithmeticOp < BinOp
+  include NumericOp
+end
+
+class Add     < ArithmeticOp; end
+class Sub     < ArithmeticOp; end
+class Mul     < ArithmeticOp; end
+class Div     < ArithmeticOp; end
+class Mod     < ArithmeticOp; end
+
+class Neg     < Instruction; include Unary, NumericOp end  # Unary minus
+class Not     < Instruction; include Unary, BooleanOp end
+
+class BinAnd  < BinOp; include BooleanOp end
+class BinOr   < BinOp; include BooleanOp end
+
+class Equal         < Comparison; end
+class NotEqual      < Comparison; end
+class GreaterThan   < Comparison; end
+class LessThan      < Comparison; end
+class LessEqual     < Comparison; end
+class GreaterEqual  < Comparison; end
 
 # Super-special merge (phi) instruction used for && and ||:
 # #left is the result of the first entry branch to the current block,
 # #right is the result of the second entry branch to the current block.
 # #target 'chooses' a value based on which branch was followed.
-class Merge     < BinOp; end
+class Merge < BinOp
+  def target_type
+    left.target_type
+  end
+end
 
 # Map from infix ops in the grammar to instruction types.
 # Does not include instanceof or short-circuiting, since these are special.
@@ -123,6 +145,7 @@ INFIX_OPERATOR_TYPES = {
 class This < Instruction
   def initialize target, type
     super target
+    raise "This instruction - no type specified" unless type
     @target_type = type
   end
 end
@@ -142,6 +165,7 @@ class Const < Instruction
 
   def initialize target, type, value
     super target
+    raise "Const instruction - no type specified" unless type
     @target_type = type
     @value = value
   end
@@ -150,6 +174,17 @@ class Const < Instruction
     new(target, token.type, token.value).tap do |ret|
       ret.token = token
     end
+  end
+
+  def param_to_s
+    type_s = target_type.type_inspect
+    val_s = if target_type.string_class?
+              ('"' + value + '"').magenta
+            else
+              value.to_s.magenta
+            end
+
+    "#{type_s} #{val_s}"
   end
 end
 
@@ -167,18 +202,19 @@ module ParamaterizedByEntity
         types.map(&:name).join(', ')
     end
   end
+
+  def param_to_s
+    (entity || 'nil'.bold_red).to_s
+  end
 end
 
 # Get a local variable, param, or static field
 class Get < Instruction
   include ParamaterizedByEntity
 
-  def target_type
-    @entity.type
-  end
-
   def initialize target, variable
     super target
+    @target_type = variable.type
     @entity = variable
     assert_entity_type Joos::Entity::Field, Joos::Entity::LocalVariable,
       Joos::Entity::FormalParameter, Joos::Array::LengthField
@@ -221,11 +257,8 @@ class GetField < Instruction
   def initialize target, field, receiver
     super target, receiver
     @entity = field
+    @target_type = field.type
     assert_entity_type Joos::Entity::Field, Joos::Array::LengthField
-  end
-
-  def target_type
-    @entity.type
   end
 end
 
@@ -236,10 +269,7 @@ class SetField < Instruction
   include ParamaterizedByEntity
 
   alias_method :receiver, :left
-
-  def value
-    arguments[2]
-  end
+  alias_method :value, :right
 
   def initialize field, receiver, value
     # SetField does not have a target
@@ -259,10 +289,7 @@ class GetIndex < Instruction
 
   def initialize target, receiver, index
     super target, receiver, index
-  end
-
-  def target_type
-    receiver.target_type.type
+    @target_type = receiver.target_type.type
   end
 end
 
@@ -294,6 +321,7 @@ class CallStatic < Instruction
   def initialize target, method, *args
     super target, *args
     @entity = method
+    @target_type = method.type
     assert_entity_type Joos::Entity::Method
   end
 end
@@ -305,11 +333,8 @@ class New < Instruction
   def initialize target, constructor, *args
     super target, *args
     @entity = constructor
+    @target_type = constructor.unit
     assert_entity_type Joos::Entity::Constructor
-  end
-
-  def target_type
-    entity.type
   end
 end
 
@@ -339,11 +364,8 @@ class CallMethod < Instruction
   def initialize target, method, receiver, *args
     super target, receiver, *args
     @entity = method
+    @target_type = method.type
     assert_entity_type Joos::Entity::Method
-  end
-
-  def type
-    entity.type
   end
 end
 
