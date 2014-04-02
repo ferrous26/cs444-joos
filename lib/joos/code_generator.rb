@@ -194,8 +194,13 @@ class Joos::CodeGenerator
     [
       '__debexit', '__malloc', '__exception',
       '__division', '__modulo',
+
       '__downcast_check', '__instanceof',
-      '__allocate', '__dispatch',
+      'array_instanceof', 'array_downcast_check',
+
+      '__dispatch',
+
+      '__allocate',
       'array__allocate', 'array?length', 'array_get', 'array_set'
     ]
   end
