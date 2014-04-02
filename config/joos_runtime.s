@@ -317,8 +317,6 @@ array_downcast_check:
 	mov     eax, class_cast_exception
 	call __internal_exception
 
-
-
 ;; print out an exception message and then exit
 ;;
 ;; pre:  pointer to exception string in eax
