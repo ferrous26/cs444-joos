@@ -56,7 +56,7 @@ end
 # Simple binary operations
 #
 # These do not include short-circuiting && and ||, since these are technically
-# branch operations and therefore must be handled at the  FlowBlock level
+# branch operations and therefore must be handled at the FlowBlock level.
 module Binary
   def left
     arguments[0]
@@ -377,6 +377,20 @@ class Cast < Instruction
     super target, operand
     @entity = type
     @target_type = type
+  end
+
+  def param_to_s
+    entity.type_inspect
+  end
+end
+
+class Instanceof < Instruction
+  include BooleanOp
+  include ParamaterizedByEntity
+
+  def initialize target, type, operand
+    super target, operand
+    @entity = type
   end
 
   def param_to_s

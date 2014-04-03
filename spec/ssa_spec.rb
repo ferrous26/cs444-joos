@@ -104,4 +104,11 @@ describe Joos::SSA::Segment do
     expect( seg.flow_blocks.length ).to be == 1
     expect( seg.instructions.to_a.length ).to be == 11
   end
+
+  it 'compiles instanceof' do
+    main, seg = ssa_test 'fixture/instanceof_test'
+    expect( seg.flow_blocks.length ).to be == 1
+    expect( seg.instructions.to_a.length ).to be == 2
+    expect( seg.find_var(1).target_type ).to be_boolean_type
+  end
 end

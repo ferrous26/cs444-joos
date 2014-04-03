@@ -48,7 +48,9 @@ module CompileAST
     @debug_depth = (@debug_depth || 0) + 1
 
     # Change this to a higher value to look further up the AST
-    puts node.inspect if @debug_depth == 2
+    if @debug_depth == 2
+      puts node.inspect
+    end
     raise e
   end
 
@@ -162,23 +164,22 @@ module CompileAST
       compile flow_block, node.nodes[0]
     elsif node.nodes.length == 3
       # Infix binary operators
-      
-      if node.Instanceof
+      op = node.nodes[1]
+      if op.Instanceof
         # The RHS of this is not a value
-        raise "Not implemented - instanceof"
-      elsif node.nodes[1].LazyAnd or node.nodes[1].LazyOr
+        return compile_instanceof compile(flow_block, node.left), node.right
+      elsif op.LazyAnd or op.LazyOr
         # These need special branching logic
         return compile_short_circuit flow_block, node
       end
 
-      block = compile flow_block, node.nodes[0]
+      block = compile flow_block, node.left
       left = block.result
-      block = compile block, node.nodes[2]
+      block = compile block, node.right
       right = block.result
 
-      compile_infix block, left, node.nodes[1], right
+      compile_infix block, left, op, right
     else
-      puts node.inspect
       raise "SubExpression has #{node.nodes.length} children"
     end
   end
@@ -214,6 +215,7 @@ module CompileAST
       end
       compile block, node.Selectors
     else
+      puts node.source
       raise "Match failed - #{node}"
     end
   end
@@ -411,6 +413,12 @@ module CompileAST
 
       block.make_result New.new(new_var, constructor, *args)
     end
+  end
+
+  def compile_instanceof flow_block, type_node
+    type = type_node.type
+
+    flow_block.make_result Instanceof.new(new_var, type, flow_block.result)
   end
 end
 
