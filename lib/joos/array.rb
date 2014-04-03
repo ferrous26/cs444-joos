@@ -68,17 +68,14 @@ class Joos::Array
   end
 
   def ancestors_hack
-    @root_package ||= if type.basic_type?
-                        type.token.scope.type_environment.root_package
-                      else
-                        type.type_environment.root_package
-                      end
+    find_root_package
+
     [
       ['java', 'lang', 'Object'],
       ['java', 'io',   'Serializable'],
       ['java', 'lang', 'Cloneable']
     ].map do |qid|
-      @root_package.find qid
+      root_package.find qid
     end.reverse
   end
 
@@ -139,6 +136,17 @@ class Joos::Array
     false
   end
 
+  # Get java.lang.Object
+  # @return [Joos::Entity::Class]
+  def get_top_class
+    find_root_package.get Joos::Entity::Class::BASE_CLASS
+  end
+
+  def get_string_class
+    find_root_package.get Joos::Entity::Class::STRING_CLASS
+  end
+
+
   def type_inspect
     '['.yellow << @type.type_inspect << ']'.yellow
   end
@@ -147,5 +155,16 @@ class Joos::Array
   # @!group Inspect
 
   alias_method :to_s, :type_inspect
+
+
+  private
+
+  def find_root_package
+    @root_package ||= if type.basic_type?
+                        type.token.scope.type_environment.root_package
+                      else
+                        type.type_environment.root_package
+                      end
+  end
 
 end

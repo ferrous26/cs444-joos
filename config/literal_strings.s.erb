@@ -1,4 +1,10 @@
 ;; Literal Strings
 <% @strings.each_pair do |str, symbol| %>
-<%= symbol %>: db '<%= str %>'
+<%= symbol %>:
+  dd vtable_@java.lang.String
+  dd vtable_array
+  dd char_array#
+  dd <%= str.length %>
+  dd <%= str.join(',') %>
+
 <% end %>

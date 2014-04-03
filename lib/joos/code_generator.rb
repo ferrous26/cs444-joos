@@ -174,19 +174,25 @@ class Joos::CodeGenerator
   end
 
   def default_symbols
-    [
-      '__debexit', '__malloc', '__exception', '__null_pointer_exception',
+    base =
+      [
+        '__debexit', '__malloc', '__exception', '__null_pointer_exception',
 
-      '__division', '__modulo',
+        '__division', '__modulo',
 
-      '__downcast_check', '__instanceof',
-      'array_instanceof', 'array_downcast_check',
+        '__downcast_check', '__instanceof',
+        'array_instanceof', 'array_downcast_check',
 
-      '__dispatch',
+        '__dispatch',
 
-      '__allocate',
-      'array__allocate', 'array?length', 'array_get', 'array_set'
-    ]
+        '__allocate',
+        'array__allocate', 'array?length', 'array_get', 'array_set'
+      ]
+
+    base << vtable(@unit.get_string_class) unless @unit.string_class?
+    base << 'vtable_array' unless @unit.array_type? # @todo not hardcode this
+
+    base
   end
 
   def fields_initializer
@@ -215,8 +221,12 @@ class Joos::CodeGenerator
     method.label
   end
 
+  def vtable unit
+    'vtable_' + unit.label
+  end
+
   def vtable_label
-    'vtable_' + @unit.label
+    vtable @unit
   end
 
   def vtable_methods
