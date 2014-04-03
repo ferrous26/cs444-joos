@@ -45,7 +45,6 @@ describe Joos::SSA::Segment do
     main, seg = ssa_test 'fixture/short_circuit'
     expect( seg.flow_blocks.length ).to be == 5
     expect( seg.instructions.to_a.length ).to be == 13
-    expect( seg.variable_count ).to be == 12
     expect(
       seg.instructions.select{|ins| ins.is_a? Joos::SSA::Merge}.length
     ).to be == 2
@@ -61,7 +60,6 @@ describe Joos::SSA::Segment do
     main, seg = ssa_test 'fixture/selectors'
     expect( seg.flow_blocks.length ).to be == 1
     expect( seg.instructions.to_a.length ).to be == 14
-    expect( seg.variable_count ).to be == 14
     expect( seg.start_block.continuation ).to be_a Joos::SSA::Return
   end
 
