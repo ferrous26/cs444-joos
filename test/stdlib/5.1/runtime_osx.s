@@ -8,6 +8,7 @@ __malloc:
 .prologue:
 	push    ebp
         mov     ebp, esp
+	push    ebx       ; backup
 
 	; dynamically align the stack
 	mov     ebx, esp
@@ -25,6 +26,7 @@ __malloc:
 	je      .OOM      ; assume OOM, might actually have been bad arg
 
 .epilogue:
+	pop     ebx       ; restore
 	pop     ebp
 	ret
 .OOM:
