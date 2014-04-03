@@ -133,7 +133,7 @@ class Joos::CodeGenerator
     # @return [Array<String>]
     def movement_instructions
       instructions = @moves.map { |name, register|
-        "        mov #{self.allocate name}, #{register}"
+        "        mov #{self.allocate name}, #{register}    ; backup #{name}"
       }
       @moves.clear
       instructions
