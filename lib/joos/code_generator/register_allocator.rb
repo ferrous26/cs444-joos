@@ -17,7 +17,7 @@ class Joos::CodeGenerator
       @moves     = [] # temp store for things that need to move around
       @registers = REGISTERS.dup
       @args      = {}
-      @stack     = []
+      @stack     = [nil] # starts off with backed up ebp
       @offset    = (args.size - 1) * 4 # offset from `[ebp]`
 
       args.each do |name|
