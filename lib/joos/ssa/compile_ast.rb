@@ -188,7 +188,7 @@ module CompileAST
     child = node.nodes
     case child.map(&:to_sym)
     when [:TermModifier, :Term]
-      raise "Not implemented - term modifier"
+      compile_term_modifier compile(flow_block, node.Term), child[0]
     when [:OpenParen, :Type, :CloseParen, :Term]
       compile_cast compile(flow_block, child[3]), child[1]
     when [:OpenParen, :ArrayType,  :CloseParen, :Term]
@@ -338,6 +338,18 @@ module CompileAST
       method = type.all_methods.find {|m| m.name == 'toString' }
       raise "toString() not found" unless method
       flow_block.make_result CallMethod.new(new_var, method, instruction)
+    end
+  end
+
+  # Compile ! and -
+  def compile_term_modifier flow_block, modifier
+    val = flow_block.result
+    if modifier.Minus
+      flow_block.make_result Neg.new(new_var, val)
+    elsif modifier.Not
+      flow_block.make_result Not.new(new_var, val)
+    else
+      raise "Match failed - #{modifier}"
     end
   end
 

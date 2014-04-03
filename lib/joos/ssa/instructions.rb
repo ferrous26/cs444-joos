@@ -33,8 +33,8 @@ class Instruction
     ret = ""
     ret << "#{target} = " if target
     ret << self.class.name.split(/::/).last.bold_green
-    ret << "[#{param_to_s}] " unless param_to_s.empty?
-    ret << arguments.map(&:target).join(', ')
+    ret << "[#{param_to_s}]" unless param_to_s.empty?
+    ret << ' ' << arguments.map(&:target).join(', ')
   end
 
   # Debug summary of the non-SSA parameter of an instruction, if applicable
@@ -179,9 +179,9 @@ class Const < Instruction
   def param_to_s
     type_s = target_type.type_inspect
     val_s = if target_type.string_class?
-              ('"' + value + '"').magenta
+              ('"' + value + '"').yellow
             else
-              value.to_s.magenta
+              value.to_s.yellow
             end
 
     "#{type_s} #{val_s}"
