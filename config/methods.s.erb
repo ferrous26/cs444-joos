@@ -2,7 +2,10 @@
 <% concrete_methods.each do |method| %>
 global <%= method.label %>
 <%= method.label %>:
-    <%= render_segment method.segment %>
-    ret
+.prologue:
+        push    ebp
+        mov     ebp, esp
+
+        <%= render_segment method.segment %>
 
 <% end %>

@@ -12,11 +12,6 @@ class Joos::CodeGenerator
     @allocator = RegisterAllocator.new
     @output_instructions = []
 
-    output '.prologue:'
-    output 'push ebp'
-    output 'mov  ebp, esp'
-    output
-
     segment.flow_blocks.each_with_index do |block, index|
       @current_block = block
       @next_block = segment.flow_blocks[index + 1]
@@ -38,7 +33,7 @@ class Joos::CodeGenerator
 
     output
     output '.epilogue:'
-    output 'add ebp, 0     ; TODO: offset'
+    output 'add esp, 0     ; TODO: offset'
     output 'pop ebp'
 
     @output_instructions

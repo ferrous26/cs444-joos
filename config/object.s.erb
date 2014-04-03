@@ -5,6 +5,15 @@
 %define true    dword 1
 %define null    dword 0
 
+%define ref#           0x10 ; the first ancestor number for reference types
+%define int_array#     0xf
+%define short_array#   0xe
+%define byte_array#    0xd
+%define char_array#    0xc
+%define boolean_array# 0xb
+%define array#         0x9
+
+
 section .text
 
 <%= render_field_initializers %>

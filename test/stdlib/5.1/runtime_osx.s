@@ -5,21 +5,32 @@ section .text
 ; Allocates eax bytes of memory. Pointer to allocated memory returned in eax.
 global __malloc
 __malloc:
-	push   ebp       ; setup the frame
-        mov    ebp, esp
+.prologue:
+	push    ebp
+        mov     ebp, esp
 
-	sub    esp, 12   ; align the stack...
-	push   eax       ; push allocation size onto stack
-	call   _malloc
-	add    esp, 16   ; pop the stack
+	; dynamically align the stack
+	mov     ebx, esp
+	and     ebx, 0xf
+	sub     esp, ebx
 
-	cmp    eax, 0    ; check if we got NULL back
-	jne    ok
-	mov    eax, 22   ; on error, exit with code 22
-	call __debexit
-ok:
-	pop ebp
+	sub     esp, 12   ; cough, ignore this additional padding
+	push    eax       ; push allocation size onto stack (4B)
+	call    _malloc   ; call the real malloc
+
+	add     esp, 16
+	add     esp, ebx  ; pop the stack
+
+	cmp     eax, 0    ; check if we got NULL back
+	je      .OOM      ; assume OOM, might actually have been bad arg
+
+.epilogue:
+	pop     ebp
 	ret
+.OOM:
+	mov     eax, 22   ; on error, exit with code 22
+	call __debexit
+
 
 ; Debugging exit: ends the process, returning the value of
 ; eax as the exit code.
