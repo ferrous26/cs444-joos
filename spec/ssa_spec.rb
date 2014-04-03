@@ -45,7 +45,6 @@ describe Joos::SSA::Segment do
     main, seg = ssa_test 'fixture/short_circuit'
     expect( seg.flow_blocks.length ).to be == 5
     expect( seg.instructions.to_a.length ).to be == 13
-    expect( seg.variable_count ).to be == 12
     expect(
       seg.instructions.select{|ins| ins.is_a? Joos::SSA::Merge}.length
     ).to be == 2
@@ -61,7 +60,6 @@ describe Joos::SSA::Segment do
     main, seg = ssa_test 'fixture/selectors'
     expect( seg.flow_blocks.length ).to be == 1
     expect( seg.instructions.to_a.length ).to be == 14
-    expect( seg.variable_count ).to be == 14
     expect( seg.start_block.continuation ).to be_a Joos::SSA::Return
   end
 
@@ -91,5 +89,26 @@ describe Joos::SSA::Segment do
     expect(
       seg.instructions.select{|ins| ins.is_a? Joos::SSA::Add}.length
     ).to be == 0
+  end
+
+  it 'compiles casts' do
+    main, seg = ssa_test 'fixture/casts'
+    expect( seg.flow_blocks.length ).to be == 1
+    expect( seg.instructions.to_a.length ).to be == 13
+    expect( seg.find_var(1).target_type.top_class?).to be true
+    expect( seg.find_var(3).target_type).to be == main.type_environment
+  end
+
+  it 'compiles unary operators' do
+    main, seg = ssa_test 'fixture/unaries'
+    expect( seg.flow_blocks.length ).to be == 1
+    expect( seg.instructions.to_a.length ).to be == 11
+  end
+
+  it 'compiles instanceof' do
+    main, seg = ssa_test 'fixture/instanceof_test'
+    expect( seg.flow_blocks.length ).to be == 1
+    expect( seg.instructions.to_a.length ).to be == 2
+    expect( seg.find_var(1).target_type ).to be_boolean_type
   end
 end

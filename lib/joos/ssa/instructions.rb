@@ -33,8 +33,8 @@ class Instruction
     ret = ""
     ret << "#{target} = " if target
     ret << self.class.name.split(/::/).last.bold_green
-    ret << "[#{param_to_s}] " unless param_to_s.empty?
-    ret << arguments.map(&:target).join(', ')
+    ret << "[#{param_to_s}]" unless param_to_s.empty?
+    ret << ' ' << arguments.map(&:target).join(', ')
   end
 
   # Debug summary of the non-SSA parameter of an instruction, if applicable
@@ -56,7 +56,7 @@ end
 # Simple binary operations
 #
 # These do not include short-circuiting && and ||, since these are technically
-# branch operations and therefore must be handled at the  FlowBlock level
+# branch operations and therefore must be handled at the FlowBlock level.
 module Binary
   def left
     arguments[0]
@@ -179,9 +179,9 @@ class Const < Instruction
   def param_to_s
     type_s = target_type.type_inspect
     val_s = if target_type.string_class?
-              ('"' + value + '"').magenta
+              ('"' + value + '"').yellow
             else
-              value.to_s.magenta
+              value.to_s.yellow
             end
 
     "#{type_s} #{val_s}"
@@ -333,7 +333,7 @@ class New < Instruction
   def initialize target, constructor, *args
     super target, *args
     @entity = constructor
-    @target_type = constructor.unit
+    @target_type = constructor.type_environment
     assert_entity_type Joos::Entity::Constructor
   end
 end
@@ -369,6 +369,33 @@ class CallMethod < Instruction
   end
 end
 
+class Cast < Instruction
+  include Unary
+  include ParamaterizedByEntity
 
+  def initialize target, type, operand
+    super target, operand
+    @entity = type
+    @target_type = type
+  end
+
+  def param_to_s
+    entity.type_inspect
+  end
+end
+
+class Instanceof < Instruction
+  include BooleanOp
+  include ParamaterizedByEntity
+
+  def initialize target, type, operand
+    super target, operand
+    @entity = type
+  end
+
+  def param_to_s
+    entity.type_inspect
+  end
+end
 
 end  # End Joos::SSA module

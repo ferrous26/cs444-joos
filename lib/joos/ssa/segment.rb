@@ -114,23 +114,6 @@ class Segment
   end
 
 
-  # Ending blocks of the segment.
-  #
-  # Method bodies will always have zero or more {Return} continuations.
-  # Field initializers will always have at most one {Just} continuation.
-  # Zero continuations imply a provably infinite loop.
-  #
-  # @return [Array<FlowBlock>]
-  def end_blocks
-    flow_blocks.select {|block| block.is_a?(Return) || block.is_a?(Just)}
-  end
-
-  # Number of SSA variables created in this segment
-  # @return [Fixnum]
-  def variable_count
-    next_variable - first_variable
-  end
-
   # Mint a new SSA variable
   # @return [Fixnum]
   def new_var
