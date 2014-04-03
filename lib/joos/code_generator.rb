@@ -36,10 +36,7 @@ class Joos::CodeGenerator
     #
     # @param label [String]
     def static_field_read label
-      <<-EOC
-        mov     eax, #{label}
-        mov     eax, [eax]
-      EOC
+      "        mov     eax, dword #{label}"
     end
 
     ##
@@ -48,10 +45,7 @@ class Joos::CodeGenerator
     # @param label [String]
     # @param value [String, Fixnum]
     def static_field_write label, value
-      <<-EOC
-        mov     ebx, #{label}
-        mov     [ebx], eax
-      EOC
+      "        mov     dword #{label}, eax"
     end
 
     ##
@@ -59,6 +53,7 @@ class Joos::CodeGenerator
     #
     # @param offset [String, Fixnum]
     def instance_field_read offset
+      # @todo generate with label comment
       <<-EOC
         cmp     ebx, 0
         je      __null_pointer_exception
@@ -72,6 +67,7 @@ class Joos::CodeGenerator
     #
     # @param offset [String, Fixnum]
     def instance_field_write offset
+      # @todo generate with label comment
       <<-EOC
         cmp     ebx, 0
         je      __null_pointer_exception
