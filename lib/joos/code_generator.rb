@@ -185,7 +185,6 @@ class Joos::CodeGenerator
 
         '__dispatch',
 
-        '__allocate',
         'array__allocate', 'array?length', 'array_get', 'array_set'
       ]
 

@@ -95,19 +95,6 @@ __downcast_check:
 	mov     eax, class_cast_exception
 	call __internal_exception
 
-;; object allocation
-;;
-;; pre:  size in eax, vtable ptr in ebx
-;; post: pointer to new object in eax
-global __allocate
-__allocate:
-	call __malloc
-	mov     [eax], ebx    ; put vtable pointer in place
-	; do I need to zero out the object?
-	; call constructor
-	ret
-
-
 ;; Constants for array ancestor numbers (use these instead of magic numbers)
 %define ref#           0x10 ; the first ancestor number for reference types
 %define int_array#     0xf
