@@ -175,9 +175,7 @@ class Joos::CodeGenerator
                   ecx: nil,
                   edx: nil,
                   esi: nil,
-                  edi: nil,
-                  ebp: nil,
-                  esp: nil
+                  edi: nil
                 }
 
     # Generate convenient accessors for named registers
