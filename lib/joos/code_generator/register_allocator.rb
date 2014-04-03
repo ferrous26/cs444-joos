@@ -36,7 +36,7 @@ class Joos::CodeGenerator
     # @param name [String]
     # @return [String] location where `name` will be stored
     def allocate name
-      @stack << name # @todo maybe not always do this?
+      @stack << name # @todo can we improve on this?
       find name
     end
     alias_method :alloc,  :allocate
@@ -85,10 +85,10 @@ class Joos::CodeGenerator
 
       elsif @args.key? name
         @args[name]
-        'ebp + ' + @args[name].to_s
+        "[ebp + #{@args[name].to_s}]"
 
       elsif @stack.include? name
-        'ebp - ' + ((@stack.index(name) + 1) * 4).to_s
+        "[ebp - #{((@stack.index(name) + 1) * 4)}]"
 
       end
     end
