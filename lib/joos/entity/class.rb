@@ -554,9 +554,13 @@ class Joos::Entity::Class < Joos::Entity
     all_methods.reject(&:static?)
   end
 
+  def static_methods
+    methods.select(&:static?)
+  end
+
   # SSA segment that initializes static fields
   def static_initializer_segment
-    @static_seg ||= Joos::SSA::Segment.from_static_fields static_fields
+    @static_seg ||= Joos::SSA::Segment.from_static_fields static_fields, self
   end
 
   # SSA segment that initializes instance fields

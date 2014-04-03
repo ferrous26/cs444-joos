@@ -10,9 +10,11 @@ module Joos::SSA
 class Segment
   include CompileAST
 
-  # Type of `This`.
-  # @return [Joos::Entity::Class]
-  attr_accessor :this_type
+  # Type environment we can use to get at java.lang.* builtins.
+  # This is also the type of the receiver if non-static.
+  # @return [Joos::Entity::CompilationUnit]
+  attr_accessor :type_environment
+  alias_method :this_type, :type_environment
 
   # Method whose body is the receiver Segment, if any.
   # @return [Joos::Entity::Method, nil]
@@ -42,6 +44,7 @@ class Segment
     @this_type = nil
     @flow_blocks = []
     @first_variable = 0
+    @first_variable = 0
     @next_variable = 0
   end
 
@@ -50,7 +53,7 @@ class Segment
   def self.from_method method, this_type
     new.tap do |ret|
       ret.method = method
-      ret.this_type = this_type
+      ret.type_environment = this_type
       ret.start_block = FlowBlock.new '.enter'
       ret.compile ret.start_block, method.body
       ret.flow_blocks = ret.start_block.dominates.reverse
@@ -61,7 +64,7 @@ class Segment
   # @param fields [Array<Joos::Entity::Field>]
   def self.from_fields fields, this_type
     new.tap do|ret|
-      ret.this_type = this_type
+      ret.type_environment = this_type
       ret.start_block = FlowBlock.new '.enter'
       fields.reduce ret.start_block do |block, field|
         # Compile the initializer
@@ -81,9 +84,11 @@ class Segment
 
   # Create a segment that initializes an array of static fields
   # @param fields [Array<Joos::Entity::Field>]
+  # @param type_environment [Joos::Entity::Class]
   # @param label [String]
-  def self.from_static_fields fields
+  def self.from_static_fields fields, type_environment
     new.tap do|ret|
+      ret.type_environment = type_environment
       ret.start_block = FlowBlock.new '.enter'
       fields.reduce ret.start_block do |block, field|
         # Compile the initializer

@@ -315,7 +315,6 @@ module CompileAST
       block = compile_to_string block, right
       right_string = block.result
 
-
       concat_method = left_string.target_type.all_methods.find {|m| m.name == 'concat'}
       return block.make_result CallMethod.new(new_var, concat_method, left_string, right_string)
     end
@@ -326,21 +325,31 @@ module CompileAST
     flow_block.make_result op.new(new_var, left, right)
   end
 
-  # Call toString() on an existing SSA value
+  # Call valueOf() to convert an SSA value to a string
   def compile_to_string flow_block, instruction
     type = instruction.target_type
-    if type.basic_type?
-      raise "Not implemented - string conversion for basic types"
-    elsif type.string_class?
-      # Do nothing for java.lang.string
-      flow_block.continuation = Just.new(instruction)
-      flow_block
-    else
-      # Call toString() on reference types
-      method = type.all_methods.find {|m| m.name == 'toString' }
-      raise "toString() not found" unless method
-      flow_block.make_result CallMethod.new(new_var, method, instruction)
+
+    # Return string literals as-is
+    if instruction.is_a? Const and type.string_class?
+      flow_block.continuation = Just.new instruction
+      return flow_block
     end
+
+    # Otherwise, call String.valueOf()
+    string_methods = type_environment.get_string_class.static_methods
+    converter = string_methods.find {|m| m.signature == ['valueOf', [type]]}
+    
+    # If no valueOf() exists, implicitly cast to Object
+    unless converter
+      object_type = type_environment.get_top_class
+      converter = string_methods.find {|m| m.signature == ['valueOf', [object_type]]}
+      raise "No string String.valueOf() for #{type}" unless converter
+      instruction = Cast.new(new_var, object_type, instruction)
+      flow_block << instruction
+    end
+
+    # Call valueOf()
+    flow_block.make_result CallStatic.new(new_var, converter, instruction)
   end
 
   # Compile ! and -
