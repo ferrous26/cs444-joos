@@ -2,18 +2,13 @@
 <% @unit.constructors.each do |constructor| %>
 global <%= constructor.label %>
 <%= constructor.label %>:
-  .prolog:
-        push    ebp
-        mov     ebp, esp
+.prologue:
+    push    ebp
+    mov     ebp, esp
 
     ; TODO: Call superclass constructor
     ; TODO: Call instance fields initializer (#fields_initializer), passing this
     ; Constructor body
-    <% #render_segment constructor.segment %>
-
-.epilog:
-        add     esp, 0 ; TODO: pop stack according to RA
-        pop     ebp
-        ret
+    <%= render_segment constructor.segment %>
 
 <% end %>
