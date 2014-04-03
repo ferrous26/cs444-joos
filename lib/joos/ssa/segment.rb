@@ -76,7 +76,7 @@ class Segment
         # Add an instruction to actually set the field
         receiver = This.new ret.new_var, this_type
         block << receiver
-        block << SetField.new(field, receiver.target, block.result)
+        block << SetField.new(field, receiver, block.result)
       end
       ret.flow_blocks = ret.start_block.dominates.reverse
     end
