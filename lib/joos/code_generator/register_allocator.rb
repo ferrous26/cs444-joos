@@ -36,7 +36,7 @@ class Joos::CodeGenerator
     # @param name [String]
     # @return [String] location where `name` will be stored
     def allocate name
-      @stack << name # @todo maybe not always do this?
+      @stack << name # @todo can we improve on this?
       find name
     end
     alias_method :alloc,  :allocate
@@ -85,10 +85,10 @@ class Joos::CodeGenerator
 
       elsif @args.key? name
         @args[name]
-        'ebp + ' + @args[name].to_s
+        "[ebp + #{@args[name]}]"
 
       elsif @stack.include? name
-        'ebp - ' + ((@stack.index(name) + 1) * 4).to_s
+        "[ebp - #{((@stack.index(name) + 1) * 4)}]"
 
       end
     end
@@ -104,6 +104,9 @@ class Joos::CodeGenerator
     end
 
     ##
+    # @note This method is destructive in the same way that
+    #       {#movement_instructions} is destructive.
+    #
     # To be called when setting up a method.
     #
     # Every register that is currently in use will be backed up to the
@@ -111,7 +114,10 @@ class Joos::CodeGenerator
     #
     # @return [Array<String>]
     def caller_save
-      # @todo Every register currently in use...or just `pushad`
+      @registers.each do |register, name|
+        backup register if name
+      end
+      movement_instructions
     end
 
     ##
@@ -127,7 +133,7 @@ class Joos::CodeGenerator
     # @return [Array<String>]
     def movement_instructions
       instructions = @moves.map { |name, register|
-        "        mov #{self.allocate name}, #{register}"
+        "        mov #{self.allocate name}, #{register}    ; backup #{name}"
       }
       @moves.clear
       instructions
@@ -140,6 +146,14 @@ class Joos::CodeGenerator
     # @return [Fixnum]
     def alignment_offset
       (@stack.size % 4) * 4
+    end
+
+    ##
+    # Instruction required to align the stack on 16B boundaries.
+    #
+    # @return [String]
+    def align_stack
+      "        sub esp, #{16 - alignment_offset}"
     end
 
 

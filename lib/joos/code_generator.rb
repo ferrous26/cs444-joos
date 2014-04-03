@@ -31,23 +31,52 @@ class Joos::CodeGenerator
   module I386
     extend self
 
+    ##
+    # Uses `eax` to load static field named `label` into `eax`
+    #
+    # @param label [String]
     def static_field_read label
-      "mov     eax, [#{offset}]"
+      <<-EOC
+        mov     eax, #{label}
+        mov     eax, [eax]
+      EOC
     end
 
+    ##
+    # Uses `ebx` to write static field named `label` from `eax`
+    #
+    # @param label [String]
+    # @param value [String, Fixnum]
     def static_field_write label, value
-      "mov     [#{label}], #{value}"
+      <<-EOC
+        mov     ebx, #{label}
+        mov     [ebx], eax
+      EOC
     end
 
+    ##
+    # Read field at `offset` from object pointed to by `ebx` into `eax`
+    #
+    # @param offset [String, Fixnum]
     def instance_field_read offset
-      # @todo null check
-      "mov     eax, [ebx + #{offset}]"
+      <<-EOC
+        cmp     ebx, 0
+        je      __null_pointer_exception
+        mov     eax, [ebx + #{offset}]
+      EOC
     end
 
-    # @param value [String]
-    def instance_field_write offset, value
-      # @todo null check
-      "mov     [ebx + #{offset}], #{value}"
+    ##
+    # Write field at `offset` to object pointed to by `ebx` using value
+    # from `eax`.
+    #
+    # @param offset [String, Fixnum]
+    def instance_field_write offset
+      <<-EOC
+        cmp     ebx, 0
+        je      __null_pointer_exception
+        mov     [ebx + #{offset}], eax
+      EOC
     end
   end
 
@@ -146,7 +175,8 @@ class Joos::CodeGenerator
 
   def default_symbols
     [
-      '__debexit', '__malloc', '__exception',
+      '__debexit', '__malloc', '__exception', '__null_pointer_exception',
+
       '__division', '__modulo',
 
       '__downcast_check', '__instanceof',
