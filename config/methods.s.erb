@@ -2,7 +2,15 @@
 <% concrete_methods.each do |method| %>
 global <%= method.label %>
 <%= method.label %>:
-    <%= render_segment method.segment %>
-    ret
+.prolog:
+        push    ebp
+        mov     ebp, esp
+
+        <%= render_segment method.segment %>
+
+.epilog:
+        add     esp, 0 ; TODO: pop stack according to RA
+        pop     ebp
+        ret
 
 <% end %>
