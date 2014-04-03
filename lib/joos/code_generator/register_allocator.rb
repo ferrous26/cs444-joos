@@ -85,7 +85,7 @@ class Joos::CodeGenerator
 
       elsif @args.key? name
         @args[name]
-        "[ebp + #{@args[name].to_s}]"
+        "[ebp + #{@args[name]}]"
 
       elsif @stack.include? name
         "[ebp - #{((@stack.index(name) + 1) * 4)}]"
