@@ -5,9 +5,9 @@ public class string_cats {
         String cats = "Chen, Orin, " +
             this.actually_a_tiger() +
             unrelated +
-            //4 +
+            4 +
             this +
-            //'s' +
+            's' +
             ""
             ;
     }

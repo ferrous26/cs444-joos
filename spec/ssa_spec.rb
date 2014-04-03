@@ -81,16 +81,6 @@ describe Joos::SSA::Segment do
     expect( seg.instructions.to_a.length ).to be == 1
   end
 
-  it 'compiles string concatenations' do
-    main, seg = ssa_test 'fixture/string_cats'
-    # TODO: string conversion for basic types
-    expect( seg.flow_blocks.length ).to be == 1
-    expect( seg.instructions.to_a.length ).to be == 13;
-    expect(
-      seg.instructions.select{|ins| ins.is_a? Joos::SSA::Add}.length
-    ).to be == 0
-  end
-
   it 'compiles casts' do
     main, seg = ssa_test 'fixture/casts'
     expect( seg.flow_blocks.length ).to be == 1
@@ -111,4 +101,14 @@ describe Joos::SSA::Segment do
     expect( seg.instructions.to_a.length ).to be == 2
     expect( seg.find_var(1).target_type ).to be_boolean_type
   end
+
+  it 'compiles string concatenations' do
+    main, seg = ssa_test 'fixture/string_cats'
+    expect( seg.flow_blocks.length ).to be == 1
+    expect( seg.instructions.to_a.length ).to be == 27;
+    expect(
+      seg.instructions.select{|ins| ins.is_a? Joos::SSA::Add}.length
+    ).to be == 0
+  end
+
 end
