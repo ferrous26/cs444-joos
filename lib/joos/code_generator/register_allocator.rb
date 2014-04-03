@@ -104,6 +104,9 @@ class Joos::CodeGenerator
     end
 
     ##
+    # @note This method is destructive in the same way that
+    #       {#movement_instructions} is destructive.
+    #
     # To be called when setting up a method.
     #
     # Every register that is currently in use will be backed up to the
@@ -111,7 +114,10 @@ class Joos::CodeGenerator
     #
     # @return [Array<String>]
     def caller_save
-      # @todo Every register currently in use...or just `pushad`
+      @registers.each do |register, name|
+        backup register if name
+      end
+      movement_instructions
     end
 
     ##
