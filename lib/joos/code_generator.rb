@@ -3,6 +3,7 @@ require 'erb'
 
 require 'joos/exceptions'
 require 'joos/utilities'
+require 'joos/code_generator/register_allocator'
 
 
 ##
@@ -16,54 +17,6 @@ class Joos::CodeGenerator
   class NoMainDetected < Joos::CompilerException
     def initialize unit
       super "#{unit.inspect} must have a public static int test() method", unit
-    end
-  end
-
-  ##
-  # @todo move this to its own file...
-  #
-  # Knows the names of values in registers and the current stack frame.
-  #
-  # The purpose of this class is to keep track of where variables/values
-  # with a given name currently are, and to make decisions on where to
-  # move variables/values for instructions.
-  #
-  class RegisterAllocator
-
-    def initialize
-      @registers = []
-      @stack     = []
-    end
-
-    ##
-    # Move variable with the given `name` into the given register
-    def move name, to: available_register
-    end
-
-    ##
-    # Find the first available register
-    #
-    # @return [String]
-    def available_register
-      REGISTER[0]
-    end
-
-
-    private
-
-    ##
-    # The assembly names of registers.
-    #
-    # @return [Array<String>]
-    REGISTER = []
-
-    # Generate convenient accessors for named registers
-    [
-      'eax', 'ebx', 'ecx', 'edx', 'esi', 'edi', 'ebp', 'esp'
-    ].each_with_index do |reg, index|
-      REGISTER[index] = reg
-      define_method(reg)       {       @registers[index]       }
-      define_method("#{reg}=") { |val| @registers[index] = val }
     end
   end
 
