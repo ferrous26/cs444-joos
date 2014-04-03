@@ -211,12 +211,13 @@ array_set:
 	mov     edi, [edi]      ; load inner tag pointer
 
 	; if inner tag belongs to a primitive type, we skip __instanceof check
+	; because the check will have been statically done during type checking
 	cmp     edi, ref#
 	jl      .instanceof_epilog
 
-	; else, we need to get the inner type's ancestor number
+        ; else, we need to get the inner type's ancestor number
 	mov     edi, [edi]      ; load atable pointer
-	mov     edi, [edi]      ; load first atable entry
+	mov     eax, [edi]      ; load atable[0] into expected register
 	mov     ebx, ecx        ; place object in expected register
 	call __instanceof
 	cmp     eax, 0          ; if (instanceof == false)
@@ -278,7 +279,7 @@ array_instanceof:
 	add     edi, 4             ; move ptr down to inner type ptr
 	mov     edi, [edi]         ; load the ptr value
 	cmp     edi, ref#
-	jge     .recursive_case    ;
+	jge     .recursive_case    ; fuuuuu
 
 	; since it is a primitive type, we must check against given type
 	cmp     edi, eax
@@ -287,7 +288,7 @@ array_instanceof:
 	mov     eax, 1
 	ret
 .recursive_case:
-	mov     ebx, edi           ; should be inner type vtable ptr
+	add     ebx, 4             ; chop off the head of the arry ptr
 	call __instanceof
 	ret
 .different:
@@ -315,8 +316,6 @@ array_downcast_check:
 .bad_cast:
 	mov     eax, class_cast_exception
 	call __internal_exception
-
-
 
 ;; print out an exception message and then exit
 ;;
