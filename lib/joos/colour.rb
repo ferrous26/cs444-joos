@@ -58,6 +58,10 @@ module Joos::Colour
     define_method(constant.to_s.downcase) { (value + to_s) << CLEAR }
   end
 
+  def decolour
+    to_s.gsub /\e\[.{0,4}m/, ''
+  end
+
 end
 
 ##

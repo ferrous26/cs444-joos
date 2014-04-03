@@ -77,6 +77,7 @@ class Segment
         receiver = This.new ret.new_var, this_type
         block << receiver
         block << SetField.new(field, receiver, block.result)
+        block.continuation = nil
       end
       ret.flow_blocks = ret.start_block.dominates.reverse
     end
@@ -99,6 +100,7 @@ class Segment
                 end
         # Add an instruction to actually set the field
         block << Set.new(field, block.result)
+        block.continuation = nil
       end
       ret.flow_blocks = ret.start_block.dominates.reverse
     end
@@ -108,12 +110,14 @@ class Segment
   # @return [FlowBlock]
   def compile_default_initializer flow_block, type
     const = if type.reference_type?
-      Const.new(new_var, type, nil)
-    elsif type.boolean_type?
-      Const.new(new_var, type, false)
-    else
-      Const.new(new_var, type, 0)
-    end
+              Const.new(new_var, type, 'null')
+            elsif type.boolean_type?
+              Const.new(new_var, type, false)
+            elsif type.basic_type?
+              Const.new(new_var, type, 0)
+            else
+              raise "Match failed - #{type}"
+            end
 
     flow_block.make_result const
   end
