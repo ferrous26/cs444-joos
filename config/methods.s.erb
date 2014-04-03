@@ -2,7 +2,7 @@
 <% concrete_methods.each do |method| %>
 global <%= method.label %>
 <%= method.label %>:
-        mov     eax, 123      ;; TODO: real code
-        ret
+    <%= render_segment method.segment %>
+    ret
 
 <% end %>

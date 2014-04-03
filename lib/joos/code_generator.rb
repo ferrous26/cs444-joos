@@ -4,6 +4,7 @@ require 'erb'
 require 'joos/exceptions'
 require 'joos/utilities'
 require 'joos/code_generator/register_allocator'
+require 'joos/code_generator/render_segment'
 
 
 ##
@@ -106,8 +107,8 @@ class Joos::CodeGenerator
   # @param segment [Joos::SSA::Segment]
   # @return [String]
   def render_segment segment
-    # TODO stub
-    ''
+    # Actual code is in code_generator/render_segment.rb
+    render_segment_x86(segment).join("\n    ")
   end
 
 
