@@ -2,6 +2,8 @@
 <% @strings.each_pair do |str, symbol| %>
 <%= symbol %>:
   dd vtable_@java.lang.String
+  dd <%= symbol %>_char_array
+<%= symbol %>_char_array:
   dd vtable_array
   dd char_array#
   dd <%= str.length %>

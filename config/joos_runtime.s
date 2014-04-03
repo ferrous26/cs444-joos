@@ -115,6 +115,7 @@ global array__allocate
 array__allocate:
 	cmp     eax, 0         ; array size cannot be <= 0
 	jle     .negative_array_size
+
 	mov     ebx, eax       ; backup original size
 	add     eax, 3         ; we need to reserve 3 dwords
 	shl     eax, 2         ; calculate actual array size
@@ -122,6 +123,7 @@ array__allocate:
 	call __malloc
 	mov     esi, eax       ; copy head of array obj
 	add     esi, edi       ; move to end of array obj
+
 .zeroing:
 	sub     esi, 4         ; move to prev entry
 	mov     [esi], dword 0 ; zero out the entry
@@ -129,6 +131,7 @@ array__allocate:
 	jne     .zeroing
 	mov     [eax + 8], ebx ; copy array length into field spot
 	ret
+
 .negative_array_size:
 	mov     eax, negative_array_size_exception
 	call __internal_exception
