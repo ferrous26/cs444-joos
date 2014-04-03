@@ -148,6 +148,14 @@ class Joos::CodeGenerator
       (@stack.size % 4) * 4
     end
 
+    ##
+    # Instruction required to align the stack on 16B boundaries.
+    #
+    # @return [String]
+    def align_stack
+      "        sub esp, #{16 - alignment_offset}"
+    end
+
 
     private
 
