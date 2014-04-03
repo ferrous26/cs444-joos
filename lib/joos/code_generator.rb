@@ -146,7 +146,8 @@ class Joos::CodeGenerator
 
   def default_symbols
     [
-      '__debexit', '__malloc', '__exception',
+      '__debexit', '__malloc', '__exception', '__null_pointer_exception',
+
       '__division', '__modulo',
 
       '__downcast_check', '__instanceof',

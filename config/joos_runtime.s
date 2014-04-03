@@ -325,6 +325,13 @@ __internal_exception:
 	call __debug_print
 	call __exception
 
+global __null_pointer_exception
+__null_pointer_exception:
+	mov     eax, null_pointer_exception
+	call __debug_print
+	call __exception
+
+
 section .data
 
 debug_message:                         db 'oops                           ', 10
