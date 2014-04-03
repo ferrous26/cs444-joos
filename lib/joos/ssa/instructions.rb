@@ -333,7 +333,7 @@ class New < Instruction
   def initialize target, constructor, *args
     super target, *args
     @entity = constructor
-    @target_type = constructor.unit
+    @target_type = constructor.type_environment
     assert_entity_type Joos::Entity::Constructor
   end
 end
@@ -369,6 +369,19 @@ class CallMethod < Instruction
   end
 end
 
+class Cast < Instruction
+  include Unary
+  include ParamaterizedByEntity
 
+  def initialize target, type, operand
+    super target, operand
+    @entity = type
+    @target_type = type
+  end
+
+  def param_to_s
+    entity.type_inspect
+  end
+end
 
 end  # End Joos::SSA module

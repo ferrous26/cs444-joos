@@ -90,4 +90,12 @@ describe Joos::SSA::Segment do
       seg.instructions.select{|ins| ins.is_a? Joos::SSA::Add}.length
     ).to be == 0
   end
+
+  it 'compiles casts' do
+    main, seg = ssa_test 'fixture/casts'
+    expect( seg.flow_blocks.length ).to be == 1
+    expect( seg.instructions.to_a.length ).to be == 13
+    expect( seg.find_var(1).target_type.top_class?).to be true
+    expect( seg.find_var(3).target_type).to be == main.type_environment
+  end
 end

@@ -245,7 +245,9 @@ module CompileAST
   # @param value_block [FlowBlock]
   # @param cast_type {Joos::AST]
   def compile_cast value_block, cast_type
-    raise "Not implemented - cast"
+    type = cast_type.type
+
+    value_block.make_result Cast.new(new_var, type, value_block.result)
   end
 
   # @param field [Joos::Entity::Field]
