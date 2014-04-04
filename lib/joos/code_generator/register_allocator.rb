@@ -135,9 +135,15 @@ class Joos::CodeGenerator
       end
     end
 
-    def swap old_name, new_name
-      # if old_name on the stack, no problem
-      # else back that ass up
+    ##
+    # Merge `left` into `right`, implicitly freeing the space for `left`
+    # and aliasing the name to the name of `right`.
+    #
+    # @param left  [String]
+    # @param right [String]
+    # @return [nil]
+    def unify name1, name2
+      # @todo herp derp
     end
 
     ##
@@ -176,16 +182,6 @@ class Joos::CodeGenerator
         "[ebp - #{((@stack.index(name) + 1) * 4)}]"
 
       end
-    end
-
-    ##
-    # Merge `name2` into `name1`, implicitly freeing `name2`
-    #
-    # @param name1 [String]
-    # @param name2 [String]
-    # @return [nil]
-    def unify name1, name2
-      # @todo
     end
 
     ##
