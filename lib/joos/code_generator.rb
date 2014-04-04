@@ -31,6 +31,23 @@ class Joos::CodeGenerator
   module I386
     extend self
 
+    def allocate_single size, vtable_symbol
+      <<-EOC
+        mov     eax, #{size}
+        call __malloc
+	mov     [eax], dword #{vtable_symbol}
+      EOC
+    end
+
+    def allocate_array size, inner_vtable_symbol
+      <<-EOC
+        mov     eax, #{size}
+        call array__allocate
+        mov     [eax],     dword vtable_array
+        mov     [eax + 4], dword #{inner_vtable_symbol}
+      EOC
+    end
+
     ##
     # Uses `eax` to load static field named `label` into `eax`
     #
