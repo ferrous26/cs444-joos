@@ -113,8 +113,8 @@ __downcast_check:
 ;; post: pointer to head of array in eax
 global array__allocate
 array__allocate:
-	cmp     eax, 0         ; array size cannot be <= 0
-	jle     .negative_array_size
+	cmp     eax, 0         ; array size cannot be < 0
+	jl      .negative_array_size
 
 	mov     ebx, eax       ; backup original size
 	add     eax, 3         ; we need to reserve 3 dwords
