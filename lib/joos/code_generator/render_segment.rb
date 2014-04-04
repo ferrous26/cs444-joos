@@ -70,14 +70,16 @@ class Joos::CodeGenerator
   # @param segment [Joos::SSA::Segment]
   # @return [Array<String>]
   def render_segment_x86 segment
-    params = segment.method ? segment.method.parameters.map(&:name) : []
+    params = segment.method ? segment.method.parameters.map(&:name).map(&:token) : []
     @allocator = RegisterAllocator.new params
     @output_instructions = []
+    @current_segment = segment
 
     segment.flow_blocks.each_with_index do |block, index|
       @current_block = block
       @next_block = segment.flow_blocks[index + 1]
 
+      output
       output "#{block.name}:"
 
       block.instructions.each do |instruction|
@@ -86,6 +88,10 @@ class Joos::CodeGenerator
         # Magic
         @current_instruction = instruction
         handler = self.class.instruction_handlers[instruction.class]
+        handler = (self.class.instruction_handlers.each_pair.find do |pair|
+          instruction.is_a? pair.first
+        end || []).second
+
         if handler
           self.instance_exec instruction, &handler
         else
@@ -98,8 +104,8 @@ class Joos::CodeGenerator
 
     output
     output '.epilogue:'
-    output "        add esp, #{@allocator.stack_size}"
-    output '        pop ebp'
+    output '    mov esp, ebp'
+    output '    pop ebp'
 
     @output_instructions
   end
@@ -128,43 +134,57 @@ class Joos::CodeGenerator
     destination @current_instruction
   end
 
-  # Get the location of a variable
-  # @param instruction [Joos::SSA::Instruction, String]
-  def locate instruction
-    target = instruction.is_a?(String) ? instruction : instruction.target
-    # @note: #find will only find it if has been allocated previously
-    @allocator.find target
+  def target_name instruction_or_var
+    if instruction_or_var.is_a? Joos::SSA::Instruction
+      # SSA temporary varible - a Fixnum
+      instruction_or_var.target
+    else
+      # Param / local var - a string
+      instruction_or_var.name.token
+    end
   end
 
-  # @note is this not effectively a wrapper for RA#take_registers?
-  #
-  # Get the location of a variable and make sure it is in a register
-  # @param instruction [Joos::SSA::Instruction, String]
-  def locate_reg instruction
-    # TODO
-    target = instruction.is_a?(String) ? instruction : instruction.target
-    # @note perhaps #take_registers(target) would be better?
-    # it will guarantee that the name is in a register, but it might kick
-    # out someone else you need, best to force everybody into registers at once
-    ret = @allocator.find target
-    @allocator.movement_instructions.each do |ins|
-      output ins
-    end
+  # Get the location of a variable that already exists
+  # @param instruction [Joos::SSA::Instruction, Joos::Entity]
+  # @return [String]
+  def locate instruction, register=false
+    target = target_name instruction
 
-    ret
+    if register
+      # Var must be in a register
+      ret = @allocator.take_registers(target).first
+      @allocator.movement_instructions.each do |ins|
+        output ins
+      end
+
+      ret
+    else
+      # Don't care where the var is
+      @allocator.find target
+    end
+  end
+
+  # Get the location of a variable and make sure it is in a register.
+  # This is effectively a wrapper for #take_registers
+  # @param instruction [Joos::SSA::Instruction, Joos::Entity]
+  # @return [String]
+  def locate_reg instruction
+    locate instruction, true
   end
 
   # Where to write a new SSA variable to
-  # @param instruction [Joos::SSA::Instruction, String]
+  # @param instruction [Joos::SSA::Instruction, Joos::Entity]
+  # @return [String]
   def destination instruction
-    target = instruction.is_a?(String) ? instruction : instruction.target
+    target = target_name instruction
     return nil unless target
 
-    # @note so you want to put everybody onto the stack?
-    ret = @allocator.allocate target
-    unless ret
-      output 'push dword 0'
-      ret = @allocator.find target
+    ret = @allocator.find target
+    return ret if ret
+
+    ret = @allocator.allocate_register target
+    @allocator.movement_instructions.each do |ins|
+      output ins
     end
 
     ret
@@ -177,6 +197,12 @@ class Joos::CodeGenerator
     @allocator.movement_instructions.each do |ins|
       output ins
     end
+  end
+
+  # Mint a label for branching
+  # @return [String]
+  def make_label prefix='_'
+    @current_segment.block_name prefix
   end
 
   class << self
@@ -207,15 +233,9 @@ class Joos::CodeGenerator
       end
       output 'jmp .epilogue' if next_block
     when Joos::SSA::Next
-      # @note hmm, jumping to the end from various places will cause the
-      #       `add esp, offset` calculation to be wrong, we have two solutions
-      #       generate a different `offset` before the jump (place it in eax?),
-      #       or dynamically calculate the offset based on `ebp`, much like how
-      #       I dynamically align the stack for OS X __malloc
       output "jmp #{continuation.block.name}" unless continuation.block == next_block
     when Joos::SSA::Loop
       output "jmp #{continuation.block.name}"
-  # @param instruction [Joos::SSA::Instruction]
     when Joos::SSA::Branch
       # TODO
     when nil
@@ -250,9 +270,9 @@ class Joos::CodeGenerator
       symbols << label unless ins.entity.type_environment == @unit
       output "mov #{destination ins}, dword #{label}"
     when Joos::Entity::LocalVariable
-      not_implemented
+      output "mov #{destination ins}, #{locate ins.entity}"
     when Joos::Entity::FormalParameter
-      not_implemented
+      output "mov #{destination ins}, #{locate ins.entity}"
     end
   end
 
@@ -300,11 +320,11 @@ class Joos::CodeGenerator
     case ins.entity
     when Joos::Entity::Field
       # Static field
-      dest = ins.entity.label
+      dest = "[#{ins.entity.label}]"
     when Joos::Entity::LocalVariable
-      dest = destination ins.entity.name.token
+      dest = destination ins.entity
     when Joos::Entity::FormalParameter
-      dest = locate ins.entity.name.token
+      dest = locate ins.entity
     end
 
     src = locate_reg ins.operand
@@ -312,4 +332,51 @@ class Joos::CodeGenerator
     output "mov #{dest}, #{src}"
   end
 
+  instruction Joos::SSA::Comparison do |ins|
+    left = locate ins.left
+    right = locate ins.right
+    dest = destination ins
+
+    # Branching logic is insane here, but it is easier to figure out
+    output "cmp #{left}, #{right}"
+    tcase = make_label
+    next_case = make_label
+    case ins
+    when Joos::SSA::Equal
+      output "je #{tcase}"
+    when Joos::SSA::NotEqual
+      output "jne #{tcase}"
+    when Joos::SSA::GreaterThan
+      output "jg #{tcase}"
+    when Joos::SSA::LessThan
+      output "jl #{tcase}"
+    when Joos::SSA::GreaterEqual
+      output "jge #{tcase}"
+    when Joos::SSA::LessEqual
+      output "jle #{tcase}"
+    end
+
+    # False case
+    output "mov #{dest}, dword 0"
+    output "jmp #{next_case}"
+
+    # True case
+    output "#{tcase}:"
+    output "mov #{dest}, dword 1"
+
+    # Continue
+    output "#{next_case}:"
+  end
+
+  instruction Joos::SSA::Div do |ins|
+    not_implemented
+  end
+
+  instruction Joos::SSA::Mod do |ins|
+    not_implemented
+  end
+
+  instruction Joos::SSA::ArithmeticOp do |ins|
+    not_implemented
+  end
 end

@@ -41,7 +41,7 @@ class Joos::CodeGenerator
   # @param directory [String] where to put all the asm
   # @param main      [Boolean] whether or not to generate the main routine
   def initialize unit, platform, directory, main
-    @platform = self.class.const_get platform.to_s.capitalize
+    #@platform = self.class.const_get platform.to_s.capitalize
     @unit     = unit
     @file     = "#{directory}/_#{unit.fully_qualified_name.join('_') << '.s'}"
     @symbols  = default_symbols
