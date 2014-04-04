@@ -33,7 +33,7 @@ class Joos::CodeGenerator
 
     output
     output '.epilogue:'
-    output "        add esp, #{@allocater.stack_size}"
+    output "        add esp, #{@allocator.stack_size}"
     output '        pop ebp'
 
     @output_instructions
