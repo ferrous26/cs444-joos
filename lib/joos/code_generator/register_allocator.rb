@@ -194,7 +194,6 @@ class Joos::CodeGenerator
         @registers.find { |reg, val| val == name }.first.to_s
 
       elsif arg? name
-        @args[name]
         "[ebp + #{@args[name]}]"
 
       elsif on_stack? name
