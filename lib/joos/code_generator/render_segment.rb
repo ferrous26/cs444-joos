@@ -317,7 +317,7 @@ class Joos::CodeGenerator
     end
   end
 
-  def render_call ins
+  def render_call ins, method, receiver, arguments
     # Save registers
     @allocator.caller_save
 
@@ -326,24 +326,18 @@ class Joos::CodeGenerator
     take_eax ins
 
     # Push arguments and receiver (if applicable)
-    args = ins.arguments
-    output "push dword #{locate args[0]}" unless ins.is_a? Joos::SSA::HasReceiver
-    args[1..-1].each do |arg|
+    arguments.each do |arg|
       output "push dword #{locate arg}"
     end
     # Receiver is pushed last
-    if ins.is_a? Joos::SSA::HasReceiver
-      null_check ins.receiver
-      output "push dword #{locate ins.receiver}"
-    end
+    output "push dword #{locate receiver}" if receiver
 
     # Call. Result is moved into eax.
-    method = ins.entity
     if method.static?
-      @symbols << method.label
+      symbols << method.label
       output "call #{method.label}"
     else
-      output "mov eax, #{ins.entity.method_number}"
+      output "mov eax, #{method.method_number}"
       output "call __dispatch"
       output "call eax"
     end
@@ -353,11 +347,11 @@ class Joos::CodeGenerator
   end
 
   instruction Joos::SSA::CallStatic do |ins|
-    render_call ins
+    render_call ins, ins.entity, nil, ins.arguments
   end
 
   instruction Joos::SSA::CallMethod do |ins|
-    render_call ins
+    render_call ins, ins.entity, ins.receiver, ins.arguments[1..-1]
   end
 
   instruction Joos::SSA::Set do |ins|
@@ -448,6 +442,25 @@ class Joos::CodeGenerator
   instruction Joos::SSA::This do |ins|
     dest = destination ins
     output "mov #{dest}, #{locate 'this'}"
+  end
+
+  instruction Joos::SSA::New do |ins|
+    type = ins.target_type
+    constructor = ins.entity
+    
+    # Allocate
+    take_eax ins
+    @allocator.caller_save
+    output "mov eax, #{type.allocation_size}"
+    output "call __malloc"
+    
+    # Set the vtable
+    vtable = "vtable_#{type.label}"
+    symbols << vtable
+    output "mov [eax], dword #{vtable}"
+
+    # Call the constructor
+    render_call ins, constructor, ins, ins.arguments
   end
 
 end
