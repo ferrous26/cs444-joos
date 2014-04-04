@@ -51,27 +51,49 @@ SSA
 
 \section{Testing}
 
-Augment the test harness to compile stuff
+Testing for code generation was done by implementing unit tests,
+example Joos programs, and by using the available public tests from
+Marmoset.
 
-Interestingly, tests that run extremely slowly are hidden by all the
-tests which run quickly.
+SSA compilation testing was done with unit testing by writing small
+programs and testing that the output matched exactly with what was
+expected. Test programs were created for each type of SSA
+instruction.
 
-Augment the compiler so that output directory was configurable
+The Joos runtime was written while SSA compilation was still being
+implemented, and so we could not test the library by compiling
+programs. Our strategy was to create mock Joos objects in assembly,
+and test the inidividual functions by passing the mock objects. It was
+simple to perform rudimentary checks for boolean values and null
+pointers in assembly, and exit with an appropriate exit code.
 
-Use our own exception routine in teh runtime so that we can print out
-the excption type.
+In addition to checking the result of a runtime function, we
+implemented a function for printing full strings to standard output,
+by using the example from the standard library runtime. This function
+allowed us to output explicit exception class names when exiting with
+an exception, instead of just exiting with exit code 13. However, this
+functionality is disabled in the submitted code just in case it would
+interfere with expected output.
 
-Add new tests to the marmoset suite to test edge cases in our
-implementation.
+For system level testing, we wrote example Joos programs to test edge
+cases in expected side effect behaviour and exception behaviour. These
+tests included testing that constructors initialize fields and call the
+super constructor in the correct order, and array bounds checking
+tests. We also wrote some basic programs, such as bubble sort, to
+exercise various other components of code generation.
 
-Also added tests that exercise more components than the other tests.
+The test programs were added to the collection of public tests
+available from Marmoset. We relied on Marmoset test for assignment 5,
+and some from previous assignments that were relevant to assignment 5,
+to fully exercise our code generator.
 
-In some cases, where test programs would not provide precise feedback,
-we wrote unit tests.
-
-In order to test the runtime, we create mock objects in assembly and
-fed them to the various runtime functions to test that they worked
-correctly.
+However, the Marmoset test harness required various changes in order
+to manage files that were output by the compiler. Namely, we had to
+change the compiler to allow the output directory to be configurable,
+with a default value of \ttt{output/}, so that the test suite was able
+parallelize compilation of test cases correctly. Interestingly, we
+found that tests that ran extremely slowly are hidden by all the tests
+which run quickly due to the parallelization.
 
 \end{document}
 

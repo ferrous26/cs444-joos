@@ -101,7 +101,13 @@ module Joos::TypeChecking::Term
     elsif self.casting_expression?
       if type.numeric_type? && self.Term.literal_value
         value  = self.Term.literal_value.ruby_value.ord
-        value %= 2**(8 * type.length)
+        if value < 0
+          value = -value
+          value %= 2**(8 * type.length)
+          value = -value
+        else
+          value %= 2**(8 * type.length)
+        end
         literal =
           if type.is_a? Joos::BasicType::Char
             Joos::Token.make(:Character, "'#{value.chr}'")
