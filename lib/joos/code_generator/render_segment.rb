@@ -65,16 +65,16 @@ class Joos::CodeGenerator
     EOC
   end
 
-  # Location of `this`.
-  def locate_this
-    '[ebp + 4]'
-  end
-
   # Render a Segment into x86 assembly.
   # @param segment [Joos::SSA::Segment]
   # @return [Array<String>]
   def render_segment_x86 segment
-    params = segment.method ? segment.method.parameters.map(&:name).map(&:token) : []
+    if segment.method
+      params = segment.method.parameters.map(&:name).map(&:token)
+    else
+      params = []
+    end
+    params << 'this' if segment.has_receiver?
     @allocator = RegisterAllocator.new params
     @output_instructions = []
     @current_segment = segment
@@ -140,6 +140,8 @@ class Joos::CodeGenerator
     if instruction_or_var.is_a? Joos::SSA::Instruction
       # SSA temporary varible - a Fixnum
       instruction_or_var.target
+    elsif instruction_or_var.is_a? ::String
+      instruction_or_var
     else
       # Param / local var - a string
       instruction_or_var.name.token
@@ -151,7 +153,6 @@ class Joos::CodeGenerator
   # @return [String]
   def locate instruction, register=false
     target = target_name instruction
-
     if register
       # Var must be in a register
       ret = @allocator.take_registers(target).first
@@ -205,6 +206,16 @@ class Joos::CodeGenerator
   # @return [String]
   def make_label prefix='_'
     @current_segment.block_name prefix
+  end
+
+  # Render a null check for the given variable
+  def null_check ins
+    loc = locate ins
+    label = make_label '_not_null'
+    output "cmp #{loc}, dword 0"
+    output "jne #{label}"
+    output "call __null_pointer_exception"
+    output "#{label}:"
   end
 
   class << self
@@ -321,7 +332,10 @@ class Joos::CodeGenerator
       output "push dword #{locate arg}"
     end
     # Receiver is pushed last
-    output "push dword #{locate ins.receiver}" if ins.is_a? Joos::SSA::HasReceiver
+    if ins.is_a? Joos::SSA::HasReceiver
+      null_check ins.receiver
+      output "push dword #{locate ins.receiver}"
+    end
 
     # Call. Result is moved into eax.
     method = ins.entity
@@ -433,7 +447,7 @@ class Joos::CodeGenerator
 
   instruction Joos::SSA::This do |ins|
     dest = destination ins
-    output "mov #{dest}, #{locate_this}"
+    output "mov #{dest}, #{locate 'this'}"
   end
 
 end
