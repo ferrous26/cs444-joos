@@ -38,6 +38,13 @@ class Segment
   # @return [Fixnum]
   attr_reader :next_variable
   
+  # True iff the segment is for code that requires a receiver
+  # (instance method bodies, constructors, and field initializers)
+  # @return [Bool]
+  attr_accessor :has_receiver
+  def has_receiver?
+    !!has_receiver
+  end
 
   def initialize
     @method = nil
@@ -54,17 +61,19 @@ class Segment
     new.tap do |ret|
       ret.method = method
       ret.type_environment = this_type
+      ret.has_receiver = !method.static?
       ret.start_block = FlowBlock.new '.enter'
       ret.compile ret.start_block, method.body
       ret.flow_blocks = ret.start_block.dominates.reverse
     end
   end
 
-  # Create a segment that initializes an array of fields
+  # Create a segment that initializes an array of instance fields
   # @param fields [Array<Joos::Entity::Field>]
   def self.from_fields fields, this_type
     new.tap do|ret|
       ret.type_environment = this_type
+      ret.has_receiver = true
       ret.start_block = FlowBlock.new '.enter'
       fields.reduce ret.start_block do |block, field|
         # Compile the initializer
@@ -90,6 +99,7 @@ class Segment
   def self.from_static_fields fields, type_environment
     new.tap do|ret|
       ret.type_environment = type_environment
+      ret.has_receiver = false
       ret.start_block = FlowBlock.new '.enter'
       fields.reduce ret.start_block do |block, field|
         # Compile the initializer
