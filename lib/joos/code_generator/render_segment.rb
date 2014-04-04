@@ -333,7 +333,7 @@ class Joos::CodeGenerator
     output "push dword #{locate receiver}" if receiver
 
     # Call. Result is moved into eax.
-    if method.static?
+    if method.static? or method.is_a? Joos::Entity::Constructor
       symbols << method.label
       output "call #{method.label}"
     else
@@ -343,7 +343,7 @@ class Joos::CodeGenerator
     end
 
     # Pop arguments and receiver
-    output "add esp, [#{4 * ins.arguments.length.to_i}]"
+    output "add esp, #{4 * ins.arguments.length.to_i}"
   end
 
   instruction Joos::SSA::CallStatic do |ins|
