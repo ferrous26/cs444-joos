@@ -148,13 +148,13 @@ class Joos::Compiler
 
   # @return [Array<Joos::Entity::Class>]
   def classes
-    return nil unless @compilation_units
+    raise 'no classes yet' unless @compilation_units
     @compilation_units.select { |unit| unit.is_a? Joos::Entity::Class }
   end
 
   # @return [Array<Joos::Entity::Interface>]
   def interfaces
-    return nil unless @compilation_units
+    return 'no interfaces yet' unless @compilation_units
     @compilation_units.select { |unit| unit.is_a? Joos::Entity::Interface }
   end
 
@@ -276,10 +276,16 @@ class Joos::Compiler
         method.method_number = unique[method.signature]
       end
     end
+    interfaces.each do |unit|
+      unit.methods.each do |method|
+        if unique.key? method.signature
+          method.method_number = unique[method.signature]
+        end
+      end
+    end
 
     # Assign a field offset to each field of each class
     classes.each do |unit|
-
       fields = unit.instance_fields
       next if fields.empty?
 
