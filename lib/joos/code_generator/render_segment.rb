@@ -9,7 +9,7 @@ class Joos::CodeGenerator
   # @return [Array<String>]
   def render_segment_x86 segment
     # TODO: method parameters
-    @allocator = RegisterAllocator.new
+    @allocator = RegisterAllocator.new # TODO: give state of arguments
     @output_instructions = []
 
     segment.flow_blocks.each_with_index do |block, index|
@@ -33,8 +33,8 @@ class Joos::CodeGenerator
 
     output
     output '.epilogue:'
-    output 'add esp, 0     ; TODO: offset'
-    output 'pop ebp'
+    output "        add esp, #{@allocater.stack_size}"
+    output '        pop ebp'
 
     @output_instructions
   end

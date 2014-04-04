@@ -17,7 +17,7 @@ class Joos::CodeGenerator
       @moves     = [] # temp store for things that need to move around
       @registers = REGISTERS.dup
       @args      = {}
-      @stack     = [nil] # starts off with backed up ebp
+      @stack     = [nil] # starts off with `ebp` already pushed
       @offset    = (args.size - 1) * 4 # offset from `[ebp]`
 
       args.each do |name|
@@ -154,6 +154,11 @@ class Joos::CodeGenerator
     # @return [String]
     def align_stack
       "        sub esp, #{16 - alignment_offset}"
+    end
+
+    # @return [Fixnum] size in bytes, not including saved `ebp`
+    def stack_size
+      (@stack.size - 1) * 4
     end
 
 
