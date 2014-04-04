@@ -17,7 +17,7 @@ class Joos::CodeGenerator
       @moves     = [] # temp store for things that need to move around
       @registers = REGISTERS.dup
       @args      = {}
-      @stack     = [nil] # starts off with `ebp` already pushed
+      @stack     = [:nil] # starts off with `ebp` already pushed
       @offset    = (args.size - 1) * 4 # offset from `[ebp]`
 
       args.each do |name|
@@ -31,13 +31,21 @@ class Joos::CodeGenerator
     #       {#find}, order of precedence will determine which copy
     #       you find. {#free} will free all copies.
     #
-    # Allocate space for a new value with the given `name`.
+    # Allocate space on the stack for a new value with the given `name`.
     #
     # @param name [String]
-    # @return [String] location where `name` will be stored
+    # @return [String,nil] location where `name` will be stored if
+    #   an existing stack space is being reused, else returns `nil`
+    #   indicating the variable can be `push`ed onto the stack
     def allocate name
-      @stack << name # @todo can we improve on this?
-      find name
+      i = @stack.index nil
+      if i
+        @stack[i] = name
+        "[ebp - #{(i + 1) * 4}]"
+      else
+        @stack << name
+        nil
+      end
     end
     alias_method :alloc,  :allocate
     alias_method :malloc, :allocate
@@ -45,16 +53,80 @@ class Joos::CodeGenerator
     ##
     # Forcefully place `name` in the given `register`.
     #
-    # This only works for register take over.
-    #
     # @param register [Symbol]
     # @param name [String]
-    # @return [String] pointlessly return `register`
+    # @return [String] pointlessly return `register` as a string
     def take register, name
       raise "#{register} is not a register" unless @registers.key? register
-      backup register if @registers[register]
-      @registers[register] = name
-      register.to_s
+      in_reg = @registers[register]
+
+      # if name is already in the register, nothing to do...
+      unless in_reg == name
+        # if something is in the register...
+        if in_reg
+          # if it is already on the stack, we can just overwrite it
+          unless @stack.index in_reg
+            @stack << in_reg
+            @moves << "push #{register}    ; backup #{in_reg}"
+          end
+        end
+
+        @registers[register] = name
+      end
+
+      register.to_s # fulfill post condition...
+    end
+
+    ##
+    # One or more variables which must be allocated into a register
+    # and already exists somewhere.
+    #
+    # @param names [String]
+    # @return [Array<String>]
+    def take_registers *names
+      names.map do |name|
+        # if it is already in a register, just use that register
+        if @registers.value? name
+          # and we do not need to generate any move instructions
+          @registers.find { |reg, val| val == name }
+
+        # else we need to allocate a register
+        else
+          # it is on the stack, so we calculate the offset for loading
+          offset    = (@stack.index(name) + 1) * 4
+          empty_reg = @registers.find { |reg, val| !val }
+
+          if empty_reg
+            @moves << "mov #{empty_reg.first}, [ebp - #{offset}]"
+            @registers[empty_reg.first] = name
+            empty_reg.first
+
+          # no empty registers, need to kick someone out
+          else
+            # look at registers that we do not need to keep
+            taken_regs = @registers.reject { |reg, val| names.include? val }
+
+            # from the available regs, prefer someone on the stack
+            loser = taken_regs.find { |reg, val| @stack.index val }
+
+            # if no loser is on the stack, then we need to arbitrarily
+            # pick a loser and kick him/her out
+            unless loser
+              loser   = taken_regs.first
+              @stack << loser.last
+              @moves << "push #{loser.first}    ; backup #{loser.last}"
+            end
+
+            @registers[loser.first] = name
+            loser.first
+          end
+        end
+      end
+    end
+
+    def swap old_name, new_name
+      # if old_name on the stack, no problem
+      # else back that ass up
     end
 
     ##
@@ -62,9 +134,15 @@ class Joos::CodeGenerator
     # reused by another variable, thus mitigating stack overflow
     # likelyhood.
     #
-    # @param name [String]
-    def free name
-      # @todo
+    # @param dead_name [String]
+    def free dead_name
+      # remove all occurences from the stack
+      @stack = @stack.map { |name| name == dead_name ? nil : name }
+
+      # remove all occurences from registers
+      @registers.keys.each do |register|
+        @registers[register] = nil if @registers[register] == dead_name
+      end
     end
 
     ##
@@ -74,8 +152,8 @@ class Joos::CodeGenerator
     # @example
     #
     #   find('foo')  # => 'eax'
-    #   find('foo')  # => 'ebp - 12'
-    #   find('this') # => 'ebp + 8'
+    #   find('foo')  # => '[ebp - 12]'
+    #   find('this') # => '[ebp + 8]'
     #
     # @param name [String]
     # @return [String] location of `name`
@@ -115,9 +193,19 @@ class Joos::CodeGenerator
     # @return [Array<String>]
     def caller_save
       @registers.each do |register, name|
-        backup register if name
+        next unless name
+
+        # back it up if it is not already somewhere on the stack
+        index = @stack.index name
+        unless index
+          @stack << name
+          @moves << "push #{register}    ; backup #{name}"
+        end
+
+        @registers[register] = nil # blank the register
       end
-      movement_instructions
+
+      @moves
     end
 
     ##
@@ -132,10 +220,8 @@ class Joos::CodeGenerator
     #
     # @return [Array<String>]
     def movement_instructions
-      instructions = @moves.map { |name, register|
-        "        mov #{self.allocate name}, #{register}    ; backup #{name}"
-      }
-      @moves.clear
+      instructions = @moves
+      @moves = []
       instructions
     end
     alias_method :backup_instructions, :movement_instructions
@@ -147,12 +233,6 @@ class Joos::CodeGenerator
 
 
     private
-
-    def backup register
-      name = @registers[register]
-      @registers[register] = nil
-      @moves << [name, register]
-    end
 
     ##
     # The assembly names of registers.
