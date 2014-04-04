@@ -1,5 +1,13 @@
 ;; aggregate initializer for all static fields
 global <%= unit_initializer @unit %>
 <%= unit_initializer @unit %>:
+    .prologue:
+    push    ebp
+    mov     ebp, esp
+
     <%= render_segment @unit.static_initializer_segment %>
+
+    .epilogue:
+    mov     esp, ebp
+    pop     ebp
     ret
