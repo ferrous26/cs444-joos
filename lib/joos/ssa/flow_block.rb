@@ -8,6 +8,7 @@ module Joos::SSA
 class FlowBlock
   # @return [String]
   attr_accessor :name
+  alias_method :label, :name
 
   # List of SSA instructions to execute
   # @return [Array<Instruction>]
@@ -162,7 +163,7 @@ end
 #
 # This covers if, while, && and ||
 class Branch < Continuation
-  # @return [Fixnum]
+  # @return [Instruction]
   attr_accessor :guard
 
   # @return [FlowBlock]
@@ -180,7 +181,7 @@ class Branch < Continuation
   def to_s
     super           <<
     " if ".blue     <<
-    guard.to_s      <<
+    guard.target.to_s <<
     " then ".blue   <<
     true_case.name  <<
     " else ".blue   <<

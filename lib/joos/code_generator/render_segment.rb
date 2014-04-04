@@ -220,25 +220,53 @@ class Joos::CodeGenerator
 
   def render_continuation block
     continuation = block.continuation
+    output ";; #{continuation}"
+    # TODO: Tell the register allocator that this is the end of a block and it
+    # must clear its accumulated state.
     case continuation
     when Joos::SSA::Just
       puts block.inspect
       raise "FlowBlock has a Just continuation - this should not happen"
     when Joos::SSA::Return
       if continuation.value
-        loc = locate continuation.value
-        output "mov eax, dword #{loc}"
+        # Move result into eax
+        take_eax continuation.value
       end
       output 'jmp .epilogue' if next_block
     when Joos::SSA::Next
+      render_merge block, continuation.block
       output "jmp #{continuation.block.name}" unless continuation.block == next_block
     when Joos::SSA::Loop
       output "jmp #{continuation.block.name}"
     when Joos::SSA::Branch
-      # TODO
+      render_merge block, continuation.true_case
+      output "cmp #{locate continuation.guard}, 1"
+      output "je  #{continuation.true_case.label}"
+      render_merge block, continuation.false_case
+      output "jmp #{continuation.false_case.label}"
     when nil
       # Nothing
     end
+  end
+
+  # Check next_block for a Merge instruction. If the instruction references an
+  # SSA variable in the current block, move that variable into eax.
+  def render_merge block, next_block
+    next_instruction = next_block.instructions[0]
+    return unless next_instruction
+    return unless next_instruction.is_a? Joos::SSA::Merge
+
+    left_var = next_instruction.left
+    right_var = next_instruction.right
+    our_var = block.instructions.find {|ins| ins == left_var or ins == right_var}
+
+    take_eax our_var
+  end
+
+
+  instruction Joos::SSA::Merge do |ins|
+    # #render_merge ensures that either side of the branch is in eax
+    take_eax ins
   end
 
   instruction Joos::SSA::Const do |ins|
@@ -366,6 +394,19 @@ class Joos::CodeGenerator
     output "#{next_case}:"
   end
 
+  instruction Joos::SSA::Not do |ins|
+    dest = destination ins
+    output "mov #{dest}, #{locate ins.operand}"
+    output "not #{dest}"
+    output "and #{dest}, dword 1"   # Want only the lowest bit for Booleans
+  end
+
+  instruction Joos::SSA::Neg do |ins|
+    dest = destination ins
+    output "mov #{dest}, #{locate ins.operand}"
+    output "neg #{dest}"
+  end
+
   instruction Joos::SSA::Div do |ins|
     not_implemented
   end
@@ -374,7 +415,16 @@ class Joos::CodeGenerator
     not_implemented
   end
 
-  instruction Joos::SSA::ArithmeticOp do |ins|
-    not_implemented
+  instruction Joos::SSA::Add do |ins|
+    dest = destination ins
+    output "mov #{dest}, #{locate ins.left}"
+    output "add #{dest}, #{locate ins.right}"
   end
+
+  instruction Joos::SSA::Sub do |ins|
+    dest = destination ins
+    output "mov #{dest}, #{locate ins.left}"
+    output "sub #{dest}, #{locate ins.right}"
+  end
+
 end
