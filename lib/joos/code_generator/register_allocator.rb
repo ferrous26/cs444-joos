@@ -144,6 +144,7 @@ class Joos::CodeGenerator
     # @return [nil]
     def unify name1, name2
       # @todo herp derp
+      raise NotImplementedError
     end
 
     ##
