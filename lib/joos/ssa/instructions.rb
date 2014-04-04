@@ -30,7 +30,7 @@ class Instruction
   end
 
   def to_s
-    ret = ""
+    ret = ''
     ret << "#{target} = " if target
     ret << self.class.name.split(/::/).last.bold_green
     ret << "[#{param_to_s}]" unless param_to_s.empty?
@@ -40,7 +40,7 @@ class Instruction
   # Debug summary of the non-SSA parameter of an instruction, if applicable
   # @return [String]
   def param_to_s
-    ""
+    ''
   end
 end
 
