@@ -87,7 +87,10 @@ class Joos::CodeGenerator
 
         # Magic
         @current_instruction = instruction
+
+        # @todo next line is dead code?
         handler = self.class.instruction_handlers[instruction.class]
+
         handler = (self.class.instruction_handlers.each_pair.find do |pair|
           instruction.is_a? pair.first
         end || []).second
