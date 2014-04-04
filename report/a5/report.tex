@@ -70,7 +70,18 @@ for the function and using the \ttt{call} instruction. However,
 instance methods are not always monomorphic, and require a runtime
 lookup to find the address of the method implementation.
 
-vtable lookup
+Similar to runtime type checking, we assign a number to each concrete
+method signature declared for the program. However, we then also
+assign numbers to each abstract method signature which has a concrete
+implementation. This is to help with finding the correct method number
+during instruction generation when we may only have a reference to an
+abstract method implementation.
+
+The number assigned to each method is then used as the index into a
+sparse table. Each instantiable type is given a table as part of the
+types static data. Empty entries in the table are given a null
+pointer. At runtime, a concrete object can reach the table via its
+tag.
 
 Since Joos does not support any form of dynamic code loading, we would
 have liked to perform an analysis to check which instance methods were
@@ -89,7 +100,28 @@ appropriate code.
 
 \subsubsection{Static Fields}
 
+Code generation for static fields is done in two steps. The first step
+is allocate space for the static value in the \ttt{data} section of
+the program. Each field is given a double word of space for storage
+for convenience. The default value for each static field is \ttt{00},
+which is the correct default initialzation value for Joos data no
+matter what type information is used to interpret the bits.
+
+The second step is to generate a function that will be called during
+program initialization to initialize the field. However, static fields
+with no initializer will not have a function generated.
+
+Each compilation unit has a single function which calls all the static
+field initializers, in the order that they were declared in the source
+program. This single function is then called by the program's main
+function before calling the Joos \ttt{test()} method. Organizing
+initializers with this hierarchy was simply to keep information more
+compartmentalized.
+
 \subsubsection{String Literals}
+
+String literal objects are created each string literal in a
+compilation unit.
 
 \subsection{Dynamic Data}
 
