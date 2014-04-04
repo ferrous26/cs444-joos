@@ -65,6 +65,10 @@ class Joos::CodeGenerator
     EOC
   end
 
+  # Location of `this`.
+  def locate_this
+    '[ebp + 4]'
+  end
 
   # Render a Segment into x86 assembly.
   # @param segment [Joos::SSA::Segment]
@@ -425,6 +429,11 @@ class Joos::CodeGenerator
     dest = destination ins
     output "mov #{dest}, #{locate ins.left}"
     output "sub #{dest}, #{locate ins.right}"
+  end
+
+  instruction Joos::SSA::This do |ins|
+    dest = destination ins
+    output "mov #{dest}, #{locate_this}"
   end
 
 end
