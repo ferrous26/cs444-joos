@@ -136,31 +136,69 @@ the string object, the array field is also declared.
 
 \subsection{Dynamic Data}
 
-Once static data is generated,
+The design of non-static data follows from choices made for static
+data.
 
 \subsubsection{Object Layout}
 
+The concrete data for an object begins with a tag, which points to
+static data for the class. The fields of an object are located after
+the tag and are organized in the obvious way. Fields are ordered first
+by the class hierarchy ordering and then by declaration order. This
+allows for polymorphism to work correctly and provides an efficient
+strategy for accessing field data by determining offsets at
+compilation time.
 
-\subsubsection{Field Access}
-
+Each field is alloted a double word of storage space to make offset
+calculations simple, though we would have preferred to pack objects
+more efficiently if time had permitted.
 
 \subsubsection{Array Objects}
 
+Since there is no class declaration for an array, the data layout of
+array objects is not handled by the same code as for other
+objects. However, it does have a compatible layout in order to support
+the various things that an object must do at runtime, such as type
+checking.
 
-\subsection{Generating Assembly Skeleton Files}
+An array contains, in order, a tag pointer for static data generated for the
+array pseudo-class, a tag pointer to the static data for the inner
+type of the array, length field of the array, and then finally the
+array data.
 
-Symbol names, prefixing, etc\ldots
+Since arrays contain an inner type, runtime type checks for arrays
+need to handle array checks specially to know where the tag for the
+inner type is located. As well, since an array's inner type can be a
+Joos basic type, the type checking logic must handle that specially.
 
-What goes in the runtime library
+For arrays of some basic type, the inner tag pointer is a pointer to
+unaddressable memory. On most operating systems, including Linux and
+OS X, the first page of memory is unaddressable, and the first page is
+usually 4kB in size. So, we use small values, close to 0, to represent
+specific basic type arrays.
 
-Program startup
+The implementation of array element reading, writing, allocation, and
+type checking is written in assembly and included as part of the Joos
+runtime.
+
+\subsection{Assembly Skeleton Files}
+
+In order for compilation units to call each other's methods and access
+each others data, we needed a label generating scheme that allowed
+different instances of \ttt{CodeGenerator} to easily determine
+
+
+
+\subsubsection{Program Startup}
 
 
 \subsection{Conventions}
 
-Calling convention
+\subsubsection{Calling Convention}
 
-Local function layout
+\subsubsection{Method Layout}
+
+Also mention that stack objects are given a double word of storage each.
 
 
 \subsection{Substance}
