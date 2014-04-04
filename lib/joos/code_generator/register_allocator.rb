@@ -51,6 +51,14 @@ class Joos::CodeGenerator
     alias_method :malloc, :allocate
 
     ##
+    # Allocate some register for the given `name`
+    #
+    # @param name [String]
+    def allocate_register name
+      take_registers(name).first
+    end
+
+    ##
     # Forcefully place `name` in the given `register`.
     #
     # @param register [Symbol]
@@ -88,16 +96,20 @@ class Joos::CodeGenerator
         # if it is already in a register, just use that register
         if @registers.value? name
           # and we do not need to generate any move instructions
-          @registers.find { |reg, val| val == name }
+          @registers.find { |reg, val| val == name }.first
 
         # else we need to allocate a register
         else
-          # it is on the stack, so we calculate the offset for loading
-          offset    = (@stack.index(name) + 1) * 4
+          # if it is on the stack, we calculate the offset for loading
+          offset    = if @stack.index name
+                        (@stack.index(name) + 1) * 4
+                      end
           empty_reg = @registers.find { |reg, val| !val }
 
           if empty_reg
-            @moves << "mov #{empty_reg.first}, [ebp - #{offset}]"
+            # only generate a move if it existed on the stack
+            @moves << "mov #{empty_reg.first}, [ebp - #{offset}]" if offset
+
             @registers[empty_reg.first] = name
             empty_reg.first
 
@@ -117,8 +129,12 @@ class Joos::CodeGenerator
               @moves << "push #{loser.first}    ; backup #{loser.last}"
             end
 
+            # only generate a move if it existed on the stack
+            @moves << "mov #{loser.first}, [ebp - #{offset}]" if offset
+
             @registers[loser.first] = name
             loser.first
+
           end
         end
       end
@@ -136,13 +152,9 @@ class Joos::CodeGenerator
     #
     # @param dead_name [String]
     def free dead_name
-      # remove all occurences from the stack
-      @stack = @stack.map { |name| name == dead_name ? nil : name }
-
-      # remove all occurences from registers
-      @registers.keys.each do |register|
-        @registers[register] = nil if @registers[register] == dead_name
-      end
+      free_stack dead_name
+      free_registers dead_name
+      nil
     end
 
     ##
@@ -246,5 +258,17 @@ class Joos::CodeGenerator
                   esi: nil,
                   edi: nil
                 }
+
+    def free_stack dead_name
+      # remove all occurences from the stack
+      @stack = @stack.map { |name| name == dead_name ? nil : name }
+    end
+
+    def free_registers dead_name
+      # remove all occurences from registers
+      @registers.keys.each do |register|
+        @registers[register] = nil if @registers[register] == dead_name
+      end
+    end
   end
 end
