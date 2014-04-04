@@ -344,6 +344,7 @@ class Joos::CodeGenerator
       output "call #{method.label}"
     else
       output "mov eax, #{ins.entity.method_number}"
+      # @todo Need to mov receiver into ebx...to look at correct vtable
       output "call __dispatch"
       output "call eax"
     end
