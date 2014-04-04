@@ -132,14 +132,20 @@ class Joos::CodeGenerator
   # @param instruction [Joos::SSA::Instruction, String]
   def locate instruction
     target = instruction.is_a?(String) ? instruction : instruction.target
+    # @note: #find will only find it if has been allocated previously
     @allocator.find target
   end
 
+  # @note is this not effectively a wrapper for RA#take_registers?
+  #
   # Get the location of a variable and make sure it is in a register
   # @param instruction [Joos::SSA::Instruction, String]
   def locate_reg instruction
     # TODO
     target = instruction.is_a?(String) ? instruction : instruction.target
+    # @note perhaps #take_registers(target) would be better?
+    # it will guarantee that the name is in a register, but it might kick
+    # out someone else you need, best to force everybody into registers at once
     ret = @allocator.find target
     @allocator.movement_instructions.each do |ins|
       output ins
@@ -154,6 +160,7 @@ class Joos::CodeGenerator
     target = instruction.is_a?(String) ? instruction : instruction.target
     return nil unless target
 
+    # @note so you want to put everybody onto the stack?
     ret = @allocator.allocate target
     unless ret
       output 'push dword 0'
@@ -179,8 +186,8 @@ class Joos::CodeGenerator
     # @param type [::Class]
     def instruction type, &block
       @instruction_handlers ||= {}
-      @instruction_handlers[type] = Proc.new &block
-      return
+      @instruction_handlers[type] = Proc.new(&block)
+      nil
     end
 
   end
@@ -200,6 +207,11 @@ class Joos::CodeGenerator
       end
       output 'jmp .epilogue' if next_block
     when Joos::SSA::Next
+      # @note hmm, jumping to the end from various places will cause the
+      #       `add esp, offset` calculation to be wrong, we have two solutions
+      #       generate a different `offset` before the jump (place it in eax?),
+      #       or dynamically calculate the offset based on `ebp`, much like how
+      #       I dynamically align the stack for OS X __malloc
       output "jmp #{continuation.block.name}" unless continuation.block == next_block
     when Joos::SSA::Loop
       output "jmp #{continuation.block.name}"
@@ -251,7 +263,7 @@ class Joos::CodeGenerator
     # Allocate space for destination (if apllicable) and claim eax
     dest = destination ins
     take_eax ins
-    
+
     # Push arguments and receiver (if applicable)
     args = ins.arguments
     output "push dword #{locate args[0]}" unless ins.is_a? Joos::SSA::HasReceiver
@@ -271,7 +283,7 @@ class Joos::CodeGenerator
       output "call __dispatch"
       output "call eax"
     end
-    
+
     # Pop arguments and receiver
     output "add esp, [4*#{ins.arguments.length}]"
   end
