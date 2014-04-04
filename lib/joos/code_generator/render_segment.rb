@@ -193,13 +193,21 @@ class Joos::CodeGenerator
     ret
   end
 
-  # Claim eax for nefarious purposes. A striaghtforward call in to the RA.
+  # Claim register for nefarious purposes. A striaghtforward call in to the RA.
+  # @param register [Symbol]
   # @param instruction [Joos::SSA::Instruction]
-  def take_eax instruction
-    @allocator.take :eax, instruction.target
+  def take_register register, instruction
+    @allocator.take register, instruction.target
     @allocator.movement_instructions.each do |ins|
       output ins
     end
+  end
+
+  def take_eax ins
+    take_register :eax, ins
+  end
+  def take_ebx ins
+    take_register :ebx, ins
   end
 
   # Mint a label for branching
@@ -321,9 +329,10 @@ class Joos::CodeGenerator
     # Save registers
     @allocator.caller_save
 
-    # Allocate space for destination (if apllicable) and claim eax
+    # Allocate space for destination (if apllicable) and claim registers
     dest = destination ins
     take_eax ins
+    take_ebx receiver if receiver
 
     # Push arguments and receiver (if applicable)
     arguments.each do |arg|

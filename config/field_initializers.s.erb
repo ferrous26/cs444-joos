@@ -1,4 +1,12 @@
 ;; field initializers
 <%= fields_initializer %>:
+    .prologue:
+    push    ebp
+    mov     ebp, esp
+
     <%= render_segment @unit.instance_initializer_segment %>
+
+    .epilogue:
+    mov     esp, ebp
+    pop     ebp
     ret
