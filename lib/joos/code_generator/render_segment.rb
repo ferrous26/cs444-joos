@@ -294,7 +294,7 @@ class Joos::CodeGenerator
     # Call. Result is moved into eax.
     method = ins.entity
     if method.static?
-      symbols << method.label unless method.type_environment == @unit
+      @symbols << method.label
       output "call #{method.label}"
     else
       output "mov eax, #{ins.entity.method_number}"
