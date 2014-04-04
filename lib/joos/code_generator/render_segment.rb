@@ -8,8 +8,8 @@ class Joos::CodeGenerator
   # @param segment [Joos::SSA::Segment]
   # @return [Array<String>]
   def render_segment_x86 segment
-    # TODO: method parameters
-    @allocator = RegisterAllocator.new
+    params = segment.method ? segment.method.parameters.map(&:name) : []
+    @allocator = RegisterAllocator.new params
     @output_instructions = []
 
     segment.flow_blocks.each_with_index do |block, index|
@@ -66,19 +66,36 @@ class Joos::CodeGenerator
     destination @current_instruction
   end
 
-  # Get or generate the location of an SSA variable
-  # @param instruction [Joos::SSA::Instruction]
+  # Get the location of a variable
+  # @param instruction [Joos::SSA::Instruction, String]
   def locate instruction
-    @allocator.find instruction.target
+    target = instruction.is_a?(String) ? instruction : instruction.target
+    @allocator.find target
+  end
+
+  # Get the location of a variable and make sure it is in a register
+  # @param instruction [Joos::SSA::Instruction, String]
+  def locate_reg instruction
+    # TODO
+    target = instruction.is_a?(String) ? instruction : instruction.target
+    ret = @allocator.find target
+    @allocator.movement_instructions.each do |ins|
+      output ins
+    end
+
+    ret
   end
 
   # Where to write a new SSA variable to
-  # @param instruction [Joos::SSA::Instruction]
+  # @param instruction [Joos::SSA::Instruction, String]
   def destination instruction
-    ret = @allocator.allocate instruction.target
+    target = instruction.is_a?(String) ? instruction : instruction.target
+    return nil unless target
+
+    ret = @allocator.allocate target
     unless ret
       output 'push dword 0'
-      ret = @allocator.find instruction.target
+      ret = @allocator.find target
     end
 
     ret
@@ -88,6 +105,9 @@ class Joos::CodeGenerator
   # @param instruction [Joos::SSA::Instruction]
   def take_eax instruction
     @allocator.take :eax, instruction.target
+    @allocator.movement_instructions.each do |ins|
+      output ins
+    end
   end
 
   class << self
@@ -162,26 +182,60 @@ class Joos::CodeGenerator
     end
   end
 
-  instruction Joos::SSA::CallMethod do |ins|
-    # Allocate space for destination and claim eax
-    dest = destination ins
-    take_eax ins
-
+  def render_call ins
     # Save registers
     @allocator.caller_save
+
+    # Allocate space for destination (if apllicable) and claim eax
+    dest = destination ins
+    take_eax ins
     
-    # Push arguments and receiver
-    ins.arguments[1..-1].each do |arg|
+    # Push arguments and receiver (if applicable)
+    args = ins.arguments
+    output "push dword #{locate args[0]}" unless ins.is_a? Joos::SSA::HasReceiver
+    args[1..-1].each do |arg|
       output "push dword #{locate arg}"
     end
-    output "push dword #{locate ins.receiver}"
+    # Receiver is pushed last
+    output "push dword #{locate ins.receiver}" if ins.is_a? Joos::SSA::HasReceiver
 
     # Call. Result is moved into eax.
-    output "mov eax, #{ins.entity.method_number}"
-    output "call __dispatch"
+    method = ins.entity
+    if method.static?
+      symbols << method.label unless method.type_environment == @unit
+      output "call #{method.label}"
+    else
+      output "mov eax, #{ins.entity.method_number}"
+      output "call __dispatch"
+      output "call eax"
+    end
     
     # Pop arguments and receiver
     output "add esp, [4*#{ins.arguments.length}]"
+  end
+
+  instruction Joos::SSA::CallStatic do |ins|
+    render_call ins
+  end
+
+  instruction Joos::SSA::CallMethod do |ins|
+    render_call ins
+  end
+
+  instruction Joos::SSA::Set do |ins|
+    case ins.entity
+    when Joos::Entity::Field
+      # Static field
+      dest = ins.entity.label
+    when Joos::Entity::LocalVariable
+      dest = destination ins.entity.name.token
+    when Joos::Entity::FormalParameter
+      dest = locate ins.entity.name.token
+    end
+
+    src = locate_reg ins.operand
+
+    output "mov #{dest}, #{src}"
   end
 
 end

@@ -59,7 +59,8 @@ module Joos::Colour
   end
 
   def decolour
-    to_s.gsub /\e\[.{0,4}m/, ''
+    # @#$%!
+    to_s.gsub /\e\[([0134][0-9]?|1;[0-9]{2})?m/, ''
   end
 
 end
