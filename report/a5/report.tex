@@ -120,16 +120,31 @@ compartmentalized.
 
 \subsubsection{String Literals}
 
-String literal objects are created each string literal in a
-compilation unit.
+String literal objects are created for each string literal used in a
+compilation unit. String literals are deduplicated per compilation
+unit, but not globally. Our plan was to create a separate file for
+string literals which all compilation units would contribute to and
+allow full deduplication of string literals, but we did not have time
+to implement this feature.
+
+Each string literal object is added to the \ttt{data} section of the
+compilation unit where it is used, and behaves like a normal
+object. It is given an object tag, which points to
+\ttt{java.lang.String} and contains an array reference to a
+\ttt{char[]} for the one field that a string declares. Directly after
+the string object, the array field is also declared.
 
 \subsection{Dynamic Data}
 
-Object layout
+Once static data is generated,
 
-Field offsets
+\subsubsection{Object Layout}
 
-Arrays
+
+\subsubsection{Field Access}
+
+
+\subsubsection{Array Objects}
 
 
 \subsection{Generating Assembly Skeleton Files}
