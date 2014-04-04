@@ -6,7 +6,7 @@
 <%= symbol %>_char_array:
   dd vtable_array
   dd char_array#
-  dd <%= str.length %>
-  dd <%= str.join(',') %>
+  dd <%= str.length %> ; strlen
+<%= '  dd ' + str.join(',') unless str.empty? %>
 
 <% end %>
