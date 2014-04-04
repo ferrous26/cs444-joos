@@ -9,7 +9,7 @@ class Joos::CodeGenerator
   # @return [Array<String>]
   def render_segment_x86 segment
     # TODO: method parameters
-    @allocator = RegisterAllocator.new # TODO: give state of arguments
+    @allocator = RegisterAllocator.new
     @output_instructions = []
 
     segment.flow_blocks.each_with_index do |block, index|
