@@ -303,7 +303,7 @@ class Joos::CodeGenerator
     end
 
     # Pop arguments and receiver
-    output "add esp, [4*#{ins.arguments.length}]"
+    output "add esp, [#{4 * ins.arguments.length.to_i}]"
   end
 
   instruction Joos::SSA::CallStatic do |ins|
