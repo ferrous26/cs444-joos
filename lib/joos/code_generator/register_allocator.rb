@@ -18,7 +18,7 @@ class Joos::CodeGenerator
       @registers = REGISTERS.dup
       @args      = {}
       @stack     = [:nil] # starts off with `ebp` already pushed
-      @offset    = (args.size - 1) * 4 # offset from `[ebp]`
+      @offset    = (args.size + 1) * 4 # offset from `[ebp]`
 
       args.each do |name|
         @args[name]  = @offset if name
@@ -27,10 +27,6 @@ class Joos::CodeGenerator
     end
 
     ##
-    # @note We allow a name to exist more than once. When calling
-    #       {#find}, order of precedence will determine which copy
-    #       you find. {#free} will free all copies.
-    #
     # Allocate space on the stack for a new value with the given `name`.
     #
     # @param name [String]
@@ -38,22 +34,39 @@ class Joos::CodeGenerator
     #   an existing stack space is being reused, else returns `nil`
     #   indicating the variable can be `push`ed onto the stack
     def allocate name
-      i = @stack.index nil
+      # first, check if it already exists on the stack
+      i = @stack.index name
       if i
-        @stack[i] = name
         "[ebp - #{(i + 1) * 4}]"
+
+      # else, it does not exist, so we need to find a spot
       else
-        @stack << name
-        nil
+
+        # check for an open space
+        i = @stack.index nil
+        if i
+          @stack[i] = name
+          "[ebp - #{(i + 1) * 4}]"
+
+        # no open space, so actually allocate a new spot
+        else
+          @stack << name
+          nil
+        end
       end
     end
     alias_method :alloc,  :allocate
     alias_method :malloc, :allocate
 
     ##
-    # Allocate some register for the given `name`
+    # Allocate some register for the given `name`, possibly kicking
+    # out someone else.
+    #
+    # Essentially follows protocol of {#take_registers}, except for
+    # the case of a single `name`.
     #
     # @param name [String]
+    # @return [String]
     def allocate_register name
       take_registers(name).first
     end
@@ -70,15 +83,18 @@ class Joos::CodeGenerator
 
       # if name is already in the register, nothing to do...
       unless in_reg == name
-        # if something is in the register...
+        # if something is in the register, then we might need to back it up
         if in_reg
-          # if it is already on the stack, we can just overwrite it
-          unless @stack.index in_reg
+          # if it is already on the stack (or args), we can just overwrite
+          # the register and reload the value later if needed
+          unless on_stack?(in_reg) || arg?(in_reg)
+            # it does not exist elsewhere, so we must push it onto the stack
             @stack << in_reg
-            @moves << "push #{register}    ; backup #{in_reg}"
+            @moves << push_instruction(register, in_reg)
           end
         end
 
+        # finally, take over the register
         @registers[register] = name
       end
 
@@ -101,13 +117,15 @@ class Joos::CodeGenerator
         # else we need to allocate a register
         else
           # if it is on the stack, we calculate the offset for loading
-          offset    = if @stack.index name
-                        (@stack.index(name) + 1) * 4
-                      end
+          offset, dir = if on_stack? name
+                          [stack_offset(name), :stack]
+                        elsif arg? name
+                          [@args[name], :args]
+                        end
           empty_reg = @registers.find { |reg, val| !val }
 
           if empty_reg
-            take_register_private empty_reg, offset, name
+            take_register_private empty_reg, offset, name, dir
 
           # there are no empty registers, so we need to kick someone out
           else
@@ -128,7 +146,7 @@ class Joos::CodeGenerator
               @moves << push_instruction(*loser)
             end
 
-            take_register_private loser, offset, name
+            take_register_private loser, offset, name, dir
 
           end
         end
@@ -172,15 +190,15 @@ class Joos::CodeGenerator
     # @param name [String]
     # @return [String] location of `name`
     def find name
-      if @registers.value? name
+      if in_register? name
         @registers.find { |reg, val| val == name }.first.to_s
 
-      elsif @args.key? name
+      elsif arg? name
         @args[name]
         "[ebp + #{@args[name]}]"
 
-      elsif @stack.include? name
-        "[ebp - #{((@stack.index(name) + 1) * 4)}]"
+      elsif on_stack? name
+        "[ebp - #{stack_offset name}]"
 
       end
     end
@@ -236,6 +254,19 @@ class Joos::CodeGenerator
     end
 
 
+    def on_stack? name
+      @stack.index name
+    end
+
+    def in_register? name
+      @registers.value? name
+    end
+
+    def arg? name
+      @args.key? name
+    end
+
+
     private
 
     ##
@@ -267,16 +298,28 @@ class Joos::CodeGenerator
       "mov #{reg}, [ebp - #{offset}]  ; load #{name}"
     end
 
+    def arg_move_instruction reg, offset, name
+      "mov #{reg}, [ebp + #{offset}]  ; load arg #{name}"
+    end
+
     def push_instruction register, name
       "push #{register}    ; backup #{name}"
     end
 
-    def take_register_private pair, offset, name
+    def take_register_private pair, offset, name, location
       # only generate a move if it existed on the stack
-      @moves << move_instruction(pair.first, offset, name) if offset
+      if location == :stack
+        @moves << move_instruction(pair.first, offset, name)
+      elsif location == :args
+        @moves << arg_move_instruction(pair.first, offset, name)
+      end
 
       @registers[pair.first] = name
       pair.first
+    end
+
+    def stack_offset name
+      (@stack.index(name) + 1) * 4
     end
   end
 end
