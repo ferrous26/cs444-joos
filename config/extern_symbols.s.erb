@@ -1,4 +1,4 @@
 ;; Symbols that we need to import
-<% @symbols.uniq.each do |symbol| %>
+<% (@symbols - @globals).each do |symbol| %>
 extern <%= symbol -%>
 <% end %>

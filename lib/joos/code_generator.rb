@@ -117,6 +117,7 @@ class Joos::CodeGenerator
     @unit     = unit
     @file     = "#{directory}/_#{unit.fully_qualified_name.join('_') << '.s'}"
     @symbols  = default_symbols
+    @globals  = determine_global_symbols
     @strings  = literal_string_hash
     @main     = main
   end
@@ -176,6 +177,7 @@ class Joos::CodeGenerator
     ERB.new(template, nil, '>-').def_method(self, "render_#{name}")
   end
 
+
   private
 
   def literal_string_hash
@@ -218,7 +220,7 @@ class Joos::CodeGenerator
   def unit_initializers
     @unit.root_package.all_classes.map do |unit|
       unit_initializer(unit).tap do |label|
-        @symbols << label unless unit == @unit
+        @symbols << label
       end
     end
   end
@@ -247,7 +249,7 @@ class Joos::CodeGenerator
       .sort_by(&:method_number)
 
     methods.each do |method|
-      @symbols << method.label unless method.type_environment == @unit
+      @symbols << method.label
     end
 
     mtable = Array.new(methods.last.method_number) do |index|
@@ -269,6 +271,16 @@ class Joos::CodeGenerator
 
   def static_fields
     @unit.fields.select(&:static?)
+  end
+
+  def determine_global_symbols
+    base = [vtable_label, unit_initializer(@unit)]
+    unless @unit.array_type?
+      base.concat concrete_methods.map(&:label)
+      base.concat @unit.constructors.map(&:label)
+      base.concat @unit.static_fields.map(&:label)
+    end
+    base
   end
 
 end

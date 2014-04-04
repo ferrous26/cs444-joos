@@ -107,42 +107,44 @@ class Joos::CodeGenerator
           empty_reg = @registers.find { |reg, val| !val }
 
           if empty_reg
-            # only generate a move if it existed on the stack
-            @moves << "mov #{empty_reg.first}, [ebp - #{offset}]" if offset
+            take_register_private empty_reg, offset, name
 
-            @registers[empty_reg.first] = name
-            empty_reg.first
-
-          # no empty registers, need to kick someone out
+          # there are no empty registers, so we need to kick someone out
           else
             # look at registers that we do not need to keep
             taken_regs = @registers.reject { |reg, val| names.include? val }
 
             # from the available regs, prefer someone on the stack
+            # implicitly choosing older variables (hopefully a good
+            # heuristic)
             loser = taken_regs.find { |reg, val| @stack.index val }
 
             # if no loser is on the stack, then we need to arbitrarily
-            # pick a loser and kick him/her out
+            # pick a loser and kick him/her out, though maybe we can
+            # make a smarter choice about who to kick out... @todo
             unless loser
               loser   = taken_regs.first
               @stack << loser.last
-              @moves << "push #{loser.first}    ; backup #{loser.last}"
+              @moves << push_instruction(*loser)
             end
 
-            # only generate a move if it existed on the stack
-            @moves << "mov #{loser.first}, [ebp - #{offset}]" if offset
-
-            @registers[loser.first] = name
-            loser.first
+            take_register_private loser, offset, name
 
           end
         end
       end
     end
 
-    def swap old_name, new_name
-      # if old_name on the stack, no problem
-      # else back that ass up
+    ##
+    # Merge `left` into `right`, implicitly freeing the space for `left`
+    # and aliasing the name to the name of `right`.
+    #
+    # @param left  [String]
+    # @param right [String]
+    # @return [nil]
+    def unify name1, name2
+      # @todo herp derp
+      raise NotImplementedError
     end
 
     ##
@@ -181,16 +183,6 @@ class Joos::CodeGenerator
         "[ebp - #{((@stack.index(name) + 1) * 4)}]"
 
       end
-    end
-
-    ##
-    # Merge `name2` into `name1`, implicitly freeing `name2`
-    #
-    # @param name1 [String]
-    # @param name2 [String]
-    # @return [nil]
-    def unify name1, name2
-      # @todo
     end
 
     ##
@@ -269,6 +261,22 @@ class Joos::CodeGenerator
       @registers.keys.each do |register|
         @registers[register] = nil if @registers[register] == dead_name
       end
+    end
+
+    def move_instruction reg, offset, name
+      "mov #{reg}, [ebp - #{offset}]  ; load #{name}"
+    end
+
+    def push_instruction register, name
+      "push #{register}    ; backup #{name}"
+    end
+
+    def take_register_private pair, offset, name
+      # only generate a move if it existed on the stack
+      @moves << move_instruction(pair.first, offset, name) if offset
+
+      @registers[pair.first] = name
+      pair.first
     end
   end
 end
