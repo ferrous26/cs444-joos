@@ -7,24 +7,102 @@
 
 This document outlines the design of the code generation phase of
 the Joos 1W language implemented by our compiler to target the
-\ttt{i386} Linux platform.
+\ttt{i386} Linux platform as well as the \ttt{i386} OS X (darwin)
+platform.
 
 
 \section{Design}
 
-Ported runtime to OS X. Have both versions; choose the correct one at
-compile time.
+The design of code generation starts by generating static data needed
+for the Joos runtime, and then creating and running an instance of the
+\ttt{CodeGenerator} class for each compilation unit, as well as one
+instance for the \ttt{Array} pseudo-class.
 
-A code generator instance for each compilation unit.
+The result is that a single assembly file is generated for each
+compilation unit, as well as one for \ttt{Array}, and a copy of our
+runtime library is also made. All output files are placed into
+\ttt{outptut/}.
+
+
+\subsection{Static Data}
+
+The Joos runtime requires various pieces of data that must can be
+statically determined at compile time and placed into the \ttt{data}
+section of the generated assembly code.
+
+\subsubsection{Type Checking}
+
+In order to support the `instanceof` operator, down cast checking, and
+array element assignment, we are required to have hierarchy information
+available at runtime so that we can check perform a type check on the
+object. The required check can be paraphrased as ``is the required
+type an ancestor of the type of the concrete data?'', where the
+required type would be the right operand of `instanceof`, the cast
+type for a down cast, or the inner type of an array.
+
+The first observation we made was that the requirement of these three
+runtime checks is very similar, the only exception being how
+\ttt{null} concrete data is handled. The first step in our solution is
+to assign a unique number to each compilation unit, we called this the
+\ttt{ancestor\_number}. Then, we create a list for each concrete data
+type (each \ttt{Class} which is not abstract), which contains every
+possible type that an instance of that concrete class could be
+assigned. Finally, a null terminated list is output in the \ttt{data}
+section of the output file for the compilation unit containing the
+\ttt{ancestor\_number}s.
+
+The list is accessed at runtime in the class data, which is reachable
+by concrete data via the concrete data's tag. To actually perform the
+checks, instructions for `instanceof`, down casting, and array element
+assignment are generated to check the \ttt{ancestor\_number} by
+linearly scanning through the table.
+
+In practice, class hierarchies are not very deep, and so these tables
+are quite small. For the marmoset test cases, the ancestor list is two
+or three entries. So we think this solution is reasonably fast and
+compact.
+
+\subsubsection{Dynamic Dispatch}
+
+In Joos, static methods and constructors are monomorphic functions,
+and calling these functions can be done simply by knowing the label
+for the function and using the \ttt{call} instruction. However,
+instance methods are not always monomorphic, and require a runtime
+lookup to find the address of the method implementation.
+
+vtable lookup
+
+Since Joos does not support any form of dynamic code loading, we would
+have liked to perform an analysis to check which instance methods were
+actually monomorphic, so that we could optimize those method calls and
+reduce the size of the vtable. However, we did not have time to
+implement this feature.
+
+In fact, the assignment specifications and standard library do not
+provide any way for input to be given to a Joos program. The only
+output is the exit code and string output to standard output. The
+ultimate optimization would have been to interpret the Joos program in
+the compiler and generate assembly code that simply printed out any
+strings that the program would have printed, and exit with the
+appropriate code.
+
+
+\subsubsection{Static Fields}
+
+\subsubsection{String Literals}
+
+\subsection{Dynamic Data}
+
+Object layout
+
+Field offsets
+
+Arrays
 
 
 \subsection{Generating Assembly Skeleton Files}
 
 Symbol names, prefixing, etc\ldots
-
-Literal strings
-
-Static fields
 
 What goes in the runtime library
 
@@ -32,10 +110,6 @@ Program startup
 
 
 \subsection{Conventions}
-
-Object layout
-
-Arrays
 
 Calling convention
 
@@ -59,6 +133,18 @@ SSA compilation testing was done with unit testing by writing small
 programs and testing that the output matched exactly with what was
 expected. Test programs were created for each type of SSA
 instruction.
+
+The standard library \ttt{runtime.s} was ported to OS X. As well, our
+entire runtime was written to support both \ttt{i386} Linux and \ttt{i386} OS
+X. The compiler will compile for the platform that it is executed
+from, and tests platform using the \ttt{uname} program. The only
+challenge that we had with OS X support was discovering the correct
+linker incantation to link with the system C library. Linking with the
+C library was necessary in order to call \ttt{malloc} as OS X does not
+support the system calls which was used by the Linux runtime library
+provided in the standard library. Our workaround is to use
+\ttt{clang}, the C compiler for OS X, which will make the appropriate
+calls to the linker.
 
 The Joos runtime was written while SSA compilation was still being
 implemented, and so we could not test the library by compiling
