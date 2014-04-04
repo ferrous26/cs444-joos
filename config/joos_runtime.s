@@ -303,13 +303,13 @@ array_downcast_check:
 ;; pre:  pointer to exception string in eax
 ;; post: N/A
 __internal_exception:
-	call __debug_print
+;	call __debug_print
 	call __exception
 
 global __null_pointer_exception
 __null_pointer_exception:
-	mov     eax, null_pointer_exception
-	call __debug_print
+;	mov     eax, null_pointer_exception
+;	call __debug_print
 	call __exception
 
 
