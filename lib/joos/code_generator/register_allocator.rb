@@ -140,22 +140,6 @@ class Joos::CodeGenerator
     end
     alias_method :backup_instructions, :movement_instructions
 
-    ##
-    # The current 16 byte offset of the stack
-    #
-    # @return [Fixnum]
-    def alignment_offset
-      (@stack.size % 4) * 4
-    end
-
-    ##
-    # Instruction required to align the stack on 16B boundaries.
-    #
-    # @return [String]
-    def align_stack
-      "        sub esp, #{16 - alignment_offset}"
-    end
-
     # @return [Fixnum] size in bytes, not including saved `ebp`
     def stack_size
       (@stack.size - 1) * 4
@@ -182,14 +166,5 @@ class Joos::CodeGenerator
                   esi: nil,
                   edi: nil
                 }
-
-    # Generate convenient accessors for named registers
-    [
-      :eax, :ebx, :ecx, :edx, :esi, :edi, :ebp, :esp
-    ].each_with_index do |reg, index|
-      define_method(reg)       {       @registers[reg]       }
-      define_method("#{reg}=") { |val| @registers[reg] = val }
-    end
-
   end
 end
