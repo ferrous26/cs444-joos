@@ -2,10 +2,14 @@
 <% concrete_methods.each do |method| %>
 global <%= method.label %>
 <%= method.label %>:
-    .prologue:
+.prologue:
         push    ebp
         mov     ebp, esp
 
     <%= render_segment method.segment %>
+
+.epilogue:
+        mov     esp, ebp
+        pop     ebp
 
 <% end %>

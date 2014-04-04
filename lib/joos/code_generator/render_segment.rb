@@ -102,11 +102,6 @@ class Joos::CodeGenerator
       render_continuation block
     end
 
-    output
-    output '.epilogue:'
-    output '    mov esp, ebp'
-    output '    pop ebp'
-
     @output_instructions
   end
 

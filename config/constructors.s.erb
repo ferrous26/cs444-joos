@@ -11,4 +11,8 @@ global <%= constructor.label %>
     ; Constructor body
     <%= render_segment constructor.segment %>
 
+.epilogue:
+        mov     esp, ebp
+        pop     ebp
+
 <% end %>
