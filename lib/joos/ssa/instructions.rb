@@ -384,7 +384,23 @@ class Cast < Instruction
   end
 end
 
+class NumericCast < Instruction
+  include Unary
+  include ParamaterizedByEntity
+
+  def initialize target, type, operand
+    super target, operand
+    @entity = type
+    @target_type = type
+  end
+
+  def param_to_s
+    entity.type_inspect
+  end
+end
+
 class Instanceof < Instruction
+  include Unary
   include BooleanOp
   include ParamaterizedByEntity
 

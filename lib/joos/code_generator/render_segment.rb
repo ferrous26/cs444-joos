@@ -466,8 +466,8 @@ class Joos::CodeGenerator
     @allocator.caller_save
     take_eax ins
 
-    output "mov eax, #{ins.arguments[0]}"
-    output "call allocate_array"
+    output "mov eax, #{locate ins.arguments[0]}"
+    output "call array__allocate"
 
     # Set the vtables
     vtable = "vtable_array"
@@ -532,8 +532,14 @@ class Joos::CodeGenerator
     @allocator.free 'result'
     @allocator.free 'ptr'
 
-    # no result, if it fails then we have an exception
-    # if successful then the world carries on
+    # Yes result - because of the way SSA works.
+    # This would normally be optimized away.
+    output "mov #{destination ins}, #{locate ins.operand}"
+  end
+
+  instruction Joos::SSA::NumericCast do |ins|
+    # TODO
+    not_implemented
   end
 
 end
