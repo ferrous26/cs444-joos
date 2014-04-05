@@ -20,6 +20,8 @@ class Joos::CodeGenerator
       @stack     = [:nil] # starts off with `ebp` at `[ebp]`
       @offset    = (args.size + 1) * 4 # offset from `[ebp]`
 
+      # [ebp] is the previous ebp,
+      # [ebp-4] is the return address (pushed by call)
       args.each do |name|
         @args[name]  = @offset if name
         @offset     -= 4
@@ -37,7 +39,7 @@ class Joos::CodeGenerator
       # first, check if it already exists on the stack
       i = @stack.index name
       if i
-        "[ebp - #{(i + 1) * 4}]"
+        "[ebp - #{i * 4}]"
 
       # else, it does not exist, so we need to find a spot
       else
@@ -46,7 +48,7 @@ class Joos::CodeGenerator
         i = @stack.index nil
         if i
           @stack[i] = name
-          "[ebp - #{(i + 1) * 4}]"
+          "[ebp - #{i * 4}]"
 
         # no open space, so actually allocate a new spot
         else

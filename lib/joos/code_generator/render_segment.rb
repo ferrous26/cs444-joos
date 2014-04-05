@@ -92,12 +92,13 @@ class Joos::CodeGenerator
         # Magic
         @current_instruction = instruction
 
-        # @todo next line is dead code?
         handler = self.class.instruction_handlers[instruction.class]
 
-        handler = (self.class.instruction_handlers.each_pair.find do |pair|
-          instruction.is_a? pair.first
-        end || []).second
+        unless handler
+          handler = (self.class.instruction_handlers.each_pair.find do |pair|
+            instruction.is_a? pair.first
+          end || []).second
+        end
 
         if handler
           self.instance_exec instruction, &handler
@@ -276,7 +277,6 @@ class Joos::CodeGenerator
   # SSA variable in the current block, move that variable into eax.
   def render_merge block, next_block
     next_instruction = next_block.instructions[0]
-    return unless next_instruction
     return unless next_instruction.is_a? Joos::SSA::Merge
 
     left_var = next_instruction.left
@@ -317,7 +317,7 @@ class Joos::CodeGenerator
       label = ins.entity.label
 
       symbols << label unless ins.entity.type_environment == @unit
-      output "mov #{destination ins}, dword #{label}"
+      output "mov #{destination ins}, dword [#{label}]"
     when Joos::Entity::LocalVariable
       output "mov #{destination ins}, #{locate ins.entity}"
     when Joos::Entity::FormalParameter
@@ -329,17 +329,21 @@ class Joos::CodeGenerator
     # Save registers
     @allocator.caller_save
 
-    # Allocate space for destination (if apllicable) and claim registers
-    dest = destination ins
+    # Claim eax for the result and ebx for the receiver
     take_eax ins
-    take_ebx receiver if receiver
+    if receiver
+      # __dispatch requires receiver to be in ebx
+      loc = locate receiver
+      take_ebx receiver
+      output "mov ebx, #{loc}"
+    end
 
     # Push arguments and receiver (if applicable)
     arguments.each do |arg|
-      output "push dword #{locate arg}"
+      output "push dword #{locate arg}    ; #{arg.target}"
     end
     # Receiver is pushed last
-    output "push dword #{locate receiver}" if receiver
+    output "push ebx    ; receiver #{receiver.target}" if receiver
 
     # Call. Result is moved into eax.
     if method.static? or method.is_a? Joos::Entity::Constructor
