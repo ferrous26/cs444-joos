@@ -481,4 +481,54 @@ class Joos::CodeGenerator
     end
   end
 
+  instruction Joos::SSA::Instanceof do |ins|
+    @allocator.caller_save
+    @allocator.take :eax, 'result'
+    @allocator.take :ebx, 'ptr'
+    @allocator.caller_save
+    @allocator.movement_instructions.each do |ins|
+      output ins
+    end
+
+    output "mov eax, dword #{ins.entity.ancestor_number}"
+    output "mov ebx, #{locate ins.operand}"
+
+    if ins.entity.array_type?
+      output "call array_instanceof"
+    else
+      output "call __instanceof"
+    end
+
+    @allocator.free 'result'
+    @allocator.free 'ptr'
+
+    dest = destination ins
+    output "mov #{dest}, eax"
+  end
+
+  instruction Joos::SSA::Cast do |ins|
+    @allocator.caller_save
+    @allocator.take :eax, 'result'
+    @allocator.take :ebx, 'ptr'
+    @allocator.caller_save
+    @allocator.movement_instructions.each do |ins|
+      output ins
+    end
+
+    output "mov eax, dword #{ins.target_type.ancestor_number}"
+    output "mov ebx, #{locate ins.operand}"
+
+    if ins.target_type.array_type?
+      output "call array_downcast_check"
+    else
+      output "call __downcast_check"
+    end
+
+    @allocator.free 'result'
+    @allocator.free 'ptr'
+
+    # no result, if it fails then we have an exception
+    # if successful then the world carries on
+  end
+
 end
