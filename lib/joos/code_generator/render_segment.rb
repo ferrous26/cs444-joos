@@ -264,7 +264,7 @@ class Joos::CodeGenerator
       # static field access
       label = ins.entity.label
 
-      symbols << label unless ins.entity.type_environment == @unit
+      @symbols << label
       output "mov #{destination ins}, dword [#{label}]"
     when Joos::Entity::LocalVariable
       output "mov #{destination ins}, #{locate ins.entity}"
@@ -428,13 +428,13 @@ class Joos::CodeGenerator
   instruction Joos::SSA::New do |ins|
     type = ins.target_type
     constructor = ins.entity
-    
+
     # Allocate
     take_eax ins
     @allocator.caller_save
     output "mov eax, #{type.allocation_size}"
     output "call __malloc"
-    
+
     # Set the vtable
     vtable = "vtable_#{type.label}"
     symbols << vtable
