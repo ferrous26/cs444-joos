@@ -486,7 +486,7 @@ class Joos::CodeGenerator
                end
       output "mov [eax + 4], dword #{vtable}"
     else
-      vtable = "vtable_#{type.label}"
+      vtable = "vtable_#{type.type.label}"
       @symbols << vtable
       output "mov [eax + 4], dword #{vtable}"
     end
