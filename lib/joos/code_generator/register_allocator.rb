@@ -267,6 +267,13 @@ class Joos::CodeGenerator
       @args.key? name
     end
 
+    def dup
+      ra = super
+      ra.instance_variable_set(:@stack,     @stack.dup)
+      ra.instance_variable_set(:@registers, @registers.dup)
+      ra
+    end
+
 
     private
 
