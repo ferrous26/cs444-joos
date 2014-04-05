@@ -249,12 +249,6 @@ class Joos::CodeGenerator
     end
     alias_method :backup_instructions, :movement_instructions
 
-    # @return [Fixnum] size in bytes, not including saved `ebp`
-    def stack_size
-      (@stack.size - 1) * 4
-    end
-
-
     def on_stack? name
       @stack.index name
     end
