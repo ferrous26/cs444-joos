@@ -384,6 +384,10 @@ class Joos::CodeGenerator
     @allocator.take :edx, 'remainder'
     @allocator.take :eax, 'dividend'
     @allocator.take :ebx, 'divisor'
+    @allocator.movement_instructions.each do |ins|
+      output ins
+    end
+
     output "mov eax, #{locate ins.left} "
     output "mov ebx, #{locate ins.right} "
     output "call __division"
@@ -398,6 +402,10 @@ class Joos::CodeGenerator
     @allocator.take :edx, 'remainder'
     @allocator.take :eax, 'dividend'
     @allocator.take :ebx, 'divisor'
+    @allocator.movement_instructions.each do |ins|
+      output ins
+    end
+
     output "mov eax, #{locate ins.left} "
     output "mov ebx, #{locate ins.right} "
     output "call __modulo"
