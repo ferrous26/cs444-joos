@@ -288,10 +288,10 @@ the method body. Operations may only act on SSA variables - to access, say, a
 local variable, we first load it into an SSA variable using a \ttt{Get}
 instruction.
 
-At the higher level, we create graph of \ttt{FlowBlock}s for representing
+At the higher level, we create a graph of \ttt{FlowBlock}s for representing
 control flow. A \ttt{FlowBlock} consists of an array of SSA instructions that
-form its body, as well as a \ttt{continuation} that points to the next block(s)
-in the graph, or returns an SSA variable.
+form its body, as well as a \ttt{continuation} that points to the next
+block(s) in the graph, or returns an SSA variable.
 
 Short-circuiting operators are also represented as \ttt{FlowBlock}s, with a
 special $\Phi$ instruction (called \ttt{Merge}) for ``choosing'' the result of a
@@ -308,8 +308,8 @@ The second purpose was anticipating register allocation. It is relatively simple
 to perform liveness analysis on SSA variables by traversing the flow graph
 backwards. Given liveness information, we could determine the necessary size of
 the stack frame and choose locations for values ahead of time, simplifying some
-of the details of code generation. This was not implemented due to time
-constraints.
+of the details of code generation. However, this was not implemented
+due to time constraints.
 
 \section{Testing}
 
