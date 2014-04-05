@@ -450,4 +450,32 @@ class Joos::CodeGenerator
     render_call ins, constructor, ins, ins.arguments
   end
 
+  instruction Joos::SSA::NewArray do |ins|
+    type = ins.target_type
+    constructor = ins.entity
+
+    # Allocate
+    @allocator.caller_save
+    take_eax ins
+
+    output "mov eax, #{ins.arguments[0]}"
+    output "call allocate_array"
+
+    # Set the vtables
+    vtable = "vtable_array"
+    @symbols << vtable
+    output "mov [eax], dword #{vtable}"
+
+    vtable = "vtable_#{type.label}"
+    @symbols << vtable
+    output "mov [eax + 4], dword #{vtable}"
+
+    # Call the constructor
+    unless type.basic_type?
+      # @todo call instructor for each element...
+      # first element at [eax + 12], first address past array is [eax + 12 + (length * 4)]
+      # render_call ins, constructor, ins, ins.arguments
+    end
+  end
+
 end

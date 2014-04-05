@@ -56,6 +56,11 @@ __exception:
 ; Outputs the low-order byte of eax to standard output.
 global NATIVEjava.io.OutputStream.nativeWrite
 NATIVEjava.io.OutputStream.nativeWrite:
+        ; dynamically align the stack
+	mov     ebx, esp
+	and     ebx, 0xf
+	sub     esp, ebx
+
 	mov     [char], al   ; actually load char the char*
 	push    dword 1      ; push strlen (we always print 1 byte)
 	push    dword char   ; push char* onto stack
