@@ -433,11 +433,31 @@ class Joos::CodeGenerator
   end
 
   instruction Joos::SSA::Div do |ins|
-    not_implemented
+    @allocator.take :edx, 'remainder'
+    @allocator.take :eax, 'dividend'
+    @allocator.take :ebx, 'divisor'
+    output "mov eax, #{locate ins.left} "
+    output "mov ebx, #{locate ins.right} "
+    output "call __division"
+    dest = destination ins
+    output "mov #{dest}, #{locate 'dividend'}"
+    @allocator.free 'dividend'
+    @allocator.free 'remainder'
+    @allocator.free 'divisor'
   end
 
   instruction Joos::SSA::Mod do |ins|
-    not_implemented
+    @allocator.take :edx, 'remainder'
+    @allocator.take :eax, 'dividend'
+    @allocator.take :ebx, 'divisor'
+    output "mov eax, #{locate ins.left} "
+    output "mov ebx, #{locate ins.right} "
+    output "call __modulo"
+    dest = destination ins
+    output "mov #{dest}, #{locate 'remainder'}"
+    @allocator.free 'dividend'
+    @allocator.free 'remainder'
+    @allocator.free 'divisor'
   end
 
   instruction Joos::SSA::Add do |ins|

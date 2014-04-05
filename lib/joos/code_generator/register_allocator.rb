@@ -17,7 +17,7 @@ class Joos::CodeGenerator
       @moves     = [] # temp store for things that need to move around
       @registers = REGISTERS.dup
       @args      = {}
-      @stack     = [:nil] # starts off with `ebp` already pushed
+      @stack     = [:nil] # starts off with `ebp` at `[ebp]`
       @offset    = (args.size + 1) * 4 # offset from `[ebp]`
 
       # [ebp] is the previous ebp,
@@ -265,6 +265,13 @@ class Joos::CodeGenerator
 
     def arg? name
       @args.key? name
+    end
+
+    def dup
+      ra = super
+      ra.instance_variable_set(:@stack,     @stack.dup)
+      ra.instance_variable_set(:@registers, @registers.dup)
+      ra
     end
 
 
