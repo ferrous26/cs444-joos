@@ -440,7 +440,7 @@ class Joos::CodeGenerator
     output "mov ebx, #{locate ins.right} "
     output "call __division"
     dest = destination ins
-    output "mov #{dest}, eax"
+    output "mov #{dest}, #{locate 'dividend'}"
     @allocator.free 'dividend'
     @allocator.free 'remainder'
     @allocator.free 'divisor'
