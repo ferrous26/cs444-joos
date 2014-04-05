@@ -104,7 +104,7 @@ Code generation for static fields is done in two steps. The first step
 is allocate space for the static value in the \ttt{data} section of
 the program. Each field is given a double word of space for storage
 for convenience. The default value for each static field is \ttt{00},
-which is the correct default initialzation value for Joos data no
+which is the correct default initialization value for Joos data no
 matter what type information is used to interpret the bits.
 
 The second step is to generate a function that will be called during
@@ -149,7 +149,7 @@ allows for polymorphism to work correctly and provides an efficient
 strategy for accessing field data by determining offsets at
 compilation time.
 
-Each field is alloted a double word of storage space to make offset
+Each field is allotted a double word of storage space to make offset
 calculations simple, though we would have preferred to pack objects
 more efficiently if time had permitted.
 
@@ -243,16 +243,36 @@ The program will exit with the \ttt{int} returned from the
 
 \subsection{Conventions}
 
+Each method, and static field initializer, follows the same calling
+convention and organizational structure.
+
 \subsubsection{Calling Convention}
+
+The calling convention implemented by our compiler follows the general
+structure of a caller-save pattern. First, we push registers with live
+variables onto the stack, then we push the arguments onto the stack in
+the order which they appear in the source code, then we push the
+receiver (\ttt{this}) if the method is not static, then we lookup the
+method pointer as described above, and finally we call the method.
+
+When the method returns, we pop arguments off the stack and have the
+result in the \ttt{eax} register.
 
 \subsubsection{Method Layout}
 
-Also mention that stack objects are given a double word of storage each.
+Each method and static field initializer has a \ttt{.prologue} and
+\ttt{.epilogue} label. In the prologue, we push \ttt{ebp} onto the
+stack and \ttt{mov ebp, esp}, to setup the function.
+
+In the epilogue, we reverse these instructions by first performing
+\ttt{mov esp, ebp} and then popping \ttt{ebp} from the stack, and
+finally \ttt{ret}urning.
+
+To simplify method layout, each object and basic type is allocated a
+double word of storage on the stack.
 
 
 \subsection{Substance}
-
-Register allocator
 
 SSA
 
@@ -283,7 +303,7 @@ calls to the linker.
 The Joos runtime was written while SSA compilation was still being
 implemented, and so we could not test the library by compiling
 programs. Our strategy was to create mock Joos objects in assembly,
-and test the inidividual functions by passing the mock objects. It was
+and test the individual functions by passing the mock objects. It was
 simple to perform rudimentary checks for boolean values and null
 pointers in assembly, and exit with an appropriate exit code.
 
