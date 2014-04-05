@@ -185,12 +185,61 @@ runtime.
 
 In order for compilation units to call each other's methods and access
 each others data, we needed a label generating scheme that allowed
-different instances of \ttt{CodeGenerator} to easily determine
+different instances of \ttt{CodeGenerator} to easily determine a label
+coming from another \ttt{CodeGenerator}.
 
+Compilation units, classes and interfaces, were given a label name
+which was simply the units fully qualified name prefixed with
+\ttt{@}. Since the fully qualified name must be unique within a
+program, this seemed like a natural choice. The \ttt{@} prefix allows
+us to have a separator before the label which will not have collisions
+with Joos/Java identifiers.
 
+Java allows \ttt{\$}, \ttt{\_}, and \ttt{.} in qualified identifier
+names, so we avoided using those characters as separators. However,
+NASM also allows \ttt{\#}, \ttt{@}, \ttt{~}, and \ttt{?} in label
+names, so we made thorough use of those characters.
+
+Each field, constructor, and method label is prefixed with the
+compilation unit name, and then one of the separators, followed by the
+simple name of entity.
+
+For example, fields are separated by \ttt{?}, so the \ttt{foo} field
+of \ttt{java.lang.bar} class would have the label
+\ttt{@java.lang.bar?foo}.
+
+Similar to fields, methods use \ttt{~} as their separator. However, as
+methods can be overloaded, method labels include the signature for the
+method. For example, a method named \ttt{foo} for class
+\ttt{java.lang.bar}, which takes one parameter of type
+\ttt{java.lang.String} would have the label
+\ttt{@java.lang.bar~foo~@java.lang.String}.
+
+Constructor labels are generated in the same way as method labels,
+except that the simple name for a constructor is substituted with
+\ttt{@} just to make it easier for humans to tell the labels apart
+during debugging.
+
+By using \ttt{@} as a prefix, we can prepend anything before a
+generated label for use internal to the compiler, such as
+\ttt{vtable\_@java.lang.String}, as a shortcut for accessing the
+virtual function table for \ttt{java.lang.String}.
+
+Literal string labels are simply of the form \ttt{string\#UUID}, where
+\ttt{UUID} is a UUID generated at compile time. UUID's are extremely
+unlikely to collide, so we think it was a safe choice for making the
+label unique in a global context. Though literal strings are limited
+to the file in which they were declared, we did originally plan on
+global deduplication of string literals.
 
 \subsubsection{Program Startup}
 
+Program startup is as required by the assignment specification. All
+static fields are initialized, according to specification, and then a
+\ttt{call} to the \ttt{public static int test()} method is made.
+
+The program will exit with the \ttt{int} returned from the
+\ttt{test()} method.
 
 \subsection{Conventions}
 
