@@ -222,7 +222,8 @@ class Joos::CodeGenerator
       render_merge block, continuation.false_case
       output "jmp #{continuation.false_case.label}"
     when nil
-      # Nothing
+      # Void return
+      output "jmp .epilogue"
     end
   end
 
