@@ -430,8 +430,9 @@ class Joos::CodeGenerator
     constructor = ins.entity
 
     # Allocate
-    take_eax ins
     @allocator.caller_save
+    take_eax ins
+
     output "mov eax, #{type.allocation_size}"
     output "call __malloc"
 
