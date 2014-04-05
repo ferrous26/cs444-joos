@@ -84,22 +84,21 @@ class Joos::CodeGenerator
       in_reg = @registers[register]
 
       # if name is already in the register, nothing to do...
-      unless in_reg == name
-        # if something is in the register, then we might need to back it up
-        if in_reg
-          # if it is already on the stack (or args), we can just overwrite
-          # the register and reload the value later if needed
-          unless on_stack?(in_reg) || arg?(in_reg)
-            # it does not exist elsewhere, so we must push it onto the stack
-            @stack << in_reg
-            @moves << push_instruction(register, in_reg)
-          end
-        end
+      return if in_reg == name
 
-        # finally, take over the register
-        @registers[register] = name
+      # if something is in the register, then we might need to back it up
+      if in_reg
+        # if it is already on the stack (or args), we can just overwrite
+        # the register and reload the value later if needed
+        unless on_stack?(in_reg) || arg?(in_reg)
+          # it does not exist elsewhere, so we must push it onto the stack
+          @stack << in_reg
+          @moves << push_instruction(register, in_reg)
+        end
       end
 
+      # finally, take over the register
+      @registers[register] = name
       register.to_s # fulfill post condition...
     end
 
