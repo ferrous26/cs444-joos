@@ -20,6 +20,7 @@ class FlowBlock
   # @return [Return, Just, Next, Loop, Branch]
   attr_accessor :continuation
 
+  attr_accessor :allocator
 
   def initialize name="", instructions=[], continuation=nil
     @name = name
