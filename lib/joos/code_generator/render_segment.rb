@@ -438,7 +438,7 @@ class Joos::CodeGenerator
 
     # Set the vtable
     vtable = "vtable_#{type.label}"
-    symbols << vtable
+    @symbols << vtable
     output "mov [eax], dword #{vtable}"
 
     # Call the constructor
