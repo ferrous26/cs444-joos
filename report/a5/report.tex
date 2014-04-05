@@ -111,8 +111,8 @@ The second step is to generate a function that will be called during
 program initialization to initialize the field. However, static fields
 with no initializer will not have a function generated.
 
-Each compilation unit has a single function which calls all the static
-field initializers, in the order that they were declared in the source
+Each compilation unit has a single function which initializes its
+static fields in the order that they were declared in the source
 program. This single function is then called by the program's main
 function before calling the Joos \ttt{test()} method. Organizing
 initializers with this hierarchy was simply to keep information more
@@ -188,7 +188,7 @@ each others data, we needed a label generating scheme that allowed
 different instances of \ttt{CodeGenerator} to easily determine a label
 coming from another \ttt{CodeGenerator}.
 
-Compilation units, classes and interfaces, were given a label name
+Compilation units - classes and interfaces - were given a label name
 which was simply the units fully qualified name prefixed with
 \ttt{@}. Since the fully qualified name must be unique within a
 program, this seemed like a natural choice. The \ttt{@} prefix allows
@@ -198,7 +198,7 @@ with Joos/Java identifiers.
 Java allows \ttt{\$}, \ttt{\_}, and \ttt{.} in qualified identifier
 names, so we avoided using those characters as separators. However,
 NASM also allows \ttt{\#}, \ttt{@}, \ttt{~}, and \ttt{?} in label
-names, so we made thorough use of those characters.
+names, so we made thorough use of these characters.
 
 Each field, constructor, and method label is prefixed with the
 compilation unit name, and then one of the separators, followed by the
@@ -252,7 +252,7 @@ The calling convention implemented by our compiler follows the general
 structure of a caller-save pattern. First, we push registers with live
 variables onto the stack, then we push the arguments onto the stack in
 the order which they appear in the source code, then we push the
-receiver (\ttt{this}) if the method is not static, then we lookup the
+receiver (\ttt{this}) if the method is not static. We then lookup the
 method pointer as described above, and finally we call the method.
 
 When the method returns, we pop arguments off the stack and have the
@@ -274,8 +274,42 @@ double word of storage on the stack.
 
 \subsection{Substance}
 
-SSA
+Method bodies, fields initializers, and constructors are first compiled to an
+intermediate representation before being fully compiled to x86. We refer to this
+representation as Single Static Assignment form, though this is a misnomer - we
+do not actually transform any assignments to SSA.
 
+SSA code is organized in two levels. At the lower level, we have
+\ttt{Instruction}s. Each instruction may consume SSA variables and produces at
+most one SSA variable. A SSA variable is created for each intermediate value in
+an expression and is immutable. We define a SSA variable by its instruction,
+forming a tree, but for convenience we also assign it a number which is unique to
+the method body. Operations may only act on SSA variables - to access, say, a
+local variable, we first load it into an SSA variable using a \ttt{Get}
+instruction.
+
+At the higher level, we create graph of \ttt{FlowBlock}s for representing
+control flow. A \ttt{FlowBlock} consists of an array of SSA instructions that
+form its body, as well as a \ttt{continuation} that points to the next block(s)
+in the graph, or returns an SSA variable.
+
+Short-circuiting operators are also represented as \ttt{FlowBlock}s, with a
+special $\Phi$ instruction (called \ttt{Merge}) for ``choosing'' the result of a
+branch. We implement this in assembly by ensuring that a block followed by a
+\ttt{Merge} always places its result in \ttt{eax}.
+
+The purpose of creating the intermediate representation was twofold. First, it
+allowed us to break away from our existing AST code in favour of a simpler form.
+Unfortunately, much of our code for previous compilation stages depends on the
+presence of concrete nodes in the syntax tree, which we never fully simplified.
+These concrete nodes would have significantly complicated code generation.
+
+The second purpose was anticipating register allocation. It is relatively simple
+to perform liveness analysis on SSA variables by traversing the flow graph
+backwards. Given liveness information, we could determine the necessary size of
+the stack frame and choose locations for values ahead of time, simplifying some
+of the details of code generation. This was not implemented due to time
+constraints.
 
 \section{Testing}
 
