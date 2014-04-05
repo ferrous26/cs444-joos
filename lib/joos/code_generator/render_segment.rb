@@ -470,17 +470,30 @@ class Joos::CodeGenerator
     output "call array__allocate"
 
     # Set the vtables
-    vtable = "vtable_array"
-    @symbols << vtable
-    output "mov [eax], dword #{vtable}"
+    output "mov [eax], dword vtable_array"
 
-    vtable = "vtable_#{type.label}"
-    @symbols << vtable
-    output "mov [eax + 4], dword #{vtable}"
+    if type.type.basic_type?
+      vtable = if type.type.is_a? Joos::BasicType::Int
+                 "int_array#"
+               elsif type.type.is_a? Joos::BasicType::Short
+                 "short_array#"
+               elsif type.type.is_a? Joos::BasicType::Byte
+                 "byte_array#"
+               elsif type.type.is_a? Joos::BasicType::Char
+                 "char_array#"
+               elsif type.type.is_a? Joos::BasicType::Boolean
+                 "boolean_array#"
+               end
+      output "mov [eax + 4], dword #{vtable}"
+    else
+      vtable = "vtable_#{type.label}"
+      @symbols << vtable
+      output "mov [eax + 4], dword #{vtable}"
+    end
 
     # Call the constructor
     unless type.basic_type?
-      # @todo call instructor for each element...
+      # @todo call constructor for each element...
       # first element at [eax + 12], first address past array is [eax + 12 + (length * 4)]
       # render_call ins, constructor, ins, ins.arguments
     end
