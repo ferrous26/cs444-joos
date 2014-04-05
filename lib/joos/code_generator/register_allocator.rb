@@ -17,7 +17,7 @@ class Joos::CodeGenerator
       @moves     = [] # temp store for things that need to move around
       @registers = REGISTERS.dup
       @args      = {}
-      @stack     = [:nil] # starts off with `ebp` already pushed
+      @stack     = [:nil] # starts off with `ebp` at `[ebp]`
       @offset    = (args.size + 1) * 4 # offset from `[ebp]`
 
       args.each do |name|
@@ -318,7 +318,7 @@ class Joos::CodeGenerator
     end
 
     def stack_offset name
-      (@stack.index(name) + 1) * 4
+      @stack.index(name) * 4
     end
   end
 end
