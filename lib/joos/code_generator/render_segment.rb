@@ -23,12 +23,14 @@ class Joos::CodeGenerator
       params = []
     end
     params << 'this' if segment.has_receiver?
-    @allocator = RegisterAllocator.new params
+
+    segment.start_block.allocator = RegisterAllocator.new params
     @output_instructions = []
     @current_segment = segment
 
     segment.flow_blocks.each_with_index do |block, index|
       @current_block = block
+      @allocator = block.allocator
       @next_block = segment.flow_blocks[index + 1]
 
       output
@@ -206,11 +208,14 @@ class Joos::CodeGenerator
       end
       output 'jmp .epilogue' if next_block
     when Joos::SSA::Next
+      continuation.block.allocator ||= block.allocator.dup
       render_merge block, continuation.block
       output "jmp #{continuation.block.name}" unless continuation.block == next_block
     when Joos::SSA::Loop
       output "jmp #{continuation.block.name}"
     when Joos::SSA::Branch
+      continuation.true_case.allocator ||= block.allocator.dup
+      continuation.false_case.allocator ||= block.allocator.dup
       render_merge block, continuation.true_case
       output "cmp #{locate continuation.guard}, 1"
       output "je  #{continuation.true_case.label}"
