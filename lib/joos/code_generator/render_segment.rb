@@ -466,7 +466,7 @@ class Joos::CodeGenerator
     @allocator.caller_save
     take_eax ins
 
-    output "mov eax, #{ins.arguments[0]}"
+    output "mov eax, #{locate ins.arguments[0]}"
     output "call allocate_array"
 
     # Set the vtables
@@ -534,6 +534,11 @@ class Joos::CodeGenerator
 
     # no result, if it fails then we have an exception
     # if successful then the world carries on
+  end
+
+  instruction Joos::SSA::NumericCast do |ins|
+    # TODO
+    not_implemented
   end
 
 end

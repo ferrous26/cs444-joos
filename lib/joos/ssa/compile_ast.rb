@@ -248,8 +248,11 @@ module CompileAST
   # @param cast_type {Joos::AST]
   def compile_cast value_block, cast_type
     type = cast_type.type
-
-    value_block.make_result Cast.new(new_var, type, value_block.result)
+    if type.basic_type?
+      value_block.make_result NumericCast.new(new_var, type, value_block.result)
+    else
+      value_block.make_result Cast.new(new_var, type, value_block.result)
+    end
   end
 
   # @param field [Joos::Entity::Field]
