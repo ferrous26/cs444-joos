@@ -6,7 +6,7 @@ global <%= method.label %>
         push    ebp
         mov     ebp, esp
 
-<%#= render_segment method.segment %>
+<%= render_segment method.segment %>
         mov     eax, 123
 
 .epilogue:
