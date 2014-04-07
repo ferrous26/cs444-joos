@@ -309,8 +309,8 @@ class Joos::Compiler
                                              @root_package)
 
     # also add our static runtime code
-    FileUtils.cp runtime, output_directory
-    FileUtils.cp platform_runtime, output_directory
+    # FileUtils.cp runtime, output_directory
+    # FileUtils.cp platform_runtime, output_directory
   end
 
 end

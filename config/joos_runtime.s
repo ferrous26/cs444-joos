@@ -1,15 +1,9 @@
 ;; The Joos Runtime
 
-extern __malloc
-extern __debexit
-extern __exception
-extern __debug_print
-
 ;; method dispatch (actually, just finding the correct method pointer)
 ;;
 ;; pre:  object in ebx, method number in eax
 ;; post: method pointer in eax
-global __dispatch
 __dispatch:
 	cmp     ebx, 0             ; first, check if receiver is null
 	je      .null_pointer
@@ -30,8 +24,6 @@ __dispatch:
 ;; pre:  dividend in eax, divisor in ebx, we take ownership of edx, and
 ;;       eax must be already be a full int (sign extended)
 ;; post: quotient in eax, remainder in edx
-global __division
-global __modulo
 __division:
 __modulo:
 	cmp     ebx, 0           ; trying to divide by 0 is not allowed!
@@ -49,7 +41,6 @@ __modulo:
 ;;
 ;; pre:  concrete data in ebx, type number in eax, takes ownership of ebx & edi
 ;; post: boolean result value will be left in eax
-global __instanceof
 __instanceof:
 	cmp     ebx, 0             ; if (ebx == null) return false
 	je      .different         ; null is by definition not any type
@@ -79,7 +70,6 @@ __instanceof:
 ;;
 ;; pre:  concrete data in ebx, type number in eax, takes ownership of ebx & edi
 ;; post: boolean result value will be left in eax
-global __downcast_check
 __downcast_check:
 	cmp     ebx, 0          ; if (ebx == null) return true
 	je      .ok             ; null cast is always a success
@@ -111,7 +101,6 @@ __downcast_check:
 ;;
 ;; pre:  array size in eax, takes over of ebx, edi, esi
 ;; post: pointer to head of array in eax
-global array__allocate
 array__allocate:
 	cmp     eax, 0         ; array size cannot be < 0
 	jl      .negative_array_size
@@ -140,7 +129,6 @@ array__allocate:
 ;;
 ;; pre:  pointer to array is in eax
 ;; post: length of array is in eax
-global array?length
 array?length:
 	cmp     eax, 0
 	je      .null_array
@@ -152,7 +140,6 @@ array?length:
 
 ;; pre:  index in eax, pointer to array in ebx, take over edi
 ;; post: value in eax
-global array_get
 array_get:
 	cmp     ebx, 0
 	je      .null_array
@@ -176,7 +163,6 @@ array_get:
 
 ;; pre:  index in eax, pointer to array in ebx, value in ecx
 ;; post: value in eax?
-global array_set
 array_set:
 	cmp     ebx, 0          ; check if array ref is null
 	je      .null_array
@@ -241,7 +227,6 @@ array_set:
 ;;
 ;; pre:  concrete data in ebx, inner type number in eax, takes edi & ebx
 ;; post: boolean result value will be left in eax
-global array_instanceof
 array_instanceof:
 	cmp     ebx, 0             ; if (ebx == null) return false
 	je     .different          ; null is by definition not any type
@@ -282,7 +267,6 @@ array_instanceof:
 ;;
 ;; pre:  concrete data in ebx, inner type number in eax, takes over ebx & edi
 ;; post: boolean result value will be left in eax
-global array_downcast_check
 array_downcast_check:
 	cmp     ebx, 0          ; if (ebx == null) return true
 	je      .ok             ; null cast is always a success
@@ -306,7 +290,6 @@ __internal_exception:
 ;	call __debug_print
 	call __exception
 
-global __null_pointer_exception
 __null_pointer_exception:
 ;	mov     eax, null_pointer_exception
 ;	call __debug_print

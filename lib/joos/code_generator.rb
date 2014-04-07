@@ -105,6 +105,10 @@ class Joos::CodeGenerator
     ERB.new(template, nil, '>-').def_method(self, "render_#{name}")
   end
 
+  def render_runtime
+    File.read 'config/joos_runtime.s'
+  end
+
 
   private
 
@@ -117,19 +121,7 @@ class Joos::CodeGenerator
   end
 
   def default_symbols
-    base =
-      [
-        '__debexit', '__malloc', '__exception', '__null_pointer_exception',
-
-        '__division', '__modulo',
-
-        '__downcast_check', '__instanceof',
-        'array_instanceof', 'array_downcast_check',
-
-        '__dispatch',
-
-        'array__allocate', 'array?length', 'array_get', 'array_set'
-      ]
+    base = [ '__debexit', '__malloc', '__exception' ]
 
     base << vtable(@unit.get_string_class) unless @unit.string_class?
     base << 'vtable_array' unless @unit.array_type? # @todo not hardcode this
