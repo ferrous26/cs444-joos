@@ -22,8 +22,9 @@ module Joos::Entity::HasMethods
     end
   end
 
-
-  # Given a list of method AST nodes, populate @methods with with Joos::Entity::Method
+  ##
+  # Given a list of method AST nodes, populate @methods with with
+  # {Joos::Entity::Method}.
   def link_methods method_nodes, method_class = Joos::Entity::Method
     @methods = method_nodes.map do |node|
       raise "Expected an AST node, given #{node}" unless node.is_a? Joos::AST
@@ -34,15 +35,17 @@ module Joos::Entity::HasMethods
     end
   end
 
+  ##
   # An array of (method, supermethod) pairs representing the outer join of
   # the two arrays. Methods are joined if they have the same full signature.
+  #
   # @return [Array<(Method, Method)>]
   def override_pairs methods, supermethods
     has_overrides = Set.new
 
     ret = methods.map.with_index do |method, i|
       sig = method.full_signature
-      parent_index = supermethods.find_index {|s| s.full_signature == sig}
+      parent_index = supermethods.find_index { |s| s.full_signature == sig }
       has_overrides << parent_index
       parent = supermethods[parent_index] if parent_index
       [method, parent]
